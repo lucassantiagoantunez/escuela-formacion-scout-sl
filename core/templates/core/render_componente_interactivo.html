@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ componente.nombre }}</title>
+
+    <link rel="stylesheet" href="{% static 'core/css/render_componente_interactivo.css' %}">
+
+    {% if componente.css %}
+        {{ componente.css|json_script:"componente-css-data" }}
+        <script>
+            (function () {
+                const nodoCss = document.getElementById('componente-css-data');
+
+                if (!nodoCss) {
+                    return;
+                }
+
+                const cssPersonalizado = JSON.parse(nodoCss.textContent || '""');
+
+                if (!cssPersonalizado.trim()) {
+                    return;
+                }
+
+                const estilo = document.createElement('style');
+                estilo.textContent = cssPersonalizado;
+                document.head.appendChild(estilo);
+            })();
+        </script>
+    {% endif %}
+</head>
+<body>
+
+    <!-- ==========================================
+         BLOQUE HTML COMPONENTE INTERACTIVO 1 - CONTENEDOR GENERAL
+    ========================================== -->
+    <div class="componente-interactivo-contenedor">
+        {% if componente.html %}
+            {{ componente.html|safe }}
+        {% else %}
+            <div class="componente-interactivo-vacio">
+                Este componente interactivo todavía no tiene contenido HTML cargado.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML COMPONENTE INTERACTIVO 2 - JAVASCRIPT PERSONALIZADO
+    ========================================== -->
+    {% if componente.javascript %}
+        {{ componente.javascript|json_script:"componente-js-data" }}
+        <script>
+            (function () {
+                const nodoJs = document.getElementById('componente-js-data');
+
+                if (!nodoJs) {
+                    return;
+                }
+
+                const javascriptPersonalizado = JSON.parse(nodoJs.textContent || '""');
+
+                if (!javascriptPersonalizado.trim()) {
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.textContent = javascriptPersonalizado;
+                document.body.appendChild(script);
+            })();
+        </script>
+    {% endif %}
+</body>
+</html>

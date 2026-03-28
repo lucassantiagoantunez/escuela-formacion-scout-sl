@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Ruletas de desafíos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/ruletas.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML RULETAS 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="ruletas-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML RULETAS 2 - TÍTULO
+    ========================================== -->
+    <h1>Ruletas de desafíos</h1>
+
+    <!-- ==========================================
+         BLOQUE HTML RULETAS 3 - TEXTO INTRODUCTORIO
+    ========================================== -->
+    <p class="ruletas-intro">
+        Girá la ruleta y descubrí qué desafío, prenda, castigo o buena acción diaria te toca.
+        Cada ruleta puede tener distintas consignas para usar en actividades formativas y recreativas.
+    </p>
+
+    <!-- ==========================================
+         BLOQUE HTML RULETAS 4 - LISTADO DE RULETAS
+    ========================================== -->
+    {% for ruleta in ruletas %}
+        <div class="caja ruleta-item">
+            <h3>{{ ruleta.titulo }}</h3>
+
+            {% if ruleta.descripcion %}
+                <p>{{ ruleta.descripcion|truncatewords:24 }}</p>
+            {% endif %}
+
+            <div class="ruleta-detalle">
+                Sectores disponibles: {{ ruleta.sectores.count }}
+            </div>
+
+            <a href="{% url 'detalle_ruleta' ruleta.id %}" class="boton-verde">
+                Girar ruleta
+            </a>
+        </div>
+    {% empty %}
+        <!-- ==========================================
+             BLOQUE HTML RULETAS 5 - MENSAJE VACÍO
+        ========================================== -->
+        <p class="ruletas-vacio">
+            Todavía no hay ruletas cargadas.
+        </p>
+    {% endfor %}
+
+</div>
+{% endblock %}

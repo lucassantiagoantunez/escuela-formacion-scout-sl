@@ -1,0 +1,244 @@
+/* ==================================================
+   BLOQUE CAMINO DETALLE 1 - CONTENEDOR GENERAL
+================================================== */
+.detalle-camino-contenedor {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 20px 20px 40px 20px;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 2 - CABECERA
+================================================== */
+.detalle-camino-descripcion {
+    max-width: 760px;
+    margin: 0 auto 25px;
+    text-align: center;
+    color: white;
+    line-height: 1.7;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 3 - CAJAS GENERALES
+================================================== */
+.detalle-camino-caja {
+    background-color: #334155;
+    padding: 25px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+}
+
+.detalle-camino-caja h2,
+.detalle-camino-caja h3 {
+    color: #22c55e;
+    margin-top: 0;
+    text-align: center;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 4 - ESCENA ACTUAL
+================================================== */
+.camino-escena-titulo {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.camino-escena-texto {
+    max-width: 760px;
+    margin: 0 auto;
+    line-height: 1.8;
+    text-align: left;
+    color: white;
+}
+
+.camino-escena-texto p {
+    margin-bottom: 16px;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 5 - OPCIONES
+================================================== */
+.camino-opciones {
+    display: grid;
+    gap: 14px;
+    margin-top: 25px;
+}
+
+.camino-opcion-boton {
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: #1e293b;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    line-height: 1.5;
+    transition: 0.2s ease;
+}
+
+.camino-opcion-boton:hover {
+    background-color: #22c55e;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 6 - RESULTADO FINAL
+================================================== */
+.camino-final {
+    display: none;
+    margin-top: 25px;
+}
+
+.camino-final.activo {
+    display: block;
+}
+
+.camino-final-caja {
+    border-radius: 14px;
+    padding: 22px;
+    line-height: 1.7;
+    color: #0f172a;
+    text-align: center;
+    font-weight: bold;
+}
+
+.camino-final-tipo {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background-color: rgba(15, 23, 42, 0.16);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.camino-final-texto {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+.camino-final-bueno {
+    background-color: #22c55e;
+}
+
+.camino-final-neutro {
+    background-color: #facc15;
+}
+
+.camino-final-malo {
+    background-color: #ef4444;
+    color: white;
+}
+
+.camino-final-malo .camino-final-tipo {
+    background-color: rgba(255, 255, 255, 0.14);
+    color: white;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 7 - RECOMENDACIÓN
+================================================== */
+.camino-recomendacion {
+    display: none;
+    background-color: #1e293b;
+    border: 2px solid #facc15;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 12px;
+}
+
+.camino-recomendacion.activo {
+    display: block;
+}
+
+.camino-recomendacion h3 {
+    color: #facc15;
+    margin-top: 0;
+    text-align: center;
+}
+
+.camino-recomendacion p {
+    color: white;
+    text-align: center;
+    line-height: 1.7;
+    margin-bottom: 14px;
+}
+
+.camino-recomendacion-bloques {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.camino-recomendacion-item {
+    background-color: #334155;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.camino-recomendacion-item h4 {
+    color: #22c55e;
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.camino-recomendacion-item p {
+    margin-bottom: 12px;
+}
+
+.camino-recomendacion-item .boton-verde {
+    margin: 0 auto;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 8 - CONTROLES
+================================================== */
+.camino-acciones {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.camino-acciones .boton-verde {
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 9 - MENSAJES VACÍOS
+================================================== */
+.detalle-camino-vacio {
+    text-align: center;
+    color: white;
+    line-height: 1.7;
+}
+
+.camino-datos-ocultos {
+    display: none;
+}
+
+/* ==================================================
+   BLOQUE CAMINO DETALLE 10 - RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+    .detalle-camino-contenedor {
+        padding: 15px 12px 30px 12px;
+    }
+
+    .detalle-camino-caja {
+        padding: 20px;
+    }
+
+    .camino-final-texto {
+        font-size: 19px;
+    }
+}

@@ -1,0 +1,232 @@
+/* ==================================================
+   BLOQUE RULETA DETALLE 1 - CONTENEDOR GENERAL
+================================================== */
+.detalle-ruleta-contenedor {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 20px 40px 20px;
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 2 - CABECERA
+================================================== */
+.detalle-ruleta-descripcion {
+    max-width: 760px;
+    margin: 0 auto 25px;
+    text-align: center;
+    color: white;
+    line-height: 1.7;
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 3 - ESTRUCTURA PRINCIPAL
+================================================== */
+.detalle-ruleta-caja {
+    background-color: #334155;
+    padding: 25px;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.detalle-ruleta-zona {
+    position: relative;
+    max-width: 430px;
+    margin: 0 auto;
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 4 - MARCADOR SUPERIOR
+================================================== */
+.detalle-ruleta-marcador {
+    width: 0;
+    height: 0;
+    margin: 0 auto -6px auto;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-top: 28px solid #f8fafc;
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+    position: relative;
+    z-index: 3;
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 5 - CANVAS
+================================================== */
+.detalle-ruleta-lienzo-contenedor {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+}
+
+.detalle-ruleta-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.detalle-ruleta-canvas.arrastrando {
+    cursor: grabbing;
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 6 - BOTÓN CENTRAL
+================================================== */
+.detalle-ruleta-boton-centro {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    border: 5px solid #0f172a;
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+    z-index: 4;
+    transition: 0.2s ease;
+}
+
+.detalle-ruleta-boton-centro:hover {
+    transform: translate(-50%, -50%) scale(1.03);
+}
+
+.detalle-ruleta-boton-centro:disabled {
+    opacity: 0.75;
+    cursor: wait;
+    transform: translate(-50%, -50%);
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 7 - RESULTADO
+================================================== */
+.detalle-ruleta-resultado {
+    margin-top: 25px;
+    display: none;
+}
+
+.detalle-ruleta-resultado.activo {
+    display: block;
+}
+
+.detalle-ruleta-resultado.activo .detalle-ruleta-resultado-caja {
+    animation: ruletaResultadoPop 0.35s ease;
+}
+
+.detalle-ruleta-resultado-caja {
+    max-width: 760px;
+    margin: 0 auto;
+    border-radius: 14px;
+    padding: 20px;
+    color: #0f172a;
+    font-weight: bold;
+    line-height: 1.7;
+}
+
+.resultado-tipo {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background-color: rgba(15, 23, 42, 0.18);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.resultado-texto {
+    font-size: 24px;
+    margin: 0;
+}
+
+@keyframes ruletaResultadoPop {
+    0% {
+        transform: scale(0.88);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.04);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 8 - REFERENCIAS
+================================================== */
+.detalle-ruleta-ayuda {
+    margin-top: 20px;
+    color: #cbd5e1;
+    text-align: center;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.detalle-ruleta-leyenda {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.detalle-ruleta-leyenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #1e293b;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    color: white;
+}
+
+.detalle-ruleta-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 9 - MENSAJE VACÍO
+================================================== */
+.detalle-ruleta-vacio {
+    text-align: center;
+    line-height: 1.7;
+    color: white;
+}
+
+/* ==================================================
+   BLOQUE RULETA DETALLE 10 - RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+    .detalle-ruleta-contenedor {
+        padding: 15px 12px 30px 12px;
+    }
+
+    .detalle-ruleta-caja {
+        padding: 20px;
+    }
+
+    .detalle-ruleta-boton-centro {
+        width: 74px;
+        height: 74px;
+        font-size: 15px;
+    }
+
+    .resultado-texto {
+        font-size: 20px;
+    }
+}

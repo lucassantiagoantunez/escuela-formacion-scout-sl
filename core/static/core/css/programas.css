@@ -1,0 +1,92 @@
+/* ==================================================
+   BLOQUE PROGRAMAS 1 - CONTENEDOR GENERAL
+================================================== */
+.programas-contenedor {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ==================================================
+   BLOQUE PROGRAMAS 2 - MENSAJE VACÍO
+================================================== */
+.programas-vacio {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* ==================================================
+   BLOQUE PROGRAMAS 3 - BLOQUES DE SECCIÓN
+================================================== */
+.programas-seccion {
+    background-color: #334155;
+    margin: 15px auto;
+    border-radius: 12px;
+    max-width: 800px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.programas-seccion summary {
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: bold;
+    color: #22c55e;
+    outline: none;
+}
+
+.programas-seccion-contenido {
+    margin-top: 15px;
+}
+
+/* ==================================================
+   BLOQUE PROGRAMAS 4 - TARJETAS DE PROGRAMA
+================================================== */
+.programa-item {
+    background-color: #1e293b;
+    margin: 10px 0;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.programa-item summary {
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    color: #22c55e;
+    outline: none;
+    text-align: center;
+}
+
+.programa-contenido {
+    margin-top: 12px;
+    color: white;
+    text-align: center;
+}
+
+.programa-contenido p {
+    margin-bottom: 14px;
+    line-height: 1.7;
+}
+
+.programa-contenido .boton-verde {
+    margin: 0 auto;
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+/* ==================================================
+   BLOQUE PROGRAMAS 5 - RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+    .programas-seccion {
+        padding: 12px;
+    }
+
+    .programas-seccion summary {
+        font-size: 19px;
+    }
+
+    .programa-item summary {
+        font-size: 17px;
+    }
+}

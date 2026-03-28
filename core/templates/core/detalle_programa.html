@@ -1,0 +1,70 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ programa.nombre }} - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/detalle_programa.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML DETALLE PROGRAMA 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="detalle-programa-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE PROGRAMA 2 - BOTÓN VOLVER
+    ========================================== -->
+    <div class="detalle-programa-boton-volver">
+        <a href="{% url 'programas' %}" class="boton-verde">Volver a programas</a>
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE PROGRAMA 3 - CABECERA Y DESCRIPCIÓN
+    ========================================== -->
+    <div class="detalle-programa-caja">
+        <h1 class="detalle-programa-titulo">{{ programa.nombre }}</h1>
+
+        <div class="detalle-programa-descripcion">
+            {{ programa.descripcion|safe }}
+        </div>
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE PROGRAMA 4 - TÍTULO DE ÁREAS
+    ========================================== -->
+    <h2 class="detalle-programa-subtitulo">Áreas del programa</h2>
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE PROGRAMA 5 - LISTADO DE ÁREAS
+    ========================================== -->
+    {% for area in areas %}
+        <div class="detalle-programa-area">
+            <h3>{{ area.titulo }}</h3>
+
+            <div class="detalle-programa-area-descripcion">
+                {{ area.descripcion|safe }}
+            </div>
+
+            {% for material in area.material_set.all %}
+                <div class="detalle-programa-material">
+                    <h4>{{ material.titulo }}</h4>
+                    <p>{{ material.descripcion }}</p>
+
+                    {% if material.archivo %}
+                        <a href="{{ material.archivo.url }}" target="_blank" class="boton-verde">
+                            Ver archivo
+                        </a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="detalle-programa-sin-materiales">Esta área no tiene materiales.</p>
+            {% endfor %}
+        </div>
+    {% empty %}
+        <p class="detalle-programa-sin-areas">Este programa todavía no tiene áreas cargadas.</p>
+    {% endfor %}
+
+</div>
+{% endblock %}

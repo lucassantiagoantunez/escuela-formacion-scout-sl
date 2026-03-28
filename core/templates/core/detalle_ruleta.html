@@ -1,0 +1,399 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ ruleta.titulo }} - Ruleta de desafíos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/detalle_ruleta.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div class="detalle-ruleta-contenedor">
+    <h1>{{ ruleta.titulo }}</h1>
+
+    {% if ruleta.descripcion %}
+        <div class="detalle-ruleta-descripcion">
+            {{ ruleta.descripcion }}
+        </div>
+    {% endif %}
+
+    {% if sectores %}
+        <div class="detalle-ruleta-caja">
+            <div class="detalle-ruleta-zona">
+                <div class="detalle-ruleta-marcador"></div>
+
+                <div class="detalle-ruleta-lienzo-contenedor">
+                    <canvas id="ruleta-canvas" class="detalle-ruleta-canvas" width="380" height="380"></canvas>
+
+                    <button type="button" id="btn-girar" class="detalle-ruleta-boton-centro">
+                        Girar
+                    </button>
+                </div>
+            </div>
+
+            <div id="resultado-ruleta" class="detalle-ruleta-resultado">
+                <div id="resultado-ruleta-caja" class="detalle-ruleta-resultado-caja">
+                    <div id="resultado-tipo" class="resultado-tipo"></div>
+                    <p id="resultado-texto" class="resultado-texto"></p>
+                </div>
+            </div>
+
+            <div class="detalle-ruleta-leyenda">
+                <span class="detalle-ruleta-leyenda-item">
+                    <span class="detalle-ruleta-color" style="background-color: #facc15;"></span>
+                    Amarillo
+                </span>
+                <span class="detalle-ruleta-leyenda-item">
+                    <span class="detalle-ruleta-color" style="background-color: #22c55e;"></span>
+                    Verde
+                </span>
+                <span class="detalle-ruleta-leyenda-item">
+                    <span class="detalle-ruleta-color" style="background-color: #38bdf8;"></span>
+                    Celeste
+                </span>
+                <span class="detalle-ruleta-leyenda-item">
+                    <span class="detalle-ruleta-color" style="background-color: #ef4444;"></span>
+                    Rojo
+                </span>
+            </div>
+
+            <p class="detalle-ruleta-ayuda">
+                Podés girarla con el botón central o arrastrando la ruleta con el mouse o el dedo.
+            </p>
+        </div>
+    {% else %}
+        <div class="detalle-ruleta-caja">
+            <p class="detalle-ruleta-vacio">
+                Esta ruleta todavía no tiene sectores cargados.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+{% if sectores %}
+    {{ sectores_json|json_script:"sectores-ruleta-data" }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('ruleta-canvas');
+            const ctx = canvas.getContext('2d');
+            const btnGirar = document.getElementById('btn-girar');
+            const resultadoBloque = document.getElementById('resultado-ruleta');
+            const resultadoCaja = document.getElementById('resultado-ruleta-caja');
+            const resultadoTipo = document.getElementById('resultado-tipo');
+            const resultadoTexto = document.getElementById('resultado-texto');
+
+            const sectores = JSON.parse(document.getElementById('sectores-ruleta-data').textContent);
+            const coloresBase = ['#facc15', '#22c55e', '#38bdf8', '#ef4444'];
+            const radio = canvas.width / 2;
+            const centroX = radio;
+            const centroY = radio;
+
+            let audioContext = null;
+            let anguloActual = -Math.PI / 2;
+            let velocidadAngular = 0;
+            let animando = false;
+            let arrastrando = false;
+            let ultimoAnguloPuntero = null;
+            let ultimaMuestraDrag = null;
+            let ultimoIndiceTick = null;
+            let ultimoTimestamp = null;
+
+            function obtenerColor(index) {
+                return coloresBase[index % coloresBase.length];
+            }
+
+            function formatearTipo(tipo) {
+                if (tipo === 'prenda_castigo') {
+                    return 'Prenda o castigo';
+                }
+                if (tipo === 'buena_accion') {
+                    return 'Buena acción diaria';
+                }
+                return 'Resultado';
+            }
+
+            function asegurarAudio() {
+                if (!audioContext) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) {
+                        audioContext = new AudioCtx();
+                    }
+                }
+
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            }
+
+            function reproducirTick() {
+                asegurarAudio();
+
+                if (!audioContext) {
+                    return;
+                }
+
+                try {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(900, audioContext.currentTime);
+
+                    gainNode.gain.setValueAtTime(0.001, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.005);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.045);
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.05);
+                } catch (error) {
+                    // los navegadores aman sabotear cosas simples
+                }
+            }
+
+            function obtenerAnguloPuntero(evento) {
+                const rect = canvas.getBoundingClientRect();
+                const clienteX = evento.clientX ?? (evento.touches && evento.touches[0].clientX);
+                const clienteY = evento.clientY ?? (evento.touches && evento.touches[0].clientY);
+
+                const x = clienteX - rect.left - rect.width / 2;
+                const y = clienteY - rect.top - rect.height / 2;
+
+                return Math.atan2(y, x);
+            }
+
+            function normalizarAngulo(angulo) {
+                let valor = angulo % (Math.PI * 2);
+                if (valor < 0) {
+                    valor += Math.PI * 2;
+                }
+                return valor;
+            }
+
+            function obtenerIndiceSectorGanador() {
+                const cantidad = sectores.length;
+                const anguloPorSector = (Math.PI * 2) / cantidad;
+                const anguloIndicador = normalizarAngulo(-Math.PI / 2 - anguloActual);
+                return Math.floor(anguloIndicador / anguloPorSector) % cantidad;
+            }
+
+            function actualizarTick() {
+                const indiceActual = obtenerIndiceSectorGanador();
+
+                if (ultimoIndiceTick === null) {
+                    ultimoIndiceTick = indiceActual;
+                    return;
+                }
+
+                if (indiceActual !== ultimoIndiceTick) {
+                    ultimoIndiceTick = indiceActual;
+                    reproducirTick();
+                }
+            }
+
+            function dibujarRuleta() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const cantidad = sectores.length;
+                const anguloPorSector = (Math.PI * 2) / cantidad;
+
+                for (let i = 0; i < cantidad; i++) {
+                    const inicio = anguloActual + (i * anguloPorSector);
+                    const fin = inicio + anguloPorSector;
+                    const color = obtenerColor(i);
+
+                    ctx.beginPath();
+                    ctx.moveTo(centroX, centroY);
+                    ctx.arc(centroX, centroY, radio - 6, inicio, fin);
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+
+                    ctx.save();
+                    ctx.translate(centroX, centroY);
+                    ctx.rotate(inicio + anguloPorSector / 2);
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = 'bold 12px Arial';
+
+                    const textoOriginal = sectores[i].texto || '';
+                    const texto = textoOriginal.length > 18 ? textoOriginal.slice(0, 18) + '…' : textoOriginal;
+
+                    ctx.fillText(texto, radio - 28, 4);
+                    ctx.restore();
+                }
+
+                ctx.beginPath();
+                ctx.arc(centroX, centroY, 30, 0, Math.PI * 2);
+                ctx.fillStyle = '#0f172a';
+                ctx.fill();
+            }
+
+            function mostrarResultado(indice) {
+                const sector = sectores[indice];
+                const color = obtenerColor(indice);
+
+                resultadoTipo.textContent = formatearTipo(sector.tipo);
+                resultadoTexto.textContent = sector.texto;
+                resultadoCaja.style.backgroundColor = color;
+
+                resultadoBloque.classList.remove('activo');
+                void resultadoBloque.offsetWidth;
+                resultadoBloque.classList.add('activo');
+            }
+
+            function frenarYMostrarResultado() {
+                animando = false;
+                btnGirar.disabled = false;
+                mostrarResultado(obtenerIndiceSectorGanador());
+            }
+
+            function animar(timestamp) {
+                if (!animando) {
+                    return;
+                }
+
+                if (!ultimoTimestamp) {
+                    ultimoTimestamp = timestamp;
+                }
+
+                const delta = (timestamp - ultimoTimestamp) / 16.666;
+                ultimoTimestamp = timestamp;
+
+                anguloActual += velocidadAngular * delta;
+                velocidadAngular *= Math.pow(0.985, delta);
+
+                dibujarRuleta();
+                actualizarTick();
+
+                if (Math.abs(velocidadAngular) < 0.0025) {
+                    velocidadAngular = 0;
+                    ultimoTimestamp = null;
+                    frenarYMostrarResultado();
+                    return;
+                }
+
+                requestAnimationFrame(animar);
+            }
+
+            function directionSafe(valor) {
+                return valor === 0 ? 1 : valor;
+            }
+
+            function girarAleatorio() {
+                if (animando || arrastrando || sectores.length < 2) {
+                    return;
+                }
+
+                asegurarAudio();
+                resultadoBloque.classList.remove('activo');
+                btnGirar.disabled = true;
+                animando = true;
+                ultimoTimestamp = null;
+
+                const direccion = Math.random() < 0.5 ? 1 : -1;
+                velocidadAngular = directionSafe(direccion) * (0.30 + Math.random() * 0.18);
+
+                requestAnimationFrame(animar);
+            }
+
+            function iniciarArrastre(evento) {
+                if (animando || sectores.length < 2) {
+                    return;
+                }
+
+                asegurarAudio();
+                arrastrando = true;
+                canvas.classList.add('arrastrando');
+                resultadoBloque.classList.remove('activo');
+                ultimoAnguloPuntero = obtenerAnguloPuntero(evento);
+                ultimaMuestraDrag = {
+                    angulo: ultimoAnguloPuntero,
+                    tiempo: performance.now(),
+                };
+                velocidadAngular = 0;
+            }
+
+            function moverArrastre(evento) {
+                if (!arrastrando) {
+                    return;
+                }
+
+                const nuevoAngulo = obtenerAnguloPuntero(evento);
+                let delta = nuevoAngulo - ultimoAnguloPuntero;
+
+                if (delta > Math.PI) {
+                    delta -= Math.PI * 2;
+                } else if (delta < -Math.PI) {
+                    delta += Math.PI * 2;
+                }
+
+                anguloActual += delta;
+                ultimoAnguloPuntero = nuevoAngulo;
+
+                const ahora = performance.now();
+                if (ultimaMuestraDrag) {
+                    const deltaTiempo = Math.max((ahora - ultimaMuestraDrag.tiempo) / 1000, 0.001);
+                    let deltaAngulo = nuevoAngulo - ultimaMuestraDrag.angulo;
+
+                    if (deltaAngulo > Math.PI) {
+                        deltaAngulo -= Math.PI * 2;
+                    } else if (deltaAngulo < -Math.PI) {
+                        deltaAngulo += Math.PI * 2;
+                    }
+
+                    velocidadAngular = deltaAngulo / deltaTiempo * 0.04;
+                }
+
+                ultimaMuestraDrag = {
+                    angulo: nuevoAngulo,
+                    tiempo: ahora,
+                };
+
+                dibujarRuleta();
+                actualizarTick();
+            }
+
+            function terminarArrastre() {
+                if (!arrastrando) {
+                    return;
+                }
+
+                arrastrando = false;
+                canvas.classList.remove('arrastrando');
+
+                if (Math.abs(velocidadAngular) > 0.01) {
+                    animando = true;
+                    btnGirar.disabled = true;
+                    ultimoTimestamp = null;
+                    requestAnimationFrame(animar);
+                } else {
+                    velocidadAngular = 0;
+                    btnGirar.disabled = false;
+                    mostrarResultado(obtenerIndiceSectorGanador());
+                }
+            }
+
+            btnGirar.addEventListener('click', girarAleatorio);
+
+            canvas.addEventListener('mousedown', iniciarArrastre);
+            window.addEventListener('mousemove', moverArrastre);
+            window.addEventListener('mouseup', terminarArrastre);
+
+            canvas.addEventListener('touchstart', iniciarArrastre, { passive: true });
+            window.addEventListener('touchmove', moverArrastre, { passive: true });
+            window.addEventListener('touchend', terminarArrastre);
+            window.addEventListener('touchcancel', terminarArrastre);
+
+            dibujarRuleta();
+        });
+    </script>
+{% endif %}
+{% endblock %}

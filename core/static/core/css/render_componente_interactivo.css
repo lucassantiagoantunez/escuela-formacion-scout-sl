@@ -1,0 +1,38 @@
+/* ==================================================
+   BLOQUE COMPONENTE INTERACTIVO 1 - ESTILOS BASE DEL IFRAME
+================================================== */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    color: #0f172a;
+}
+
+body {
+    padding: 16px;
+}
+
+/* ==================================================
+   BLOQUE COMPONENTE INTERACTIVO 2 - CONTENEDOR GENERAL
+================================================== */
+.componente-interactivo-contenedor {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.componente-interactivo-vacio {
+    text-align: center;
+    padding: 30px 20px;
+    border: 1px dashed #94a3b8;
+    border-radius: 12px;
+    color: #475569;
+    line-height: 1.7;
+}

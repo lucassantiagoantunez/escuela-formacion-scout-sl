@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Programas - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/programas.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML PROGRAMAS 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="programas-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML PROGRAMAS 2 - TÍTULO
+    ========================================== -->
+    <h1>Programas</h1>
+
+    {% regroup programas by seccion as programas_por_seccion %}
+
+    <!-- ==========================================
+         BLOQUE HTML PROGRAMAS 3 - LISTADO POR SECCIONES
+    ========================================== -->
+    {% for grupo in programas_por_seccion %}
+        <details class="programas-seccion">
+            <summary>{{ grupo.list.0.get_seccion_display }}</summary>
+
+            <div class="programas-seccion-contenido">
+                {% for programa in grupo.list %}
+                    <details class="programa-item">
+                        <summary>{{ programa.nombre }}</summary>
+
+                        <div class="programa-contenido">
+                            <p>{{ programa.descripcion|striptags|truncatewords:35 }}</p>
+
+                            <a href="{% url 'detalle_programa' programa.id %}" class="boton-verde">
+                                Ver programa
+                            </a>
+                        </div>
+                    </details>
+                {% endfor %}
+            </div>
+        </details>
+    {% empty %}
+        <!-- ==========================================
+             BLOQUE HTML PROGRAMAS 4 - MENSAJE VACÍO
+        ========================================== -->
+        <p class="programas-vacio">No hay programas cargados todavía.</p>
+    {% endfor %}
+
+</div>
+{% endblock %}

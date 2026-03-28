@@ -1,0 +1,364 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ trivia.titulo }} - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/detalle_trivia.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML DETALLE TRIVIA 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="detalle-trivia-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE TRIVIA 2 - COLUMNA PRINCIPAL
+    ========================================== -->
+    <div class="detalle-trivia-columna-principal">
+        <h1>{{ trivia.titulo }}</h1>
+
+        {% if trivia.descripcion %}
+            <div class="detalle-trivia-descripcion">
+                {{ trivia.descripcion }}
+            </div>
+        {% endif %}
+
+        {% if puntaje is not None %}
+            <div class="detalle-trivia-resultado">
+                Obtuviste {{ puntaje }} de {{ total_preguntas }} respuestas correctas.<br>
+                Porcentaje: {{ porcentaje }}%<br>
+                Tiempo total: {{ tiempo_total_segundos }} segundos<br>
+                {{ mensaje_resultado }}
+            </div>
+        {% endif %}
+
+        {% if puntaje is None %}
+            <!-- ==========================================
+                 BLOQUE HTML DETALLE TRIVIA 3 - PANTALLA DE INICIO
+            ========================================== -->
+            <div id="pantalla-inicio" class="detalle-trivia-caja">
+                <h2>Antes de comenzar</h2>
+                <p class="detalle-trivia-inicio-texto">
+                    Ingresá tu nombre y luego presioná <strong>Comenzar trivia</strong>.
+                </p>
+
+                <label for="nombre_previo"><strong>Nombre del participante:</strong></label>
+                <input
+                    type="text"
+                    id="nombre_previo"
+                    value="{{ nombre_participante|default:'' }}"
+                    class="detalle-trivia-input-nombre"
+                >
+
+                {% if preguntas %}
+                    <div class="detalle-trivia-boton-inicio">
+                        <button type="button" id="btn-comenzar" class="boton-verde">
+                            Comenzar trivia
+                        </button>
+                    </div>
+                {% else %}
+                    <p>Esta trivia todavía no tiene preguntas cargadas.</p>
+                {% endif %}
+            </div>
+
+            <!-- ==========================================
+                 BLOQUE HTML DETALLE TRIVIA 4 - FORMULARIO DE TRIVIA
+            ========================================== -->
+            <form method="post" class="detalle-trivia-formulario" id="trivia-form">
+                {% csrf_token %}
+
+                <input type="hidden" name="nombre_participante" id="nombre_participante_hidden">
+                <input type="hidden" name="tiempo_total_segundos" id="tiempo_total_segundos" value="0">
+
+                <div id="contador-pregunta" class="detalle-trivia-contador"></div>
+                <div id="temporizador-pregunta" class="detalle-trivia-temporizador"></div>
+
+                <div class="detalle-trivia-barra-fondo">
+                    <div id="barra-tiempo" class="detalle-trivia-barra"></div>
+                </div>
+
+                {% for pregunta in preguntas %}
+                    <div class="pregunta-bloque" data-index="{{ forloop.counter0 }}">
+                        <h3>Pregunta {{ forloop.counter }}</h3>
+                        <p class="pregunta-texto"><strong>{{ pregunta.texto }}</strong></p>
+
+                        {% for opcion in pregunta.opciones_aleatorias %}
+                            <label class="opcion-label">
+                                <input
+                                    type="radio"
+                                    name="pregunta_{{ pregunta.id }}"
+                                    value="{{ opcion.id }}"
+                                    class="opcion-radio"
+                                >
+                                {{ opcion.texto }}
+                            </label>
+                        {% empty %}
+                            <p class="detalle-trivia-sin-opciones">Esta pregunta no tiene opciones cargadas.</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                {% if preguntas %}
+                    <button type="submit" id="btn-enviar" style="display:none;">
+                        Enviar respuestas
+                    </button>
+                {% endif %}
+            </form>
+
+        {% else %}
+            <!-- ==========================================
+                 BLOQUE HTML DETALLE TRIVIA 5 - RESULTADO DETALLADO
+            ========================================== -->
+            <div>
+                {% if mostrar_recomendacion %}
+                    <div class="detalle-trivia-recomendacion">
+                        <h2>Recomendación para repasar</h2>
+                        <p>
+                            Como el resultado fue menor al mínimo esperado para esta trivia,
+                            te recomendamos revisar este material antes de volver a intentarlo.
+                        </p>
+
+                        <div class="detalle-trivia-recomendacion-bloques">
+                            {% if trivia.material_recomendado %}
+                                <div class="detalle-trivia-recomendacion-item">
+                                    <h3>Material sugerido</h3>
+                                    <p><strong>{{ trivia.material_recomendado.titulo }}</strong></p>
+
+                                    {% if trivia.material_recomendado.archivo %}
+                                        <a href="{{ trivia.material_recomendado.archivo.url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                                            Ver material
+                                        </a>
+                                    {% else %}
+                                        <p>Este material no tiene archivo cargado todavía.</p>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            {% if trivia.video_recomendado_url %}
+                                <div class="detalle-trivia-recomendacion-item">
+                                    <h3>Video sugerido</h3>
+                                    <p>Podés reforzar este tema con un video explicativo.</p>
+
+                                    <a href="{{ trivia.video_recomendado_url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                                        Ver video
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% for pregunta in preguntas %}
+                    <div class="detalle-trivia-caja">
+                        <h3>Pregunta {{ forloop.counter }}</h3>
+                        <p class="pregunta-texto"><strong>{{ pregunta.texto }}</strong></p>
+
+                        {% for opcion in pregunta.opciones_aleatorias %}
+                            <label
+                                class="opcion-label opcion-label-deshabilitada
+                                {% if opcion.id|stringformat:'s' == pregunta.opcion_correcta_id %}
+                                    opcion-correcta
+                                {% elif opcion.id|stringformat:'s' == pregunta.respuesta_usuario_id %}
+                                    opcion-incorrecta
+                                {% else %}
+                                    opcion-neutra
+                                {% endif %}">
+                                <input
+                                    type="radio"
+                                    disabled
+                                    {% if opcion.id|stringformat:'s' == pregunta.respuesta_usuario_id %}checked{% endif %}
+                                >
+                                {{ opcion.texto }}
+
+                                {% if opcion.id|stringformat:'s' == pregunta.opcion_correcta_id %}
+                                    ✅ Correcta
+                                {% elif opcion.id|stringformat:'s' == pregunta.respuesta_usuario_id %}
+                                    ❌ Tu respuesta
+                                {% endif %}
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="detalle-trivia-reinicio">
+                    <a href="{% url 'detalle_trivia' trivia.id %}" class="boton-verde">
+                        Reiniciar trivia
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE TRIVIA 6 - RANKING
+    ========================================== -->
+    <div class="detalle-trivia-columna-lateral">
+        <div class="detalle-trivia-ranking">
+            <h2>Ranking</h2>
+
+            {% for resultado in ranking %}
+                <div class="detalle-trivia-ranking-item">
+                    <strong>{{ forloop.counter }}. {{ resultado.nombre }}</strong><br>
+                    {{ resultado.puntaje }}/{{ resultado.total_preguntas }}<br>
+                    {{ resultado.porcentaje }}%<br>
+                    Tiempo: {{ resultado.tiempo_total_segundos }} s
+                </div>
+            {% empty %}
+                <p class="detalle-trivia-ranking-vacio">
+                    Todavía no hay resultados registrados para esta trivia.
+                </p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+{% if puntaje is None and preguntas %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const btnComenzar = document.getElementById('btn-comenzar');
+        const nombrePrevio = document.getElementById('nombre_previo');
+        const formulario = document.getElementById('trivia-form');
+        const nombreHidden = document.getElementById('nombre_participante_hidden');
+        const inputTiempoTotal = document.getElementById('tiempo_total_segundos');
+
+        const bloques = document.querySelectorAll('.pregunta-bloque');
+        const contador = document.getElementById('contador-pregunta');
+        const temporizadorPregunta = document.getElementById('temporizador-pregunta');
+        const barraTiempo = document.getElementById('barra-tiempo');
+
+        let actual = 0;
+        let inicioTrivia = null;
+        let intervaloTiempoTotal = null;
+        let intervaloPregunta = null;
+        let tiempoRestante = 15;
+
+        function enviarTrivia() {
+            if (intervaloPregunta) {
+                clearInterval(intervaloPregunta);
+                intervaloPregunta = null;
+            }
+
+            if (intervaloTiempoTotal) {
+                clearInterval(intervaloTiempoTotal);
+                intervaloTiempoTotal = null;
+            }
+
+            const segundos = inicioTrivia ? Math.floor((Date.now() - inicioTrivia) / 1000) : 0;
+            inputTiempoTotal.value = segundos;
+
+            formulario.submit();
+        }
+
+        function mostrarPregunta(index) {
+            bloques.forEach((bloque, i) => {
+                bloque.style.display = i === index ? 'block' : 'none';
+                if (i === index) {
+                    bloque.classList.remove('bloqueado');
+                }
+            });
+
+            contador.textContent = `Pregunta ${index + 1} de ${bloques.length}`;
+
+            const bloqueActual = bloques[index];
+            const radiosActuales = bloqueActual.querySelectorAll('.opcion-radio');
+
+            if (intervaloPregunta) {
+                clearInterval(intervaloPregunta);
+            }
+
+            tiempoRestante = 15;
+            temporizadorPregunta.textContent = `Tiempo restante: ${tiempoRestante} s`;
+            barraTiempo.style.width = '100%';
+            barraTiempo.style.backgroundColor = '#22c55e';
+
+            intervaloPregunta = setInterval(() => {
+                tiempoRestante--;
+                temporizadorPregunta.textContent = `Tiempo restante: ${tiempoRestante} s`;
+                barraTiempo.style.width = `${(tiempoRestante / 15) * 100}%`;
+
+                if (tiempoRestante <= 10) {
+                    barraTiempo.style.backgroundColor = '#facc15';
+                }
+
+                if (tiempoRestante <= 5) {
+                    barraTiempo.style.backgroundColor = '#ef4444';
+                }
+
+                if (tiempoRestante <= 0) {
+                    clearInterval(intervaloPregunta);
+                    intervaloPregunta = null;
+
+                    temporizadorPregunta.textContent = 'Tiempo agotado';
+                    barraTiempo.style.width = '0%';
+                    bloqueActual.classList.add('bloqueado');
+
+                    if (index < bloques.length - 1) {
+                        setTimeout(() => {
+                            actual = index + 1;
+                            mostrarPregunta(actual);
+                        }, 500);
+                    } else {
+                        setTimeout(() => {
+                            enviarTrivia();
+                        }, 500);
+                    }
+                }
+            }, 1000);
+
+            radiosActuales.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    bloqueActual.classList.add('bloqueado');
+
+                    if (intervaloPregunta) {
+                        clearInterval(intervaloPregunta);
+                        intervaloPregunta = null;
+                    }
+
+                    if (index < bloques.length - 1) {
+                        setTimeout(() => {
+                            actual = index + 1;
+                            mostrarPregunta(actual);
+                        }, 250);
+                    } else {
+                        temporizadorPregunta.textContent = 'Última pregunta respondida';
+
+                        setTimeout(() => {
+                            enviarTrivia();
+                        }, 300);
+                    }
+                }, { once: true });
+            });
+        }
+
+        if (btnComenzar) {
+            btnComenzar.addEventListener('click', function () {
+                const nombre = nombrePrevio.value.trim();
+
+                if (!nombre) {
+                    alert('Ingresá tu nombre antes de comenzar.');
+                    nombrePrevio.focus();
+                    return;
+                }
+
+                nombreHidden.value = nombre;
+                pantallaInicio.style.display = 'none';
+                formulario.style.display = 'block';
+
+                inicioTrivia = Date.now();
+
+                intervaloTiempoTotal = setInterval(() => {
+                    const segundos = Math.floor((Date.now() - inicioTrivia) / 1000);
+                    inputTiempoTotal.value = segundos;
+                }, 1000);
+
+                mostrarPregunta(actual);
+            });
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

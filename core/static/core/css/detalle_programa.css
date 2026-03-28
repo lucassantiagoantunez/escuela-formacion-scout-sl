@@ -1,0 +1,155 @@
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 1 - CONTENEDOR GENERAL
+================================================== */
+.detalle-programa-contenedor {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 20px 40px 20px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 2 - BOTÓN VOLVER
+================================================== */
+.detalle-programa-boton-volver {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.detalle-programa-boton-volver .boton-verde {
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 3 - TARJETA PRINCIPAL
+================================================== */
+.detalle-programa-caja {
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 30px;
+    border-radius: 14px;
+    margin-bottom: 30px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 4 - CABECERA Y DESCRIPCIÓN
+================================================== */
+.detalle-programa-titulo {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.detalle-programa-descripcion {
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.8;
+    text-align: left;
+}
+
+.detalle-programa-descripcion p {
+    margin-bottom: 16px;
+}
+
+.detalle-programa-descripcion h2,
+.detalle-programa-descripcion h3,
+.detalle-programa-descripcion h4 {
+    text-align: left;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 5 - TÍTULO DE ÁREAS
+================================================== */
+.detalle-programa-subtitulo {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 6 - TARJETAS DE ÁREA
+================================================== */
+.detalle-programa-area {
+    background-color: #334155;
+    padding: 20px;
+    margin: 15px auto;
+    border-radius: 12px;
+    max-width: 850px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.detalle-programa-area h3 {
+    color: #22c55e;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.detalle-programa-area-descripcion {
+    max-width: 760px;
+    margin: 0 auto 20px;
+    line-height: 1.8;
+    text-align: left;
+}
+
+.detalle-programa-area-descripcion p {
+    margin-bottom: 16px;
+}
+
+.detalle-programa-area-descripcion h2,
+.detalle-programa-area-descripcion h3,
+.detalle-programa-area-descripcion h4 {
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 12px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 7 - MATERIALES DEL ÁREA
+================================================== */
+.detalle-programa-material {
+    background-color: #1e293b;
+    padding: 15px;
+    margin: 12px 0;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.detalle-programa-material h4 {
+    color: #22c55e;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.detalle-programa-material p {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.detalle-programa-material .boton-verde {
+    margin: 10px auto 0;
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+.detalle-programa-sin-materiales,
+.detalle-programa-sin-areas {
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.7;
+}
+
+/* ==================================================
+   BLOQUE DETALLE PROGRAMA 8 - RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+    .detalle-programa-contenedor {
+        padding: 15px 12px 30px 12px;
+    }
+
+    .detalle-programa-caja,
+    .detalle-programa-area {
+        padding: 20px;
+    }
+}

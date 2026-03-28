@@ -1,0 +1,302 @@
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 1 - CONTENEDOR GENERAL
+================================================== */
+.detalle-trivia-contenedor {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.detalle-trivia-columna-principal {
+    flex: 2;
+    min-width: 300px;
+    max-width: 700px;
+}
+
+.detalle-trivia-columna-lateral {
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 2 - CABECERA
+================================================== */
+.detalle-trivia-descripcion {
+    max-width: 700px;
+    margin: 0 auto 30px auto;
+    text-align: justify;
+    line-height: 1.7;
+}
+
+.detalle-trivia-resultado {
+    background-color: #22c55e;
+    color: black;
+    padding: 15px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 700px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.7;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 3 - TARJETAS GENERALES
+================================================== */
+.detalle-trivia-caja {
+    background-color: #334155;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 700px;
+    text-align: left;
+}
+
+.detalle-trivia-caja h2,
+.detalle-trivia-caja h3 {
+    color: #22c55e;
+    margin-top: 0;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 4 - PANTALLA DE INICIO
+================================================== */
+.detalle-trivia-inicio-texto {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.detalle-trivia-input-nombre {
+    margin-top: 10px;
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+.detalle-trivia-boton-inicio {
+    margin-top: 20px;
+}
+
+.detalle-trivia-boton-inicio .boton-verde {
+    margin: 0;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 5 - FORMULARIO Y TIEMPO
+================================================== */
+.detalle-trivia-formulario {
+    max-width: 700px;
+    margin: 0 auto;
+    display: none;
+}
+
+.detalle-trivia-contador {
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #22c55e;
+    text-align: center;
+}
+
+.detalle-trivia-temporizador {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #facc15;
+    text-align: center;
+}
+
+.detalle-trivia-barra-fondo {
+    width: 100%;
+    max-width: 700px;
+    height: 18px;
+    background-color: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.detalle-trivia-barra {
+    height: 100%;
+    width: 100%;
+    background-color: #22c55e;
+    transition: width 1s linear;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 6 - PREGUNTAS Y OPCIONES
+================================================== */
+.pregunta-bloque {
+    background-color: #334155;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 700px;
+    text-align: left;
+    display: none;
+}
+
+.pregunta-bloque.bloqueado {
+    pointer-events: none;
+    opacity: 0.95;
+}
+
+.pregunta-bloque h3 {
+    color: #22c55e;
+    margin-top: 0;
+}
+
+.pregunta-texto {
+    line-height: 1.6;
+}
+
+.opcion-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #1e293b;
+    color: white;
+    line-height: 1.5;
+}
+
+.opcion-label input[type="radio"] {
+    width: auto;
+    margin-right: 8px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.opcion-label-deshabilitada {
+    cursor: default;
+}
+
+.opcion-correcta {
+    background-color: #22c55e;
+    color: black;
+}
+
+.opcion-incorrecta {
+    background-color: #ef4444;
+    color: white;
+}
+
+.opcion-neutra {
+    background-color: #1e293b;
+    color: white;
+}
+
+.detalle-trivia-sin-opciones {
+    line-height: 1.6;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 7 - BLOQUE DE RESULTADO DETALLADO
+================================================== */
+.detalle-trivia-reinicio {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.detalle-trivia-reinicio .boton-verde {
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 8 - RECOMENDACION
+================================================== */
+.detalle-trivia-recomendacion {
+    background-color: #1e293b;
+    border: 2px solid #facc15;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 700px;
+}
+
+.detalle-trivia-recomendacion h2 {
+    color: #facc15;
+    margin-top: 0;
+    text-align: center;
+}
+
+.detalle-trivia-recomendacion p {
+    color: white;
+    line-height: 1.7;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.detalle-trivia-recomendacion-bloques {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.detalle-trivia-recomendacion-item {
+    background-color: #334155;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.detalle-trivia-recomendacion-item h3 {
+    color: #22c55e;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.detalle-trivia-recomendacion-item p {
+    margin-bottom: 12px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 9 - RANKING LATERAL
+================================================== */
+.detalle-trivia-ranking {
+    background-color: #334155;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: left;
+    position: sticky;
+    top: 20px;
+}
+
+.detalle-trivia-ranking h2 {
+    color: #22c55e;
+    margin-top: 0;
+    text-align: left;
+}
+
+.detalle-trivia-ranking-item {
+    background-color: #1e293b;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    line-height: 1.6;
+}
+
+.detalle-trivia-ranking-vacio {
+    line-height: 1.6;
+}
+
+/* ==================================================
+   BLOQUE DETALLE TRIVIA 10 - RESPONSIVE
+================================================== */
+@media (max-width: 900px) {
+    .detalle-trivia-columna-lateral {
+        max-width: 700px;
+    }
+
+    .detalle-trivia-ranking {
+        position: static;
+    }
+}

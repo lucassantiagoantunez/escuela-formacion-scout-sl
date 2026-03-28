@@ -1,0 +1,446 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ tema.titulo }} - Ordena los pasos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/detalle_ordena_pasos.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div class="detalle-ordena-contenedor">
+    <div class="detalle-ordena-columna-principal">
+        <h1>{{ tema.titulo }}</h1>
+
+        {% if tema.descripcion %}
+            <div class="detalle-ordena-descripcion">
+                {{ tema.descripcion }}
+            </div>
+        {% endif %}
+
+        {% if puntaje == None %}
+            <div id="pantalla-inicio" class="detalle-ordena-caja">
+                <h2>Antes de comenzar</h2>
+                <p>
+                    Ingresá tu nombre y resolvé las etapas en orden.
+                    No vas a poder volver atrás una vez que avances.
+                </p>
+
+                <label for="nombre_previo"><strong>Nombre del participante:</strong></label>
+                <input
+                    type="text"
+                    id="nombre_previo"
+                    value="{{ nombre_participante|default:'' }}"
+                    class="detalle-ordena-input-nombre"
+                >
+
+                {% if etapas %}
+                    <div class="detalle-ordena-boton-inicio">
+                        <button type="button" id="btn-comenzar" class="boton-verde">
+                            Comenzar tema
+                        </button>
+                    </div>
+                {% else %}
+                    <p>Este tema todavía no tiene etapas cargadas.</p>
+                {% endif %}
+            </div>
+
+            <form method="post" id="ordena-form" class="detalle-ordena-formulario">
+                {% csrf_token %}
+                <input type="hidden" name="nombre_participante" id="nombre_participante_hidden">
+                <input type="hidden" name="tiempo_total_segundos" id="tiempo_total_segundos" value="0">
+
+                {% for etapa in etapas %}
+                    <div class="etapa-bloque" data-index="{{ forloop.counter0 }}" data-tiempo="{{ etapa.tiempo_limite_segundos }}">
+                        <div class="detalle-ordena-caja">
+                            <div class="detalle-ordena-contador">
+                                Etapa {{ forloop.counter }} de {{ etapas|length }}
+                            </div>
+
+                            <h2>{{ etapa.titulo }}</h2>
+
+                            {% if etapa.descripcion %}
+                                <p class="detalle-ordena-etapa-descripcion">
+                                    {{ etapa.descripcion }}
+                                </p>
+                            {% endif %}
+
+                            <div class="detalle-ordena-temporizador">
+                                Tiempo restante:
+                                <span class="tiempo-restante">{{ etapa.tiempo_limite_segundos }}</span> s
+                            </div>
+
+                            <div class="detalle-ordena-barra-fondo">
+                                <div class="detalle-ordena-barra"></div>
+                            </div>
+
+                            <input type="hidden" name="orden_etapa_{{ etapa.id }}" class="orden-etapa-hidden">
+
+                            <ul class="lista-pasos">
+                                {% for paso in etapa.pasos_aleatorios %}
+                                    <li class="paso-item" data-id="{{ paso.id }}">
+                                        <div class="caja paso-tarjeta">
+                                            <div class="paso-numero">{{ forloop.counter }}</div>
+
+                                            <div class="paso-texto">
+                                                {{ paso.texto }}
+                                            </div>
+
+                                            {% if paso.imagen %}
+                                                <img src="{{ paso.imagen.url }}" alt="{{ paso.texto }}" class="paso-imagen">
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                {% empty %}
+                                    <li class="caja paso-tarjeta paso-sin-contenido">
+                                        Esta etapa todavía no tiene pasos cargados.
+                                    </li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="detalle-ordena-acciones">
+                                <button type="button" class="boton-verde btn-siguiente">
+                                    {% if forloop.last %}Finalizar{% else %}Siguiente{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <button type="submit" id="btn-enviar-final" style="display:none;">
+                    Enviar
+                </button>
+            </form>
+
+        {% else %}
+            <div class="detalle-ordena-resultado-general">
+                Obtuviste {{ puntaje }} de {{ total_pasos }} pasos correctos.<br>
+                Porcentaje: {{ porcentaje }}%<br>
+                Tiempo total: {{ tiempo_total_segundos }} segundos<br>
+                {{ mensaje_resultado }}
+            </div>
+
+            {% if mostrar_recomendacion %}
+                <div class="detalle-ordena-recomendacion">
+                    <h2>Recomendación para repasar</h2>
+                    <p>
+                        Como el resultado fue menor al mínimo esperado para este tema,
+                        te recomendamos revisar este material antes de volver a intentarlo.
+                    </p>
+
+                    <div class="detalle-ordena-recomendacion-bloques">
+                        {% if tema.material_recomendado %}
+                            <div class="detalle-ordena-recomendacion-item">
+                                <h3>Material sugerido</h3>
+                                <p><strong>{{ tema.material_recomendado.titulo }}</strong></p>
+
+                                {% if tema.material_recomendado.archivo %}
+                                    <a href="{{ tema.material_recomendado.archivo.url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                                        Ver material
+                                    </a>
+                                {% else %}
+                                    <p>Este material no tiene archivo cargado todavía.</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if tema.video_recomendado_url %}
+                            <div class="detalle-ordena-recomendacion-item">
+                                <h3>Video sugerido</h3>
+                                <p>Podés reforzar este tema con un video explicativo.</p>
+
+                                <a href="{{ tema.video_recomendado_url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                                    Ver video
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% for etapa in etapas %}
+                <div class="detalle-ordena-caja">
+                    <h2>Etapa {{ forloop.counter }}: {{ etapa.titulo }}</h2>
+
+                    {% if etapa.descripcion %}
+                        <p class="detalle-ordena-etapa-descripcion">
+                            {{ etapa.descripcion }}
+                        </p>
+                    {% endif %}
+
+                    <p class="detalle-ordena-etapa-descripcion">
+                        <strong>Resultado de la etapa:</strong>
+                        {{ etapa.puntaje }} de {{ etapa.total_pasos }} pasos correctos
+                        ({{ etapa.porcentaje }}%)
+                    </p>
+
+                    <div class="resultado-pasos">
+                        {% for paso in etapa.pasos_resultado %}
+                            <div class="caja paso-tarjeta {% if paso.esta_correcto %}resultado-correcto{% else %}resultado-incorrecto{% endif %}">
+                                <div class="paso-numero">{{ forloop.counter }}</div>
+
+                                <div class="paso-texto">
+                                    {{ paso.texto }}
+                                </div>
+
+                                {% if paso.imagen %}
+                                    <img src="{{ paso.imagen.url }}" alt="{{ paso.texto }}" class="paso-imagen">
+                                {% endif %}
+
+                                <div class="resultado-meta">
+                                    Tu posición: {{ forloop.counter }}<br>
+                                    Orden correcto: {{ paso.orden_correcto }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="detalle-ordena-reinicio">
+                <a href="{% url 'detalle_ordena_pasos' tema.id %}" class="boton-verde">
+                    Intentar de nuevo
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="detalle-ordena-columna-lateral">
+        <div class="detalle-ordena-ranking">
+            <h2>Ranking</h2>
+
+            {% for resultado in ranking %}
+                <div class="detalle-ordena-ranking-item">
+                    <strong>{{ forloop.counter }}. {{ resultado.nombre }}</strong><br>
+                    {{ resultado.puntaje }}/{{ resultado.total_pasos }}<br>
+                    {{ resultado.porcentaje }}%<br>
+                    Tiempo: {{ resultado.tiempo_total_segundos }} s
+                </div>
+            {% empty %}
+                <p class="detalle-ordena-ranking-vacio">
+                    Todavía no hay resultados registrados para este tema.
+                </p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if puntaje == None and etapas %}
+<script src="{% static 'core/js/sortable.min.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const btnComenzar = document.getElementById('btn-comenzar');
+        const nombrePrevio = document.getElementById('nombre_previo');
+        const formulario = document.getElementById('ordena-form');
+        const nombreHidden = document.getElementById('nombre_participante_hidden');
+        const inputTiempoTotal = document.getElementById('tiempo_total_segundos');
+        const btnEnviarFinal = document.getElementById('btn-enviar-final');
+        const etapas = document.querySelectorAll('.etapa-bloque');
+
+        let actual = 0;
+        let inicioTema = null;
+        let intervaloTiempoTotal = null;
+        let intervaloEtapa = null;
+        let tiempoRestante = 0;
+        let etapaFinalizada = false;
+
+        function actualizarNumerosVisuales(bloque) {
+            const items = bloque.querySelectorAll('.paso-item');
+
+            items.forEach((item, index) => {
+                const numero = item.querySelector('.paso-numero');
+                if (numero) {
+                    numero.textContent = index + 1;
+                }
+            });
+        }
+
+        function guardarOrdenEtapa(bloque) {
+            const lista = bloque.querySelector('.lista-pasos');
+            const inputHidden = bloque.querySelector('.orden-etapa-hidden');
+
+            if (!lista || !inputHidden) {
+                return;
+            }
+
+            const ids = Array.from(lista.querySelectorAll('.paso-item')).map(item => item.dataset.id);
+            inputHidden.value = ids.join(',');
+        }
+
+        function limpiarTemporizadorEtapa() {
+            if (intervaloEtapa) {
+                clearInterval(intervaloEtapa);
+                intervaloEtapa = null;
+            }
+        }
+
+        function bloquearEtapa(bloque) {
+            bloque.classList.add('bloqueado');
+
+            const boton = bloque.querySelector('.btn-siguiente');
+            if (boton) {
+                boton.disabled = true;
+            }
+        }
+
+        function enviarTema() {
+            limpiarTemporizadorEtapa();
+
+            if (intervaloTiempoTotal) {
+                clearInterval(intervaloTiempoTotal);
+                intervaloTiempoTotal = null;
+            }
+
+            const segundos = inicioTema ? Math.floor((Date.now() - inicioTema) / 1000) : 0;
+            inputTiempoTotal.value = segundos;
+            btnEnviarFinal.click();
+        }
+
+        function prepararBloque(bloque) {
+            const lista = bloque.querySelector('.lista-pasos');
+
+            if (!lista || lista.dataset.sortableInicializado === '1') {
+                actualizarNumerosVisuales(bloque);
+                guardarOrdenEtapa(bloque);
+                return;
+            }
+
+            new Sortable(lista, {
+                animation: 200,
+                ghostClass: 'paso-placeholder',
+                onEnd: function () {
+                    actualizarNumerosVisuales(bloque);
+                    guardarOrdenEtapa(bloque);
+                }
+            });
+
+            lista.dataset.sortableInicializado = '1';
+            actualizarNumerosVisuales(bloque);
+            guardarOrdenEtapa(bloque);
+        }
+
+        function iniciarTemporizadorEtapa(bloque, index) {
+            limpiarTemporizadorEtapa();
+
+            const textoTiempo = bloque.querySelector('.tiempo-restante');
+            const barraTiempo = bloque.querySelector('.detalle-ordena-barra');
+
+            tiempoRestante = parseInt(bloque.dataset.tiempo || '60', 10);
+            etapaFinalizada = false;
+
+            if (textoTiempo) {
+                textoTiempo.textContent = tiempoRestante;
+            }
+
+            if (barraTiempo) {
+                barraTiempo.style.width = '100%';
+                barraTiempo.style.backgroundColor = '#22c55e';
+            }
+
+            intervaloEtapa = setInterval(() => {
+                if (etapaFinalizada) {
+                    limpiarTemporizadorEtapa();
+                    return;
+                }
+
+                tiempoRestante--;
+
+                if (textoTiempo) {
+                    textoTiempo.textContent = tiempoRestante;
+                }
+
+                if (barraTiempo) {
+                    barraTiempo.style.width = `${(tiempoRestante / parseInt(bloque.dataset.tiempo || '60', 10)) * 100}%`;
+
+                    if (tiempoRestante <= 10) {
+                        barraTiempo.style.backgroundColor = '#facc15';
+                    }
+
+                    if (tiempoRestante <= 5) {
+                        barraTiempo.style.backgroundColor = '#ef4444';
+                    }
+                }
+
+                if (tiempoRestante <= 0) {
+                    finalizarEtapa(index, true);
+                }
+            }, 1000);
+        }
+
+        function mostrarEtapa(index) {
+            etapas.forEach((bloque, i) => {
+                bloque.style.display = i === index ? 'block' : 'none';
+
+                if (i === index) {
+                    bloque.classList.remove('bloqueado');
+                }
+            });
+
+            const bloqueActual = etapas[index];
+            prepararBloque(bloqueActual);
+            iniciarTemporizadorEtapa(bloqueActual, index);
+        }
+
+        function finalizarEtapa(index, fueAutomatico = false) {
+            const bloqueActual = etapas[index];
+
+            if (!bloqueActual || etapaFinalizada) {
+                return;
+            }
+
+            etapaFinalizada = true;
+            limpiarTemporizadorEtapa();
+            guardarOrdenEtapa(bloqueActual);
+            bloquearEtapa(bloqueActual);
+
+            if (index < etapas.length - 1) {
+                setTimeout(() => {
+                    actual = index + 1;
+                    mostrarEtapa(actual);
+                }, fueAutomatico ? 500 : 150);
+            } else {
+                setTimeout(() => {
+                    enviarTema();
+                }, fueAutomatico ? 500 : 150);
+            }
+        }
+
+        etapas.forEach((bloque, index) => {
+            const boton = bloque.querySelector('.btn-siguiente');
+
+            if (boton) {
+                boton.addEventListener('click', function () {
+                    finalizarEtapa(index, false);
+                });
+            }
+        });
+
+        if (btnComenzar) {
+            btnComenzar.addEventListener('click', function () {
+                const nombre = nombrePrevio.value.trim();
+
+                if (!nombre) {
+                    alert('Ingresá tu nombre antes de comenzar.');
+                    nombrePrevio.focus();
+                    return;
+                }
+
+                nombreHidden.value = nombre;
+                pantallaInicio.style.display = 'none';
+                formulario.style.display = 'block';
+
+                inicioTema = Date.now();
+
+                intervaloTiempoTotal = setInterval(() => {
+                    const segundos = Math.floor((Date.now() - inicioTema) / 1000);
+                    inputTiempoTotal.value = segundos;
+                }, 1000);
+
+                mostrarEtapa(actual);
+            });
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

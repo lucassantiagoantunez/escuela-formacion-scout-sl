@@ -1,0 +1,108 @@
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 1 - CONTENEDOR GENERAL
+================================================== */
+.detalle-noticia-contenedor {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 20px 40px 20px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 2 - BOTÓN VOLVER
+================================================== */
+.detalle-noticia-boton-volver {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.detalle-noticia-boton-volver .boton-verde {
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 3 - TARJETA PRINCIPAL
+================================================== */
+.detalle-noticia-caja {
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 30px;
+    border-radius: 14px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 4 - CABECERA
+================================================== */
+.detalle-noticia-titulo {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.detalle-noticia-fecha {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 5 - IMAGEN
+================================================== */
+.detalle-noticia-imagen-contenedor {
+    margin-bottom: 25px;
+}
+
+.detalle-noticia-imagen {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+}
+
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 6 - RESUMEN
+================================================== */
+.detalle-noticia-resumen {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 7 - CONTENIDO PRINCIPAL
+================================================== */
+.detalle-noticia-contenido {
+    line-height: 1.8;
+    text-align: left;
+}
+
+.detalle-noticia-contenido p {
+    margin-bottom: 16px;
+}
+
+.detalle-noticia-contenido h2,
+.detalle-noticia-contenido h3,
+.detalle-noticia-contenido h4 {
+    text-align: left;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+/* ==================================================
+   BLOQUE DETALLE NOTICIA 8 - RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+    .detalle-noticia-contenedor {
+        padding: 15px 12px 30px 12px;
+    }
+
+    .detalle-noticia-caja {
+        padding: 20px;
+    }
+
+    .detalle-noticia-resumen {
+        font-size: 17px;
+    }
+}

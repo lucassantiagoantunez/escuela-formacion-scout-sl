@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Elige el camino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/caminos.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML CAMINOS 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="caminos-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML CAMINOS 2 - TÍTULO
+    ========================================== -->
+    <h1>Elige el camino</h1>
+
+    <!-- ==========================================
+         BLOQUE HTML CAMINOS 3 - TEXTO INTRODUCTORIO
+    ========================================== -->
+    <p class="caminos-intro">
+        Leé una situación, tomá decisiones y descubrí a dónde te lleva cada elección.
+        Algunos recorridos terminan bien, otros regular y otros... como suelen terminar las malas decisiones humanas.
+    </p>
+
+    <!-- ==========================================
+         BLOQUE HTML CAMINOS 4 - LISTADO DE CAMINOS
+    ========================================== -->
+    {% for camino in caminos %}
+        <div class="caja camino-item">
+            <h3>{{ camino.titulo }}</h3>
+
+            {% if camino.descripcion %}
+                <p>{{ camino.descripcion|truncatewords:24 }}</p>
+            {% endif %}
+
+            <div class="camino-detalle">
+                Escenas disponibles: {{ camino.escenas.count }}
+            </div>
+
+            <a href="{% url 'detalle_camino' camino.id %}" class="boton-verde">
+                Comenzar recorrido
+            </a>
+        </div>
+    {% empty %}
+        <!-- ==========================================
+             BLOQUE HTML CAMINOS 5 - MENSAJE VACÍO
+        ========================================== -->
+        <p class="caminos-vacio">
+            Todavía no hay caminos cargados.
+        </p>
+    {% endfor %}
+
+</div>
+{% endblock %}

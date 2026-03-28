@@ -1,0 +1,132 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Biblioteca - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/biblioteca.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML BIBLIOTECA 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="biblioteca-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML BIBLIOTECA 2 - TÍTULO
+    ========================================== -->
+    <h1>Biblioteca Scout</h1>
+
+    <!-- ==========================================
+         BLOQUE HTML BIBLIOTECA 3 - BUSCADOR
+    ========================================== -->
+    <div class="biblioteca-buscador">
+        <form method="get" class="biblioteca-formulario">
+            <input
+                type="text"
+                name="q"
+                placeholder="Buscar material por título..."
+                value="{{ busqueda }}"
+                class="biblioteca-input"
+            >
+
+            <button type="submit" class="boton-verde biblioteca-boton-buscar">
+                Buscar
+            </button>
+        </form>
+    </div>
+
+    {% if busqueda %}
+        <!-- ==========================================
+             BLOQUE HTML BIBLIOTECA 4 - RESULTADOS DE BÚSQUEDA
+        ========================================== -->
+        <h2 class="biblioteca-subtitulo">Resultados para: "{{ busqueda }}"</h2>
+
+        {% if hay_resultados %}
+            <div class="biblioteca-listado">
+                {% for material in materiales %}
+                    <div class="caja biblioteca-material">
+                        <h3>{{ material.titulo }}</h3>
+                        <p>{{ material.descripcion }}</p>
+                        <p><strong>Sección:</strong> {{ material.get_seccion_display }}</p>
+
+                        {% if material.archivo %}
+                            <a
+                                href="{{ material.archivo.url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="boton-verde"
+                            >
+                                Ver archivo
+                            </a>
+                        {% else %}
+                            <p class="biblioteca-sin-archivo">Sin archivo</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="biblioteca-mensaje-vacio">
+                No se encontraron materiales con esa búsqueda.
+            </p>
+        {% endif %}
+
+    {% else %}
+        <!-- ==========================================
+             BLOQUE HTML BIBLIOTECA 5 - LISTADO POR SECCIONES
+        ========================================== -->
+        {% for seccion, nombre in materiales.model.SECCIONES %}
+            <div class="biblioteca-seccion">
+                <button
+                    type="button"
+                    class="biblioteca-boton-seccion"
+                    onclick="toggleSeccion('{{ seccion }}')"
+                >
+                    {{ nombre }}
+                </button>
+
+                <div id="{{ seccion }}" class="biblioteca-contenido-seccion">
+                    {% for material in materiales %}
+                        {% if material.seccion == seccion %}
+                            <div class="caja biblioteca-material">
+                                <h3>{{ material.titulo }}</h3>
+                                <p>{{ material.descripcion }}</p>
+
+                                {% if material.archivo %}
+                                    <a
+                                        href="{{ material.archivo.url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="boton-verde"
+                                    >
+                                        Ver archivo
+                                    </a>
+                                {% else %}
+                                    <p class="biblioteca-sin-archivo">Sin archivo</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+<!-- ==========================================
+     BLOQUE HTML BIBLIOTECA 6 - SCRIPT DESPLEGABLES
+========================================== -->
+<script>
+    function toggleSeccion(id) {
+        const seccion = document.getElementById(id);
+
+        if (seccion.style.display === "none" || seccion.style.display === "") {
+            seccion.style.display = "block";
+        } else {
+            seccion.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

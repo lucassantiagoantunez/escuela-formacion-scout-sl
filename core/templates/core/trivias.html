@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Trivias{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/trivias.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML TRIVIAS 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="trivias-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML TRIVIAS 2 - TÍTULO
+    ========================================== -->
+    <h1>Trivias</h1>
+
+    <!-- ==========================================
+         BLOQUE HTML TRIVIAS 3 - TEXTO INTRODUCTORIO
+    ========================================== -->
+    <p class="trivias-intro">
+        Poné a prueba tus conocimientos con actividades de preguntas y respuestas
+        sobre técnica, formación y vida scout.
+    </p>
+
+    <!-- ==========================================
+         BLOQUE HTML TRIVIAS 4 - LISTADO DE TRIVIAS
+    ========================================== -->
+    {% for trivia in trivias %}
+        <div class="caja trivia-item">
+            <h3>{{ trivia.titulo }}</h3>
+
+            {% if trivia.descripcion %}
+                <p>{{ trivia.descripcion|truncatewords:20 }}</p>
+            {% endif %}
+
+            <a href="{% url 'detalle_trivia' trivia.id %}" class="boton-verde">
+                Ver trivia
+            </a>
+        </div>
+    {% empty %}
+        <!-- ==========================================
+             BLOQUE HTML TRIVIAS 5 - MENSAJE VACÍO
+        ========================================== -->
+        <p class="trivias-vacio">
+            Todavía no hay trivias cargadas.
+        </p>
+    {% endfor %}
+
+</div>
+{% endblock %}

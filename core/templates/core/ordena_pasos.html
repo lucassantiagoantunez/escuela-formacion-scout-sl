@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Ordena los pasos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/ordena_pasos.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div class="ordena-contenedor">
+    <h1>Ordena los pasos</h1>
+
+    <p class="ordena-intro">
+        Elegí un tema, ingresá tu nombre una sola vez y resolvé varias etapas seguidas.
+        Cada etapa tiene su propio tiempo y al final se calcula un resultado total del tema.
+    </p>
+
+    {% for juego in juegos %}
+        <div class="caja ordena-item">
+            <h3>{{ juego.titulo }}</h3>
+
+            {% if juego.descripcion %}
+                <p>{{ juego.descripcion|truncatewords:24 }}</p>
+            {% endif %}
+
+            <div class="ordena-detalle">
+                Etapas disponibles: {{ juego.etapas.count }}
+            </div>
+
+            <a href="{% url 'detalle_ordena_pasos' juego.id %}" class="boton-verde">
+                Comenzar
+            </a>
+        </div>
+    {% empty %}
+        <p class="ordena-vacio">
+            Todavía no hay temas de “Ordena los pasos” cargados.
+        </p>
+    {% endfor %}
+</div>
+{% endblock %}

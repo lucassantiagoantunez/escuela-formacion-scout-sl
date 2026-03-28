@@ -1,0 +1,271 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ camino.titulo }} - Elige el camino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/detalle_camino.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+<div class="detalle-camino-contenedor">
+    <h1>{{ camino.titulo }}</h1>
+
+    {% if camino.descripcion %}
+        <div class="detalle-camino-descripcion">
+            {{ camino.descripcion }}
+        </div>
+    {% endif %}
+
+    {% if escena_inicial %}
+        <div class="detalle-camino-caja">
+            <h2 id="camino-escena-titulo" class="camino-escena-titulo"></h2>
+
+            <div id="camino-escena-texto" class="camino-escena-texto"></div>
+
+            <div id="camino-opciones" class="camino-opciones"></div>
+
+            <div id="camino-final" class="camino-final">
+                <div id="camino-final-caja" class="camino-final-caja">
+                    <div id="camino-final-tipo" class="camino-final-tipo"></div>
+                    <p id="camino-final-texto" class="camino-final-texto"></p>
+                </div>
+            </div>
+
+            <div id="camino-recomendacion" class="camino-recomendacion">
+                <h3>Recomendación para repasar</h3>
+                <p>
+                    Este final deja una enseñanza importante. Te recomendamos revisar este material antes de volver a intentarlo.
+                </p>
+
+                <div id="camino-recomendacion-bloques" class="camino-recomendacion-bloques"></div>
+            </div>
+
+            <div class="camino-acciones">
+                <button type="button" id="btn-reiniciar-camino" class="boton-verde">
+                    Volver a empezar
+                </button>
+            </div>
+        </div>
+
+        <div
+            id="camino-datos"
+            class="camino-datos-ocultos"
+            data-escena-inicial-id="{{ escena_inicial.id }}"
+        >
+            {% for escena in escenas %}
+                <div
+                    class="escena-data"
+                    data-id="{{ escena.id }}"
+                    data-es-final="{{ escena.es_final|yesno:'true,false' }}"
+                    data-es-inicio="{{ escena.es_inicio|yesno:'true,false' }}"
+                    data-tipo-final="{{ escena.tipo_final|default:'' }}"
+                    data-material-titulo="{% if escena.material_recomendado %}{{ escena.material_recomendado.titulo|escape }}{% endif %}"
+                    data-material-url="{% if escena.material_recomendado and escena.material_recomendado.archivo %}{{ escena.material_recomendado.archivo.url }}{% endif %}"
+                    data-video-url="{% if escena.video_recomendado_url %}{{ escena.video_recomendado_url }}{% endif %}"
+                >
+                    <div class="escena-data-titulo">{{ escena.titulo }}</div>
+
+                    <div class="escena-data-texto">
+                        {{ escena.texto|linebreaksbr }}
+                    </div>
+
+                    <div class="escena-opciones-data">
+                        {% for opcion in escena.opciones_disponibles %}
+                            <div
+                                class="opcion-data"
+                                data-destino-id="{{ opcion.escena_destino.id }}"
+                                data-texto="{{ opcion.texto_opcion|escape }}"
+                            ></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="detalle-camino-caja">
+            <p class="detalle-camino-vacio">
+                Este camino todavía no tiene una escena inicial disponible.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+{% if escena_inicial %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const datosRoot = document.getElementById('camino-datos');
+        const escenaInicialId = datosRoot.dataset.escenaInicialId;
+
+        const titulo = document.getElementById('camino-escena-titulo');
+        const texto = document.getElementById('camino-escena-texto');
+        const opcionesContenedor = document.getElementById('camino-opciones');
+
+        const finalBloque = document.getElementById('camino-final');
+        const finalCaja = document.getElementById('camino-final-caja');
+        const finalTipo = document.getElementById('camino-final-tipo');
+        const finalTexto = document.getElementById('camino-final-texto');
+
+        const recomendacionBloque = document.getElementById('camino-recomendacion');
+        const recomendacionContenedor = document.getElementById('camino-recomendacion-bloques');
+
+        const btnReiniciar = document.getElementById('btn-reiniciar-camino');
+
+        const escenasCamino = {};
+
+        document.querySelectorAll('.escena-data').forEach(function (nodoEscena) {
+            const id = nodoEscena.dataset.id;
+            const opciones = [];
+
+            nodoEscena.querySelectorAll('.opcion-data').forEach(function (nodoOpcion) {
+                opciones.push({
+                    texto: nodoOpcion.dataset.texto,
+                    destino_id: nodoOpcion.dataset.destinoId,
+                });
+            });
+
+            escenasCamino[id] = {
+                id: id,
+                titulo: nodoEscena.querySelector('.escena-data-titulo').textContent.trim(),
+                texto: nodoEscena.querySelector('.escena-data-texto').innerHTML.trim(),
+                es_final: nodoEscena.dataset.esFinal === 'true',
+                es_inicio: nodoEscena.dataset.esInicio === 'true',
+                tipo_final: nodoEscena.dataset.tipoFinal || '',
+                material_titulo: nodoEscena.dataset.materialTitulo || '',
+                material_url: nodoEscena.dataset.materialUrl || '',
+                video_url: nodoEscena.dataset.videoUrl || '',
+                opciones: opciones,
+            };
+        });
+
+        function obtenerTextoTipoFinal(tipo) {
+            if (tipo === 'bueno') {
+                return 'Final bueno';
+            }
+
+            if (tipo === 'neutro') {
+                return 'Final neutro';
+            }
+
+            if (tipo === 'malo') {
+                return 'Final malo';
+            }
+
+            return 'Final';
+        }
+
+        function limpiarClasesFinal() {
+            finalCaja.classList.remove('camino-final-bueno', 'camino-final-neutro', 'camino-final-malo');
+        }
+
+        function mostrarRecomendacion(escena) {
+            const tieneMaterial = Boolean(escena.material_url);
+            const tieneVideo = Boolean(escena.video_url);
+            const requiereRecomendacion = escena.es_final && escena.tipo_final !== 'bueno' && (tieneMaterial || tieneVideo);
+
+            recomendacionContenedor.innerHTML = '';
+
+            if (!requiereRecomendacion) {
+                recomendacionBloque.classList.remove('activo');
+                return;
+            }
+
+            if (tieneMaterial) {
+                recomendacionContenedor.innerHTML += `
+                    <div class="camino-recomendacion-item">
+                        <h4>Material sugerido</h4>
+                        <p><strong>${escena.material_titulo}</strong></p>
+                        <a href="${escena.material_url}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                            Ver material
+                        </a>
+                    </div>
+                `;
+            }
+
+            if (tieneVideo) {
+                recomendacionContenedor.innerHTML += `
+                    <div class="camino-recomendacion-item">
+                        <h4>Video sugerido</h4>
+                        <p>Podés reforzar este tema con un video explicativo.</p>
+                        <a href="${escena.video_url}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                            Ver video
+                        </a>
+                    </div>
+                `;
+            }
+
+            recomendacionBloque.classList.add('activo');
+        }
+
+        function renderizarEscena(escenaId) {
+            const escena = escenasCamino[String(escenaId)];
+
+            if (!escena) {
+                titulo.textContent = 'Escena no disponible';
+                texto.innerHTML = '<p>No se pudo cargar esta parte del recorrido.</p>';
+                opcionesContenedor.innerHTML = '';
+                finalBloque.classList.remove('activo');
+                recomendacionBloque.classList.remove('activo');
+                return;
+            }
+
+            titulo.textContent = escena.titulo;
+            texto.innerHTML = escena.texto;
+            opcionesContenedor.innerHTML = '';
+            finalBloque.classList.remove('activo');
+            recomendacionBloque.classList.remove('activo');
+
+            if (escena.es_final) {
+                limpiarClasesFinal();
+
+                if (escena.tipo_final === 'bueno') {
+                    finalCaja.classList.add('camino-final-bueno');
+                } else if (escena.tipo_final === 'neutro') {
+                    finalCaja.classList.add('camino-final-neutro');
+                } else if (escena.tipo_final === 'malo') {
+                    finalCaja.classList.add('camino-final-malo');
+                }
+
+                finalTipo.textContent = obtenerTextoTipoFinal(escena.tipo_final);
+                finalTexto.textContent = escena.titulo;
+                finalBloque.classList.add('activo');
+
+                mostrarRecomendacion(escena);
+                return;
+            }
+
+            if (escena.opciones.length === 0) {
+                opcionesContenedor.innerHTML = `
+                    <p class="detalle-camino-vacio">
+                        Esta escena no tiene opciones configuradas todavía.
+                    </p>
+                `;
+                return;
+            }
+
+            escena.opciones.forEach(function (opcion) {
+                const boton = document.createElement('button');
+                boton.type = 'button';
+                boton.className = 'camino-opcion-boton';
+                boton.textContent = opcion.texto;
+
+                boton.addEventListener('click', function () {
+                    renderizarEscena(opcion.destino_id);
+                });
+
+                opcionesContenedor.appendChild(boton);
+            });
+        }
+
+        if (btnReiniciar) {
+            btnReiniciar.addEventListener('click', function () {
+                renderizarEscena(escenaInicialId);
+            });
+        }
+
+        renderizarEscena(escenaInicialId);
+    });
+</script>
+{% endif %}
+{% endblock %}

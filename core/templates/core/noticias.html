@@ -1,0 +1,81 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Noticias - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/noticias.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML NOTICIAS 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="noticias-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML NOTICIAS 2 - ENCABEZADO
+    ========================================== -->
+    <div class="noticias-encabezado">
+        <h1>Noticias</h1>
+        <p class="noticias-subtitulo">
+            Novedades, anuncios e información de la Escuela de Formación Scout.
+        </p>
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML NOTICIAS 3 - BOTÓN VOLVER
+    ========================================== -->
+    <div class="noticias-boton-volver">
+        <a href="{% url 'inicio' %}" class="boton-verde">Volver al inicio</a>
+    </div>
+
+    {% if noticias %}
+        <!-- ==========================================
+             BLOQUE HTML NOTICIAS 4 - LISTADO
+        ========================================== -->
+        <div class="noticias-listado">
+            {% for noticia in noticias %}
+                <article class="noticia-card">
+                    <h2>
+                        <a href="{% url 'detalle_noticia' noticia.id %}">
+                            {{ noticia.titulo }}
+                        </a>
+                    </h2>
+
+                    <p class="noticia-meta">
+                        {{ noticia.fecha_creacion|date:"d/m/Y H:i" }}
+                        {% if noticia.destacada %}
+                            | Destacada
+                        {% endif %}
+                    </p>
+
+                    {% if noticia.imagen %}
+                        <div class="noticia-imagen-contenedor">
+                            <img src="{{ noticia.imagen.url }}"
+                                 alt="{{ noticia.titulo }}"
+                                 class="noticia-imagen">
+                        </div>
+                    {% endif %}
+
+                    <p class="noticia-resumen">
+                        {{ noticia.resumen }}
+                    </p>
+
+                    <a href="{% url 'detalle_noticia' noticia.id %}" class="boton-verde">
+                        Leer noticia completa
+                    </a>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- ==========================================
+             BLOQUE HTML NOTICIAS 5 - MENSAJE VACÍO
+        ========================================== -->
+        <div class="noticias-vacio">
+            <p>No hay noticias publicadas por el momento.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

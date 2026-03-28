@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ noticia.titulo }} - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/detalle_noticia.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML DETALLE NOTICIA 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="detalle-noticia-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE NOTICIA 2 - BOTÓN VOLVER
+    ========================================== -->
+    <div class="detalle-noticia-boton-volver">
+        <a href="{% url 'inicio' %}" class="boton-verde">Volver al inicio</a>
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML DETALLE NOTICIA 3 - TARJETA PRINCIPAL
+    ========================================== -->
+    <article class="detalle-noticia-caja">
+
+        <!-- ==========================================
+             BLOQUE HTML DETALLE NOTICIA 4 - CABECERA
+        ========================================== -->
+        <h1 class="detalle-noticia-titulo">{{ noticia.titulo }}</h1>
+
+        <p class="detalle-noticia-fecha">
+            {{ noticia.fecha_creacion|date:"d/m/Y H:i" }}
+        </p>
+
+        <!-- ==========================================
+             BLOQUE HTML DETALLE NOTICIA 5 - IMAGEN
+        ========================================== -->
+        {% if noticia.imagen %}
+            <div class="detalle-noticia-imagen-contenedor">
+                <img src="{{ noticia.imagen.url }}"
+                     alt="{{ noticia.titulo }}"
+                     class="detalle-noticia-imagen">
+            </div>
+        {% endif %}
+
+        <!-- ==========================================
+             BLOQUE HTML DETALLE NOTICIA 6 - RESUMEN
+        ========================================== -->
+        <p class="detalle-noticia-resumen">
+            {{ noticia.resumen }}
+        </p>
+
+        <!-- ==========================================
+             BLOQUE HTML DETALLE NOTICIA 7 - CONTENIDO
+        ========================================== -->
+        <div class="detalle-noticia-contenido">
+            {{ noticia.contenido|safe }}
+        </div>
+
+    </article>
+
+</div>
+{% endblock %}

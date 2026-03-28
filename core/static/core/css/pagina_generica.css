@@ -1,0 +1,250 @@
+/* ==================================================
+   BLOQUE PAGINA GENERICA 1 - CONTENEDOR GENERAL
+================================================== */
+.pagina-generica-contenedor {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 20px 40px 20px;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 2 - CABECERA
+================================================== */
+.pagina-generica-encabezado {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.pagina-generica-titulo {
+    margin-bottom: 15px;
+}
+
+.pagina-generica-portada {
+    width: 100%;
+    max-height: 360px;
+    object-fit: cover;
+    border-radius: 14px;
+    display: block;
+    margin: 0 auto 20px auto;
+}
+
+.pagina-generica-contenido-principal {
+    max-width: 850px;
+    margin: 0 auto;
+    line-height: 1.8;
+    text-align: left;
+}
+
+.pagina-generica-contenido-principal p {
+    margin-bottom: 16px;
+}
+
+.pagina-generica-contenido-principal h2,
+.pagina-generica-contenido-principal h3,
+.pagina-generica-contenido-principal h4 {
+    text-align: left;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 3 - CAJAS GENERALES
+================================================== */
+.pagina-generica-caja {
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 25px;
+    border-radius: 14px;
+    margin-bottom: 25px;
+}
+
+.pagina-generica-caja h2,
+.pagina-generica-caja h3 {
+    color: #22c55e;
+    margin-top: 0;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 4 - BLOQUES DE CONTENIDO
+================================================== */
+.pagina-bloque {
+    background-color: #334155;
+    padding: 22px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+}
+
+.pagina-bloque-titulo {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.pagina-bloque-subtitulo {
+    text-align: center;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+    line-height: 1.7;
+}
+
+.pagina-bloque-contenido {
+    line-height: 1.8;
+    text-align: left;
+}
+
+.pagina-bloque-contenido p {
+    margin-bottom: 16px;
+}
+
+.pagina-bloque-contenido h2,
+.pagina-bloque-contenido h3,
+.pagina-bloque-contenido h4 {
+    text-align: left;
+    margin-top: 22px;
+    margin-bottom: 12px;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 5 - BLOQUES VISUALES
+================================================== */
+.pagina-bloque-imagen {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
+}
+
+.pagina-bloque-galeria {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.pagina-bloque-galeria-item {
+    background-color: #1e293b;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.pagina-bloque-galeria-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.pagina-bloque-galeria-item h4 {
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.pagina-bloque-galeria-item p {
+    margin-bottom: 0;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 6 - MATERIALES
+================================================== */
+.pagina-materiales-listado {
+    display: grid;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.pagina-material-item {
+    background-color: #1e293b;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.pagina-material-item h4 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.pagina-material-item p {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.pagina-material-item .boton-verde {
+    margin-top: 10px;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 7 - SUBPÁGINAS
+================================================== */
+.pagina-subpaginas-listado {
+    display: grid;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.pagina-subpagina-item {
+    background-color: #334155;
+    padding: 18px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.pagina-subpagina-item h3 {
+    margin-bottom: 10px;
+}
+
+.pagina-subpagina-item p {
+    margin-bottom: 14px;
+    line-height: 1.6;
+    color: white;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 8 - INTERACTIVO
+================================================== */
+.pagina-bloque-interactivo iframe {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    background-color: white;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 9 - DETALLES AUXILIARES
+================================================== */
+.pagina-bloque-separador {
+    height: 2px;
+    background-color: rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+    margin: 10px 0;
+}
+
+.pagina-generica-vacio {
+    text-align: center;
+    line-height: 1.7;
+    color: #cbd5e1;
+}
+
+/* ==================================================
+   BLOQUE PAGINA GENERICA 10 - RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+    .pagina-generica-contenedor {
+        padding: 15px 12px 30px 12px;
+    }
+
+    .pagina-generica-caja,
+    .pagina-bloque {
+        padding: 20px;
+    }
+
+    .pagina-bloque-galeria {
+        grid-template-columns: 1fr;
+    }
+}

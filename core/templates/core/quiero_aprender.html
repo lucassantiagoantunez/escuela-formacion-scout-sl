@@ -1,0 +1,97 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}Quiero aprender - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/quiero_aprender.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML QUIERO APRENDER 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="quiero-aprender-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML QUIERO APRENDER 2 - ENCABEZADO
+    ========================================== -->
+    <div class="quiero-aprender-encabezado">
+        <h1>{{ contenido_inicio.titulo_quiero_aprender|default:"Quiero aprender" }}</h1>
+        <p class="quiero-aprender-subtitulo">
+            {{ contenido_inicio.subtitulo_quiero_aprender|default:"Este espacio permite proponer cursos, talleres o temas de formación que te gustaría realizar. La idea es conocer mejor los intereses de la comunidad y organizar propuestas útiles y concretas." }}
+        </p>
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML QUIERO APRENDER 3 - BOTÓN VOLVER
+    ========================================== -->
+    <div class="quiero-aprender-boton-volver">
+        <a href="{% url 'inicio' %}" class="boton-verde">Volver al inicio</a>
+    </div>
+
+    {% if mensaje_exito %}
+        <!-- ==========================================
+             BLOQUE HTML QUIERO APRENDER 4 - MENSAJE DE ÉXITO
+        ========================================== -->
+        <div class="quiero-aprender-exito">
+            Tu propuesta fue enviada correctamente. Gracias por compartir tu interés formativo.
+        </div>
+    {% endif %}
+
+    <!-- ==========================================
+         BLOQUE HTML QUIERO APRENDER 5 - FORMULARIO
+    ========================================== -->
+    <div class="quiero-aprender-formulario-caja">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="quiero-aprender-campo">
+                <label for="nombre">Nombre *</label>
+                <input type="text" name="nombre" id="nombre" required>
+            </div>
+
+            <div class="quiero-aprender-campo">
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email">
+            </div>
+
+            <div class="quiero-aprender-campo">
+                <label for="seccion">Sección / Rama</label>
+                <input
+                    type="text"
+                    name="seccion"
+                    id="seccion"
+                    placeholder="Ej: Manada, Scouts, Raiders, Rovers, Dirigentes"
+                >
+            </div>
+
+            <div class="quiero-aprender-campo">
+                <label for="curso_interes">¿Qué te gustaría aprender? *</label>
+                <input
+                    type="text"
+                    name="curso_interes"
+                    id="curso_interes"
+                    required
+                    placeholder="Ej: Taller de nudos, programa de rama, primeros auxilios, campismo"
+                >
+            </div>
+
+            <div class="quiero-aprender-campo">
+                <label for="detalle">Detalle adicional</label>
+                <textarea
+                    name="detalle"
+                    id="detalle"
+                    rows="5"
+                    placeholder="Podés agregar qué te interesa puntualmente, por qué te serviría o qué enfoque te gustaría que tenga."
+                ></textarea>
+            </div>
+
+            <button type="submit" class="boton-verde quiero-aprender-boton-enviar">
+                Enviar propuesta
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

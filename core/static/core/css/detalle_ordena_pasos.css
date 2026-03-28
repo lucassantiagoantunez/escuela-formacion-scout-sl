@@ -1,0 +1,342 @@
+.detalle-ordena-contenedor {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.detalle-ordena-columna-principal {
+    flex: 2;
+    min-width: 300px;
+    max-width: 760px;
+}
+
+.detalle-ordena-columna-lateral {
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.detalle-ordena-descripcion {
+    max-width: 760px;
+    margin: 0 auto 25px;
+    text-align: center;
+    color: white;
+    line-height: 1.7;
+}
+
+.detalle-ordena-caja {
+    background-color: #334155;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 760px;
+}
+
+.detalle-ordena-caja h2,
+.detalle-ordena-caja h3 {
+    color: #22c55e;
+    margin-top: 0;
+}
+
+.detalle-ordena-input-nombre {
+    margin-top: 10px;
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+.detalle-ordena-boton-inicio {
+    margin-top: 20px;
+}
+
+.detalle-ordena-boton-inicio .boton-verde {
+    margin: 0;
+}
+
+.detalle-ordena-formulario {
+    display: none;
+}
+
+.etapa-bloque {
+    display: none;
+}
+
+.etapa-bloque.bloqueado {
+    pointer-events: none;
+    opacity: 0.95;
+}
+
+.detalle-ordena-contador {
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #22c55e;
+    text-align: center;
+}
+
+.detalle-ordena-etapa-descripcion {
+    color: white;
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.detalle-ordena-temporizador {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #facc15;
+    text-align: center;
+}
+
+.detalle-ordena-barra-fondo {
+    width: 100%;
+    max-width: 700px;
+    height: 18px;
+    background-color: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.detalle-ordena-barra {
+    height: 100%;
+    width: 100%;
+    background-color: #22c55e;
+    transition: width 1s linear;
+}
+
+.lista-pasos {
+    max-width: 700px;
+    margin: 0 auto 20px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.paso-item {
+    margin-bottom: 0;
+    cursor: grab;
+}
+
+.paso-item:active {
+    cursor: grabbing;
+}
+
+.caja.paso-tarjeta {
+    min-height: 205px;
+    padding: 8px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    text-align: center;
+}
+
+.paso-numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 2px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    color: #0f172a;
+    font-weight: bold;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.paso-texto {
+    color: white;
+    text-align: center;
+    line-height: 1.1;
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0;
+}
+
+.paso-imagen {
+    width: 100%;
+    max-width: 250px;
+    height: 170px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin: 0 auto;
+    display: block;
+}
+
+.paso-placeholder {
+    border: 2px dashed #22c55e;
+    border-radius: 12px;
+    min-height: 205px;
+    background-color: rgba(34, 197, 94, 0.08);
+}
+
+.paso-sin-contenido {
+    cursor: default;
+    grid-column: 1 / -1;
+}
+
+.detalle-ordena-acciones {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.detalle-ordena-acciones .boton-verde {
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+.detalle-ordena-resultado-general {
+    background-color: #22c55e;
+    color: black;
+    padding: 15px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 760px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.7;
+}
+
+.detalle-ordena-recomendacion {
+    background-color: #1e293b;
+    border: 2px solid #facc15;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 760px;
+}
+
+.detalle-ordena-recomendacion h2 {
+    color: #facc15;
+    margin-top: 0;
+    text-align: center;
+}
+
+.detalle-ordena-recomendacion p {
+    color: white;
+    line-height: 1.7;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.detalle-ordena-recomendacion-bloques {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.detalle-ordena-recomendacion-item {
+    background-color: #334155;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.detalle-ordena-recomendacion-item h3 {
+    color: #22c55e;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.detalle-ordena-recomendacion-item p {
+    margin-bottom: 12px;
+}
+
+.detalle-ordena-recomendacion-item .boton-verde {
+    margin: 0 auto;
+}
+
+.resultado-pasos {
+    max-width: 700px;
+    margin: 15px auto 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.resultado-correcto {
+    border: 2px solid #22c55e;
+}
+
+.resultado-incorrecto {
+    border: 2px solid #ef4444;
+}
+
+.resultado-meta {
+    font-size: 13px;
+    color: #cbd5e1;
+    text-align: center;
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+.detalle-ordena-reinicio {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.detalle-ordena-ranking {
+    background-color: #334155;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: left;
+    position: sticky;
+    top: 20px;
+}
+
+.detalle-ordena-ranking h2 {
+    color: #22c55e;
+    margin-top: 0;
+    text-align: left;
+}
+
+.detalle-ordena-ranking-item {
+    background-color: #1e293b;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    line-height: 1.6;
+    color: white;
+}
+
+.detalle-ordena-ranking-vacio {
+    line-height: 1.6;
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .detalle-ordena-columna-lateral {
+        max-width: 760px;
+    }
+
+    .detalle-ordena-ranking {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .lista-pasos,
+    .resultado-pasos,
+    .detalle-ordena-recomendacion-bloques {
+        grid-template-columns: 1fr;
+    }
+
+    .paso-imagen {
+        max-width: 220px;
+        height: 150px;
+    }
+
+    .caja.paso-tarjeta {
+        min-height: 195px;
+    }
+}

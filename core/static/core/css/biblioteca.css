@@ -1,0 +1,131 @@
+/* ==================================================
+   BLOQUE BIBLIOTECA 1 - CONTENEDOR GENERAL
+================================================== */
+.biblioteca-contenedor {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ==================================================
+   BLOQUE BIBLIOTECA 2 - BUSCADOR
+================================================== */
+.biblioteca-buscador {
+    max-width: 700px;
+    margin: 20px auto 30px;
+}
+
+.biblioteca-formulario {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.biblioteca-input {
+    flex: 1;
+    min-width: 240px;
+    margin-bottom: 0;
+}
+
+.biblioteca-boton-buscar {
+    margin: 0;
+}
+
+/* ==================================================
+   BLOQUE BIBLIOTECA 3 - RESULTADOS Y MENSAJES
+================================================== */
+.biblioteca-subtitulo {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.biblioteca-mensaje-vacio {
+    color: #fca5a5;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* ==================================================
+   BLOQUE BIBLIOTECA 4 - TARJETAS DE MATERIALES
+================================================== */
+.biblioteca-listado {
+    margin-top: 20px;
+}
+
+.biblioteca-material {
+    max-width: 700px;
+    margin: 0 auto 15px;
+    text-align: center;
+}
+
+.biblioteca-material h3 {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.biblioteca-material p {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.biblioteca-material .boton-verde {
+    margin: 12px auto 0;
+    font-size: 14px;
+    padding: 8px 18px;
+}
+
+.biblioteca-sin-archivo {
+    color: #94a3b8;
+    font-style: italic;
+    margin-bottom: 0;
+}
+
+/* ==================================================
+   BLOQUE BIBLIOTECA 5 - SECCIONES DESPLEGABLES
+================================================== */
+.biblioteca-seccion {
+    max-width: 700px;
+    margin: 20px auto;
+}
+
+.biblioteca-boton-seccion {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #22c55e;
+    color: #0f172a;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.biblioteca-boton-seccion:hover {
+    background-color: #16a34a;
+}
+
+.biblioteca-contenido-seccion {
+    display: none;
+    margin-top: 12px;
+}
+
+/* ==================================================
+   BLOQUE BIBLIOTECA 6 - RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+    .biblioteca-formulario {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .biblioteca-boton-buscar {
+        width: 100%;
+    }
+
+    .biblioteca-boton-seccion {
+        font-size: 16px;
+    }
+}

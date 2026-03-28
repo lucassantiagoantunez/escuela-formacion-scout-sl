@@ -1,0 +1,273 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ pagina.titulo }} - Escuela Scout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/pagina_generica.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<!-- ==========================================
+     BLOQUE HTML PAGINA GENERICA 1 - CONTENEDOR GENERAL
+========================================== -->
+<div class="pagina-generica-contenedor">
+
+    <!-- ==========================================
+         BLOQUE HTML PAGINA GENERICA 2 - CABECERA
+    ========================================== -->
+    <div class="pagina-generica-caja pagina-generica-encabezado">
+        <h1 class="pagina-generica-titulo">{{ pagina.titulo }}</h1>
+
+        {% if pagina.imagen_portada %}
+            <img
+                src="{{ pagina.imagen_portada.url }}"
+                alt="{{ pagina.titulo }}"
+                class="pagina-generica-portada"
+            >
+        {% endif %}
+
+        {% if pagina.contenido %}
+            <div class="pagina-generica-contenido-principal">
+                {{ pagina.contenido|safe }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ==========================================
+         BLOQUE HTML PAGINA GENERICA 3 - BLOQUES DINÁMICOS
+    ========================================== -->
+    {% for bloque in bloques %}
+        <div class="pagina-bloque">
+
+            {% if bloque.tipo == "separador" %}
+                <div class="pagina-bloque-separador"></div>
+
+            {% else %}
+                {% if bloque.titulo %}
+                    <h2 class="pagina-bloque-titulo">{{ bloque.titulo }}</h2>
+                {% endif %}
+
+                {% if bloque.subtitulo %}
+                    <p class="pagina-bloque-subtitulo">{{ bloque.subtitulo }}</p>
+                {% endif %}
+
+                {% if bloque.tipo == "titulo" %}
+                    {% if bloque.contenido %}
+                        <div class="pagina-bloque-contenido">
+                            {{ bloque.contenido|safe }}
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {% if bloque.tipo == "texto" %}
+                    <div class="pagina-bloque-contenido">
+                        {{ bloque.contenido|safe }}
+                    </div>
+                {% endif %}
+
+                {% if bloque.tipo == "imagen" %}
+                    {% if bloque.imagen %}
+                        <img
+                            src="{{ bloque.imagen.url }}"
+                            alt="{{ bloque.titulo|default:pagina.titulo }}"
+                            class="pagina-bloque-imagen"
+                        >
+                    {% endif %}
+
+                    {% if bloque.contenido %}
+                        <div class="pagina-bloque-contenido separacion-superior">
+                            {{ bloque.contenido|safe }}
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {% if bloque.tipo == "galeria" %}
+                    {% if bloque.contenido %}
+                        <div class="pagina-bloque-contenido">
+                            {{ bloque.contenido|safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if bloque.imagenes_galeria.all %}
+                        <div class="pagina-bloque-galeria">
+                            {% for imagen in bloque.imagenes_galeria.all %}
+                                <div class="pagina-bloque-galeria-item">
+                                    <img
+                                        src="{{ imagen.imagen.url }}"
+                                        alt="{{ imagen.texto_alternativo|default:imagen.titulo|default:pagina.titulo }}"
+                                    >
+
+                                    {% if imagen.titulo %}
+                                        <h4>{{ imagen.titulo }}</h4>
+                                    {% endif %}
+
+                                    {% if imagen.texto_alternativo %}
+                                        <p>{{ imagen.texto_alternativo }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="pagina-generica-vacio">
+                            Este bloque de galería todavía no tiene imágenes cargadas.
+                        </p>
+                    {% endif %}
+                {% endif %}
+
+                {% if bloque.tipo == "video" %}
+                    {% if bloque.contenido %}
+                        <div class="pagina-bloque-contenido">
+                            {{ bloque.contenido|safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if bloque.video_url %}
+                        <a
+                            href="{{ bloque.video_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="boton-verde"
+                        >
+                            Ver video
+                        </a>
+                    {% else %}
+                        <p class="pagina-generica-vacio">
+                            Este bloque todavía no tiene un enlace de video cargado.
+                        </p>
+                    {% endif %}
+                {% endif %}
+
+                {% if bloque.tipo == "materiales" %}
+                    {% if bloque.contenido %}
+                        <div class="pagina-bloque-contenido">
+                            {{ bloque.contenido|safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if bloque.materiales.all %}
+                        <div class="pagina-materiales-listado">
+                            {% for material in bloque.materiales.all %}
+                                <div class="pagina-material-item">
+                                    <h4>{{ material.titulo }}</h4>
+                                    <p>{{ material.descripcion }}</p>
+
+                                    {% if material.archivo %}
+                                        <a
+                                            href="{{ material.archivo.url }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="boton-verde"
+                                        >
+                                            Ver material
+                                        </a>
+                                    {% else %}
+                                        <p>Este material no tiene archivo cargado todavía.</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="pagina-generica-vacio">
+                            Este bloque todavía no tiene materiales vinculados.
+                        </p>
+                    {% endif %}
+                {% endif %}
+
+                {% if bloque.tipo == "interactivo" %}
+                    {% if bloque.contenido %}
+                        <div class="pagina-bloque-contenido">
+                            {{ bloque.contenido|safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if bloque.componente_interactivo and bloque.componente_interactivo.publicado %}
+                        <div class="pagina-bloque-interactivo">
+                            <iframe
+                                src="{% url 'render_componente_interactivo' bloque.componente_interactivo.slug %}"
+                                height="{{ bloque.componente_interactivo.alto_iframe }}"
+                                title="{{ bloque.componente_interactivo.nombre }}"
+                                loading="lazy">
+                            </iframe>
+                        </div>
+                    {% else %}
+                        <p class="pagina-generica-vacio">
+                            Este bloque interactivo todavía no tiene un componente publicado vinculado.
+                        </p>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <!-- ==========================================
+         BLOQUE HTML PAGINA GENERICA 4 - MATERIALES DE LA PÁGINA
+    ========================================== -->
+    {% if pagina.materiales.all %}
+        <div class="pagina-generica-caja">
+            <h2>Materiales relacionados</h2>
+
+            <div class="pagina-materiales-listado">
+                {% for material in pagina.materiales.all %}
+                    <div class="pagina-material-item">
+                        <h4>{{ material.titulo }}</h4>
+                        <p>{{ material.descripcion }}</p>
+
+                        {% if material.archivo %}
+                            <a
+                                href="{{ material.archivo.url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="boton-verde"
+                            >
+                                Ver material
+                            </a>
+                        {% else %}
+                            <p>Este material no tiene archivo cargado todavía.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- ==========================================
+         BLOQUE HTML PAGINA GENERICA 5 - SUBPÁGINAS
+    ========================================== -->
+    {% if subpaginas %}
+        <div class="pagina-generica-caja">
+            <h2>Subpáginas</h2>
+
+            <div class="pagina-subpaginas-listado">
+                {% for subpagina in subpaginas %}
+                    <div class="pagina-subpagina-item">
+                        <h3>{{ subpagina.titulo }}</h3>
+
+                        {% if subpagina.contenido %}
+                            <p>{{ subpagina.contenido|striptags|truncatewords:28 }}</p>
+                        {% else %}
+                            <p>Contenido disponible para seguir profundizando este tema.</p>
+                        {% endif %}
+
+                        <a href="{% url 'detalle_pagina' subpagina.slug %}" class="boton-verde">
+                            Ver subpágina
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- ==========================================
+         BLOQUE HTML PAGINA GENERICA 6 - MENSAJE VACÍO
+    ========================================== -->
+    {% if not pagina.contenido and not bloques and not pagina.materiales.all and not subpaginas %}
+        <div class="pagina-generica-caja">
+            <p class="pagina-generica-vacio">
+                Esta página todavía no tiene contenido cargado.
+            </p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
