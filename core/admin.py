@@ -5,6 +5,7 @@ import csv
 from .models import (
     AreaPrograma,
     BloquePagina,
+    CategoriaBiblioteca,
     ComponenteInteractivo,
     ContenidoInicio,
     EligeCamino,
@@ -91,17 +92,48 @@ class AreaProgramaAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 3 - ADMIN DE MATERIALES
+# BLOQUE 3 - ADMIN DE CATEGORÍAS DE BIBLIOTECA
+# ==================================================
+@admin.register(CategoriaBiblioteca)
+class CategoriaBibliotecaAdmin(admin.ModelAdmin):
+    list_display = ("nombre", "padre", "orden", "activo")
+    list_filter = ("activo", "padre")
+    search_fields = ("nombre", "padre__nombre")
+    ordering = ("padre__nombre", "orden", "nombre")
+    autocomplete_fields = ("padre",)
+
+    fieldsets = (
+        ("Datos básicos de la categoría", {
+            "fields": ("nombre", "padre"),
+        }),
+        ("Configuración", {
+            "fields": ("orden", "activo"),
+        }),
+    )
+
+
+# ==================================================
+# BLOQUE 4 - ADMIN DE MATERIALES
 # ==================================================
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "seccion", "mostrar_programas")
-    list_filter = ("seccion", "programas")
-    search_fields = ("titulo", "descripcion")
+    list_display = (
+        "titulo",
+        "mostrar_en_biblioteca",
+        "categoria_biblioteca",
+        "mostrar_programas",
+    )
+    list_filter = ("mostrar_en_biblioteca", "categoria_biblioteca", "programas")
+    search_fields = ("titulo", "descripcion", "categoria_biblioteca__nombre")
     filter_horizontal = ("programas", "areas_programa")
+    autocomplete_fields = ("categoria_biblioteca",)
+
     fieldsets = (
         ("Datos básicos del material", {
-            "fields": ("titulo", "descripcion", "seccion", "archivo"),
+            "fields": ("titulo", "descripcion", "archivo"),
+        }),
+        ("Biblioteca", {
+            "fields": ("mostrar_en_biblioteca", "categoria_biblioteca"),
         }),
         ("Relación con formación", {
             "fields": ("programas", "areas_programa"),
@@ -115,7 +147,7 @@ class MaterialAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 4 - INLINE DE OPCIONES DE RESPUESTA
+# BLOQUE 5 - INLINE DE OPCIONES DE RESPUESTA
 # ==================================================
 class OpcionRespuestaInline(admin.TabularInline):
     model = OpcionRespuesta
@@ -123,7 +155,7 @@ class OpcionRespuestaInline(admin.TabularInline):
 
 
 # ==================================================
-# BLOQUE 5 - INLINE DE IMÁGENES DE GALERÍA
+# BLOQUE 6 - INLINE DE IMÁGENES DE GALERÍA
 # ==================================================
 class ImagenBloquePaginaInline(admin.TabularInline):
     model = ImagenBloquePagina
@@ -132,7 +164,7 @@ class ImagenBloquePaginaInline(admin.TabularInline):
 
 
 # ==================================================
-# BLOQUE 6 - INLINE DE BLOQUES DE PÁGINA
+# BLOQUE 7 - INLINE DE BLOQUES DE PÁGINA
 # ==================================================
 class BloquePaginaInline(admin.StackedInline):
     model = BloquePagina
@@ -152,7 +184,7 @@ class BloquePaginaInline(admin.StackedInline):
 
 
 # ==================================================
-# BLOQUE 7 - INLINE DE ETAPAS DE ORDENA LOS PASOS
+# BLOQUE 8 - INLINE DE ETAPAS DE ORDENA LOS PASOS
 # ==================================================
 class EtapaOrdenaPasosInline(admin.TabularInline):
     model = EtapaOrdenaPasos
@@ -161,7 +193,7 @@ class EtapaOrdenaPasosInline(admin.TabularInline):
 
 
 # ==================================================
-# BLOQUE 8 - INLINE DE PASOS DE CADA ETAPA
+# BLOQUE 9 - INLINE DE PASOS DE CADA ETAPA
 # ==================================================
 class PasoOrdenaPasosInline(admin.StackedInline):
     model = PasoOrdenaPasos
@@ -169,7 +201,7 @@ class PasoOrdenaPasosInline(admin.StackedInline):
 
 
 # ==================================================
-# BLOQUE 9 - INLINE DE SECTORES DE RULETA
+# BLOQUE 10 - INLINE DE SECTORES DE RULETA
 # ==================================================
 class SectorRuletaInline(admin.TabularInline):
     model = SectorRuleta
@@ -178,7 +210,7 @@ class SectorRuletaInline(admin.TabularInline):
 
 
 # ==================================================
-# BLOQUE 10 - INLINE DE ESCENAS DE ELIGE EL CAMINO
+# BLOQUE 11 - INLINE DE ESCENAS DE ELIGE EL CAMINO
 # ==================================================
 class EscenaCaminoInline(admin.TabularInline):
     model = EscenaCamino
@@ -187,7 +219,7 @@ class EscenaCaminoInline(admin.TabularInline):
 
 
 # ==================================================
-# BLOQUE 11 - INLINE DE OPCIONES DE CADA ESCENA
+# BLOQUE 12 - INLINE DE OPCIONES DE CADA ESCENA
 # ==================================================
 class OpcionEscenaCaminoInline(admin.TabularInline):
     model = OpcionEscenaCamino
@@ -198,7 +230,7 @@ class OpcionEscenaCaminoInline(admin.TabularInline):
 
 
 # ==================================================
-# BLOQUE 12 - ADMIN DE PÁGINAS
+# BLOQUE 13 - ADMIN DE PÁGINAS
 # ==================================================
 @admin.register(Pagina)
 class PaginaAdmin(admin.ModelAdmin):
@@ -240,7 +272,7 @@ class PaginaAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 13 - ADMIN DE COMPONENTES INTERACTIVOS
+# BLOQUE 14 - ADMIN DE COMPONENTES INTERACTIVOS
 # ==================================================
 @admin.register(ComponenteInteractivo)
 class ComponenteInteractivoAdmin(admin.ModelAdmin):
@@ -264,7 +296,7 @@ class ComponenteInteractivoAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 14 - ADMIN DE BLOQUES DE PÁGINA
+# BLOQUE 15 - ADMIN DE BLOQUES DE PÁGINA
 # ==================================================
 @admin.register(BloquePagina)
 class BloquePaginaAdmin(admin.ModelAdmin):
@@ -308,7 +340,7 @@ class BloquePaginaAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 15 - ADMIN DE TRIVIAS
+# BLOQUE 16 - ADMIN DE TRIVIAS
 # ==================================================
 @admin.register(Trivia)
 class TriviaAdmin(admin.ModelAdmin):
@@ -393,7 +425,7 @@ class ResultadoTriviaAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 16 - ADMIN DE TEMAS DE ORDENA LOS PASOS
+# BLOQUE 17 - ADMIN DE TEMAS DE ORDENA LOS PASOS
 # ==================================================
 @admin.register(OrdenaPasos)
 class OrdenaPasosAdmin(admin.ModelAdmin):
@@ -442,7 +474,7 @@ class OrdenaPasosAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 17 - ADMIN DE ETAPAS DE ORDENA LOS PASOS
+# BLOQUE 18 - ADMIN DE ETAPAS DE ORDENA LOS PASOS
 # ==================================================
 @admin.register(EtapaOrdenaPasos)
 class EtapaOrdenaPasosAdmin(admin.ModelAdmin):
@@ -471,7 +503,7 @@ class EtapaOrdenaPasosAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 18 - ADMIN DE PASOS DE ORDENA LOS PASOS
+# BLOQUE 19 - ADMIN DE PASOS DE ORDENA LOS PASOS
 # ==================================================
 @admin.register(PasoOrdenaPasos)
 class PasoOrdenaPasosAdmin(admin.ModelAdmin):
@@ -496,7 +528,7 @@ class PasoOrdenaPasosAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 19 - ADMIN DE RESULTADOS DE ORDENA LOS PASOS
+# BLOQUE 20 - ADMIN DE RESULTADOS DE ORDENA LOS PASOS
 # ==================================================
 @admin.register(ResultadoOrdenaPasos)
 class ResultadoOrdenaPasosAdmin(admin.ModelAdmin):
@@ -536,7 +568,7 @@ class ResultadoOrdenaPasosAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 20 - ADMIN DE RULETAS DE DESAFÍOS
+# BLOQUE 21 - ADMIN DE RULETAS DE DESAFÍOS
 # ==================================================
 @admin.register(RuletaDesafio)
 class RuletaDesafioAdmin(admin.ModelAdmin):
@@ -583,7 +615,7 @@ class SectorRuletaAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 21 - ADMIN DE ELIGE EL CAMINO
+# BLOQUE 22 - ADMIN DE ELIGE EL CAMINO
 # ==================================================
 @admin.register(EligeCamino)
 class EligeCaminoAdmin(admin.ModelAdmin):
@@ -680,7 +712,7 @@ class OpcionEscenaCaminoAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 22 - ADMIN DE NOTICIAS
+# BLOQUE 23 - ADMIN DE NOTICIAS
 # ==================================================
 @admin.register(Noticia)
 class NoticiaAdmin(admin.ModelAdmin):
@@ -704,7 +736,7 @@ class NoticiaAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 23 - ADMIN DEL INICIO
+# BLOQUE 24 - ADMIN DEL INICIO
 # ==================================================
 @admin.register(ContenidoInicio)
 class ContenidoInicioAdmin(admin.ModelAdmin):
@@ -741,7 +773,7 @@ class ContenidoInicioAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# BLOQUE 24 - ADMIN DE QUIERO APRENDER
+# BLOQUE 25 - ADMIN DE QUIERO APRENDER
 # ==================================================
 @admin.register(InteresCurso)
 class InteresCursoAdmin(admin.ModelAdmin):

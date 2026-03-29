@@ -26,7 +26,7 @@
             <input
                 type="text"
                 name="q"
-                placeholder="Buscar material por título..."
+                placeholder="Buscar material por título, descripción o categoría..."
                 value="{{ busqueda }}"
                 class="biblioteca-input"
             >
@@ -49,7 +49,19 @@
                     <div class="caja biblioteca-material">
                         <h3>{{ material.titulo }}</h3>
                         <p>{{ material.descripcion }}</p>
-                        <p><strong>Sección:</strong> {{ material.get_seccion_display }}</p>
+
+                        {% if material.categoria_biblioteca %}
+                            <p>
+                                <strong>Categoría:</strong>
+                                {% if material.categoria_biblioteca.padre %}
+                                    {{ material.categoria_biblioteca.padre.nombre }} / {{ material.categoria_biblioteca.nombre }}
+                                {% else %}
+                                    {{ material.categoria_biblioteca.nombre }}
+                                {% endif %}
+                            </p>
+                        {% else %}
+                            <p><strong>Categoría:</strong> Sin categoría de biblioteca</p>
+                        {% endif %}
 
                         {% if material.archivo %}
                             <a
@@ -74,42 +86,97 @@
 
     {% else %}
         <!-- ==========================================
-             BLOQUE HTML BIBLIOTECA 5 - LISTADO POR SECCIONES
+             BLOQUE HTML BIBLIOTECA 5 - LISTADO POR CATEGORÍAS
         ========================================== -->
-        {% for seccion, nombre in materiales.model.SECCIONES %}
+        {% for categoria in categorias_biblioteca %}
             <div class="biblioteca-seccion">
                 <button
                     type="button"
                     class="biblioteca-boton-seccion"
-                    onclick="toggleSeccion('{{ seccion }}')"
+                    onclick="toggleSeccion('categoria-{{ categoria.id }}')"
                 >
-                    {{ nombre }}
+                    {{ categoria.nombre }}
                 </button>
 
-                <div id="{{ seccion }}" class="biblioteca-contenido-seccion">
-                    {% for material in materiales %}
-                        {% if material.seccion == seccion %}
-                            <div class="caja biblioteca-material">
-                                <h3>{{ material.titulo }}</h3>
-                                <p>{{ material.descripcion }}</p>
+                <div id="categoria-{{ categoria.id }}" class="biblioteca-contenido-seccion">
 
-                                {% if material.archivo %}
-                                    <a
-                                        href="{{ material.archivo.url }}"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="boton-verde"
-                                    >
-                                        Ver archivo
-                                    </a>
+                    {% if categoria.materiales_directos %}
+                        <div class="biblioteca-listado">
+                            {% for material in categoria.materiales_directos %}
+                                <div class="caja biblioteca-material">
+                                    <h3>{{ material.titulo }}</h3>
+                                    <p>{{ material.descripcion }}</p>
+
+                                    {% if material.archivo %}
+                                        <a
+                                            href="{{ material.archivo.url }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="boton-verde"
+                                        >
+                                            Ver archivo
+                                        </a>
+                                    {% else %}
+                                        <p class="biblioteca-sin-archivo">Sin archivo</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% for subcategoria in categoria.subcategorias_activas %}
+                        <div class="biblioteca-subseccion" style="margin-top: 20px;">
+                            <button
+                                type="button"
+                                class="biblioteca-boton-seccion"
+                                onclick="toggleSeccion('subcategoria-{{ subcategoria.id }}')"
+                            >
+                                {{ subcategoria.nombre }}
+                            </button>
+
+                            <div id="subcategoria-{{ subcategoria.id }}" class="biblioteca-contenido-seccion">
+                                {% if subcategoria.materiales_subcategoria %}
+                                    <div class="biblioteca-listado">
+                                        {% for material in subcategoria.materiales_subcategoria %}
+                                            <div class="caja biblioteca-material">
+                                                <h3>{{ material.titulo }}</h3>
+                                                <p>{{ material.descripcion }}</p>
+
+                                                {% if material.archivo %}
+                                                    <a
+                                                        href="{{ material.archivo.url }}"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="boton-verde"
+                                                    >
+                                                        Ver archivo
+                                                    </a>
+                                                {% else %}
+                                                    <p class="biblioteca-sin-archivo">Sin archivo</p>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 {% else %}
-                                    <p class="biblioteca-sin-archivo">Sin archivo</p>
+                                    <p class="biblioteca-mensaje-vacio">
+                                        Esta subsección todavía no tiene materiales cargados.
+                                    </p>
                                 {% endif %}
                             </div>
-                        {% endif %}
+                        </div>
                     {% endfor %}
+
+                    {% if not categoria.materiales_directos and not categoria.subcategorias_activas %}
+                        <p class="biblioteca-mensaje-vacio">
+                            Esta categoría todavía no tiene materiales ni subsecciones cargadas.
+                        </p>
+                    {% endif %}
                 </div>
             </div>
+        {% empty %}
+            <p class="biblioteca-mensaje-vacio">
+                Todavía no hay categorías de biblioteca cargadas.
+            </p>
         {% endfor %}
     {% endif %}
 

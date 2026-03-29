@@ -6,6 +6,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 from .models import (
     BloquePagina,
+    CategoriaBiblioteca,
     ComponenteInteractivo,
     ContenidoInicio,
     EligeCamino,
@@ -74,20 +75,67 @@ def noticias(request):
 # ==================================================
 def biblioteca(request):
     busqueda = request.GET.get("q", "").strip()
-    materiales = Material.objects.all().order_by("titulo")
+
+    materiales_publicos = Material.objects.filter(
+        mostrar_en_biblioteca=True,
+    ).select_related(
+        "categoria_biblioteca",
+        "categoria_biblioteca__padre",
+    ).order_by("titulo")
 
     if busqueda:
-        materiales = materiales.filter(
-            Q(titulo__icontains=busqueda) | Q(descripcion__icontains=busqueda)
+        materiales = materiales_publicos.filter(
+            Q(titulo__icontains=busqueda)
+            | Q(descripcion__icontains=busqueda)
+            | Q(categoria_biblioteca__nombre__icontains=busqueda)
+            | Q(categoria_biblioteca__padre__nombre__icontains=busqueda)
         )
+
+        return render(
+            request,
+            "core/biblioteca.html",
+            {
+                "busqueda": busqueda,
+                "materiales": materiales,
+                "hay_resultados": materiales.exists(),
+                "categorias_biblioteca": [],
+            },
+        )
+
+    categorias_biblioteca = CategoriaBiblioteca.objects.filter(
+        activo=True,
+        padre__isnull=True,
+    ).prefetch_related(
+        Prefetch(
+            "materiales",
+            queryset=Material.objects.filter(
+                mostrar_en_biblioteca=True,
+            ).select_related("categoria_biblioteca").order_by("titulo"),
+            to_attr="materiales_directos",
+        ),
+        Prefetch(
+            "subcategorias",
+            queryset=CategoriaBiblioteca.objects.filter(activo=True).prefetch_related(
+                Prefetch(
+                    "materiales",
+                    queryset=Material.objects.filter(
+                        mostrar_en_biblioteca=True,
+                    ).select_related("categoria_biblioteca").order_by("titulo"),
+                    to_attr="materiales_subcategoria",
+                )
+            ).order_by("orden", "nombre", "id"),
+            to_attr="subcategorias_activas",
+        ),
+    ).order_by("orden", "nombre", "id")
 
     return render(
         request,
         "core/biblioteca.html",
         {
-            "materiales": materiales,
             "busqueda": busqueda,
-            "hay_resultados": materiales.exists(),
+            "materiales": [],
+            "hay_resultados": False,
+            "categorias_biblioteca": categorias_biblioteca,
         },
     )
 

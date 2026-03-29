@@ -50,21 +50,56 @@ class AreaPrograma(models.Model):
 
 
 # ==================================================
-# BLOQUE 3 - MODELO DE MATERIALES
+# BLOQUE 3 - MODELO DE CATEGORÍAS DE BIBLIOTECA
+# ==================================================
+class CategoriaBiblioteca(models.Model):
+    nombre = models.CharField(max_length=200)
+
+    padre = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="subcategorias",
+        verbose_name="Categoría padre",
+    )
+
+    orden = models.PositiveIntegerField(default=1)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["orden", "nombre", "id"]
+        verbose_name = "Categoría de biblioteca"
+        verbose_name_plural = "Categorías de biblioteca"
+
+    def __str__(self):
+        if self.padre:
+            return f"{self.padre.nombre} > {self.nombre}"
+        return self.nombre
+
+
+# ==================================================
+# BLOQUE 4 - MODELO DE MATERIALES
 # ==================================================
 class Material(models.Model):
-    SECCIONES = [
-        ("general", "Generales"),
-        ("menor", "Sección Menor"),
-        ("media", "Sección Media"),
-        ("intermedia", "Sección Intermedia"),
-        ("mayor", "Sección Mayor"),
-    ]
-
     titulo = models.CharField(max_length=200)
-    descripcion = models.TextField()
-    seccion = models.CharField(max_length=20, choices=SECCIONES, default="general")
+    descripcion = models.TextField(blank=True)
     archivo = models.FileField(upload_to="materiales/", null=True, blank=True)
+
+    mostrar_en_biblioteca = models.BooleanField(
+        default=True,
+        verbose_name="Mostrar en biblioteca",
+    )
+
+    categoria_biblioteca = models.ForeignKey(
+        CategoriaBiblioteca,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="materiales",
+        verbose_name="Categoría de biblioteca",
+    )
+
     programas = models.ManyToManyField(Programa, blank=True)
     areas_programa = models.ManyToManyField(AreaPrograma, blank=True)
 
@@ -78,7 +113,7 @@ class Material(models.Model):
 
 
 # ==================================================
-# BLOQUE 3A - MODELO DE PÁGINAS
+# BLOQUE 5 - MODELO DE PÁGINAS
 # ==================================================
 class Pagina(models.Model):
     titulo = models.CharField(max_length=200)
@@ -120,7 +155,7 @@ class Pagina(models.Model):
 
 
 # ==================================================
-# BLOQUE 3B - MODELO DE COMPONENTES INTERACTIVOS
+# BLOQUE 6 - MODELO DE COMPONENTES INTERACTIVOS
 # ==================================================
 class ComponenteInteractivo(models.Model):
     nombre = models.CharField(max_length=200)
@@ -144,7 +179,7 @@ class ComponenteInteractivo(models.Model):
 
 
 # ==================================================
-# BLOQUE 3C - MODELO DE BLOQUES DE PÁGINA
+# BLOQUE 7 - MODELO DE BLOQUES DE PÁGINA
 # ==================================================
 class BloquePagina(models.Model):
     TIPOS_BLOQUE = [
@@ -202,7 +237,7 @@ class BloquePagina(models.Model):
 
 
 # ==================================================
-# BLOQUE 3D - MODELO DE IMÁGENES DE GALERÍA
+# BLOQUE 8 - MODELO DE IMÁGENES DE GALERÍA
 # ==================================================
 class ImagenBloquePagina(models.Model):
     bloque = models.ForeignKey(
@@ -225,7 +260,7 @@ class ImagenBloquePagina(models.Model):
 
 
 # ==================================================
-# BLOQUE 4 - MODELO DE TRIVIAS
+# BLOQUE 9 - MODELO DE TRIVIAS
 # ==================================================
 class Trivia(models.Model):
     titulo = models.CharField(max_length=200)
@@ -251,7 +286,7 @@ class Trivia(models.Model):
 
 
 # ==================================================
-# BLOQUE 5 - MODELO DE PREGUNTAS
+# BLOQUE 10 - MODELO DE PREGUNTAS
 # ==================================================
 class Pregunta(models.Model):
     trivia = models.ForeignKey(
@@ -272,7 +307,7 @@ class Pregunta(models.Model):
 
 
 # ==================================================
-# BLOQUE 6 - MODELO DE OPCIONES DE RESPUESTA
+# BLOQUE 11 - MODELO DE OPCIONES DE RESPUESTA
 # ==================================================
 class OpcionRespuesta(models.Model):
     pregunta = models.ForeignKey(
@@ -292,7 +327,7 @@ class OpcionRespuesta(models.Model):
 
 
 # ==================================================
-# BLOQUE 7 - MODELO DE RESULTADOS DE TRIVIA
+# BLOQUE 12 - MODELO DE RESULTADOS DE TRIVIA
 # ==================================================
 class ResultadoTrivia(models.Model):
     trivia = models.ForeignKey(
@@ -317,7 +352,7 @@ class ResultadoTrivia(models.Model):
 
 
 # ==================================================
-# BLOQUE 7A - MODELO DE TEMAS DE ORDENA LOS PASOS
+# BLOQUE 13 - MODELO DE TEMAS DE ORDENA LOS PASOS
 # ==================================================
 class OrdenaPasos(models.Model):
     titulo = models.CharField(max_length=200)
@@ -346,7 +381,7 @@ class OrdenaPasos(models.Model):
 
 
 # ==================================================
-# BLOQUE 7B - MODELO DE ETAPAS DEL TEMA
+# BLOQUE 14 - MODELO DE ETAPAS DEL TEMA
 # ==================================================
 class EtapaOrdenaPasos(models.Model):
     tema = models.ForeignKey(
@@ -370,7 +405,7 @@ class EtapaOrdenaPasos(models.Model):
 
 
 # ==================================================
-# BLOQUE 7C - MODELO DE PASOS DE CADA ETAPA
+# BLOQUE 15 - MODELO DE PASOS DE CADA ETAPA
 # ==================================================
 class PasoOrdenaPasos(models.Model):
     etapa = models.ForeignKey(
@@ -396,7 +431,7 @@ class PasoOrdenaPasos(models.Model):
 
 
 # ==================================================
-# BLOQUE 7D - MODELO DE RESULTADOS POR TEMA
+# BLOQUE 16 - MODELO DE RESULTADOS POR TEMA
 # ==================================================
 class ResultadoOrdenaPasos(models.Model):
     tema = models.ForeignKey(
@@ -421,7 +456,7 @@ class ResultadoOrdenaPasos(models.Model):
 
 
 # ==================================================
-# BLOQUE 7E - MODELO DE RULETAS DE DESAFÍOS
+# BLOQUE 17 - MODELO DE RULETAS DE DESAFÍOS
 # ==================================================
 class RuletaDesafio(models.Model):
     titulo = models.CharField(max_length=200)
@@ -439,7 +474,7 @@ class RuletaDesafio(models.Model):
 
 
 # ==================================================
-# BLOQUE 7F - MODELO DE SECTORES DE RULETA
+# BLOQUE 18 - MODELO DE SECTORES DE RULETA
 # ==================================================
 class SectorRuleta(models.Model):
     TIPOS_SECTOR = [
@@ -467,7 +502,7 @@ class SectorRuleta(models.Model):
 
 
 # ==================================================
-# BLOQUE 7G - MODELO DE JUEGOS ELIGE EL CAMINO
+# BLOQUE 19 - MODELO DE JUEGOS ELIGE EL CAMINO
 # ==================================================
 class EligeCamino(models.Model):
     titulo = models.CharField(max_length=200)
@@ -485,7 +520,7 @@ class EligeCamino(models.Model):
 
 
 # ==================================================
-# BLOQUE 7H - MODELO DE ESCENAS DEL CAMINO
+# BLOQUE 20 - MODELO DE ESCENAS DEL CAMINO
 # ==================================================
 class EscenaCamino(models.Model):
     TIPOS_FINAL = [
@@ -527,7 +562,7 @@ class EscenaCamino(models.Model):
 
 
 # ==================================================
-# BLOQUE 7I - MODELO DE OPCIONES DE CADA ESCENA
+# BLOQUE 21 - MODELO DE OPCIONES DE CADA ESCENA
 # ==================================================
 class OpcionEscenaCamino(models.Model):
     escena_origen = models.ForeignKey(
@@ -554,7 +589,7 @@ class OpcionEscenaCamino(models.Model):
 
 
 # ==================================================
-# BLOQUE 8 - MODELO DE NOTICIAS
+# BLOQUE 22 - MODELO DE NOTICIAS
 # ==================================================
 class Noticia(models.Model):
     titulo = models.CharField(max_length=200)
@@ -575,7 +610,7 @@ class Noticia(models.Model):
 
 
 # ==================================================
-# BLOQUE 9 - MODELO DE CONTENIDO DEL INICIO
+# BLOQUE 23 - MODELO DE CONTENIDO DEL INICIO
 # ==================================================
 class ContenidoInicio(models.Model):
     titulo_inicio = models.CharField(
@@ -619,7 +654,7 @@ class ContenidoInicio(models.Model):
 
 
 # ==================================================
-# BLOQUE 10 - MODELO DE INTERÉS EN CURSOS
+# BLOQUE 24 - MODELO DE INTERÉS EN CURSOS
 # ==================================================
 class InteresCurso(models.Model):
     nombre = models.CharField(max_length=150)
