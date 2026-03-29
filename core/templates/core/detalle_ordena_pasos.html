@@ -436,6 +436,26 @@
                 : 'Pantalla completa';
         }
 
+        async function intentarBloquearHorizontal() {
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('landscape');
+                }
+            } catch (error) {
+                console.log('El navegador no permitió bloquear orientación.');
+            }
+        }
+
+        async function desbloquearOrientacion() {
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            } catch (error) {
+                console.log('No se pudo desbloquear la orientación.');
+            }
+        }
+
         async function entrarPantallaCompleta() {
             if (!contenedorJuego) {
                 return;
@@ -449,6 +469,8 @@
                 } else if (contenedorJuego.msRequestFullscreen) {
                     contenedorJuego.msRequestFullscreen();
                 }
+
+                await intentarBloquearHorizontal();
             } catch (error) {
                 console.error('No se pudo activar pantalla completa.', error);
             }
@@ -456,6 +478,8 @@
 
         async function salirPantallaCompleta() {
             try {
+                await desbloquearOrientacion();
+
                 if (document.exitFullscreen) {
                     await document.exitFullscreen();
                 } else if (document.webkitExitFullscreen) {
@@ -512,9 +536,29 @@
                 }
             });
 
-            document.addEventListener('fullscreenchange', actualizarTextoBotonFullscreen);
-            document.addEventListener('webkitfullscreenchange', actualizarTextoBotonFullscreen);
-            document.addEventListener('msfullscreenchange', actualizarTextoBotonFullscreen);
+            document.addEventListener('fullscreenchange', async function () {
+                actualizarTextoBotonFullscreen();
+
+                if (!estaEnPantallaCompleta()) {
+                    await desbloquearOrientacion();
+                }
+            });
+
+            document.addEventListener('webkitfullscreenchange', async function () {
+                actualizarTextoBotonFullscreen();
+
+                if (!estaEnPantallaCompleta()) {
+                    await desbloquearOrientacion();
+                }
+            });
+
+            document.addEventListener('msfullscreenchange', async function () {
+                actualizarTextoBotonFullscreen();
+
+                if (!estaEnPantallaCompleta()) {
+                    await desbloquearOrientacion();
+                }
+            });
 
             actualizarTextoBotonFullscreen();
         }
