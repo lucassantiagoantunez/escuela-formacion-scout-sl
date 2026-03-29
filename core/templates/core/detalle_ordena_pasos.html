@@ -18,6 +18,16 @@
             </div>
         {% endif %}
 
+        <div class="detalle-ordena-mobile-tools">
+            <button type="button" id="btn-fullscreen-ordena" class="boton-verde">
+                Pantalla completa
+            </button>
+
+            <p class="detalle-ordena-mobile-aviso">
+                En celular, se recomienda jugar en horizontal para ordenar mejor los pasos.
+            </p>
+        </div>
+
         {% if puntaje == None %}
             <div id="pantalla-inicio" class="detalle-ordena-caja">
                 <h2>Antes de comenzar</h2>
@@ -237,6 +247,8 @@
         const inputTiempoTotal = document.getElementById('tiempo_total_segundos');
         const btnEnviarFinal = document.getElementById('btn-enviar-final');
         const etapas = document.querySelectorAll('.etapa-bloque');
+        const btnFullscreen = document.getElementById('btn-fullscreen-ordena');
+        const contenedorJuego = document.querySelector('.detalle-ordena-columna-principal');
 
         let actual = 0;
         let inicioTema = null;
@@ -406,6 +418,56 @@
             }
         }
 
+        function estaEnPantallaCompleta() {
+            return Boolean(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.msFullscreenElement
+            );
+        }
+
+        function actualizarTextoBotonFullscreen() {
+            if (!btnFullscreen) {
+                return;
+            }
+
+            btnFullscreen.textContent = estaEnPantallaCompleta()
+                ? 'Salir de pantalla completa'
+                : 'Pantalla completa';
+        }
+
+        async function entrarPantallaCompleta() {
+            if (!contenedorJuego) {
+                return;
+            }
+
+            try {
+                if (contenedorJuego.requestFullscreen) {
+                    await contenedorJuego.requestFullscreen();
+                } else if (contenedorJuego.webkitRequestFullscreen) {
+                    contenedorJuego.webkitRequestFullscreen();
+                } else if (contenedorJuego.msRequestFullscreen) {
+                    contenedorJuego.msRequestFullscreen();
+                }
+            } catch (error) {
+                console.error('No se pudo activar pantalla completa.', error);
+            }
+        }
+
+        async function salirPantallaCompleta() {
+            try {
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            } catch (error) {
+                console.error('No se pudo salir de pantalla completa.', error);
+            }
+        }
+
         etapas.forEach((bloque, index) => {
             const boton = bloque.querySelector('.btn-siguiente');
 
@@ -439,6 +501,22 @@
 
                 mostrarEtapa(actual);
             });
+        }
+
+        if (btnFullscreen) {
+            btnFullscreen.addEventListener('click', function () {
+                if (estaEnPantallaCompleta()) {
+                    salirPantallaCompleta();
+                } else {
+                    entrarPantallaCompleta();
+                }
+            });
+
+            document.addEventListener('fullscreenchange', actualizarTextoBotonFullscreen);
+            document.addEventListener('webkitfullscreenchange', actualizarTextoBotonFullscreen);
+            document.addEventListener('msfullscreenchange', actualizarTextoBotonFullscreen);
+
+            actualizarTextoBotonFullscreen();
         }
     });
 </script>

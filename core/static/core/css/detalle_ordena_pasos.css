@@ -26,6 +26,17 @@
     line-height: 1.7;
 }
 
+.detalle-ordena-mobile-tools {
+    display: none;
+}
+
+.detalle-ordena-mobile-aviso {
+    margin: 10px 0 0;
+    color: #cbd5e1;
+    line-height: 1.5;
+    text-align: center;
+}
+
 .detalle-ordena-caja {
     background-color: #334155;
     padding: 20px;
@@ -325,18 +336,137 @@
 }
 
 @media (max-width: 768px) {
+    .detalle-ordena-mobile-tools {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        max-width: 760px;
+        margin: 0 auto 20px;
+    }
+
+    .detalle-ordena-mobile-tools .boton-verde {
+        width: 100%;
+        max-width: 280px;
+        margin: 0;
+        text-align: center;
+    }
+
+    .detalle-ordena-columna-lateral {
+        display: none;
+    }
+
+    .detalle-ordena-columna-principal {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .detalle-ordena-caja,
+    .detalle-ordena-descripcion,
+    .detalle-ordena-resultado-general,
+    .detalle-ordena-recomendacion {
+        max-width: 100%;
+    }
+
+    .detalle-ordena-caja {
+        padding: 14px;
+        margin: 14px auto;
+    }
+
+    .detalle-ordena-barra-fondo,
+    .lista-pasos,
+    .resultado-pasos {
+        max-width: 100%;
+    }
+
     .lista-pasos,
     .resultado-pasos,
     .detalle-ordena-recomendacion-bloques {
         grid-template-columns: 1fr;
     }
 
+    .caja.paso-tarjeta {
+        min-height: 150px;
+        padding: 6px !important;
+        gap: 4px;
+    }
+
+    .paso-numero {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+    }
+
+    .paso-texto {
+        font-size: 14px;
+        line-height: 1.15;
+    }
+
     .paso-imagen {
-        max-width: 220px;
-        height: 150px;
+        max-width: 150px;
+        height: 95px;
+    }
+
+    .paso-placeholder {
+        min-height: 150px;
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .lista-pasos,
+    .resultado-pasos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .caja.paso-tarjeta {
-        min-height: 195px;
+        min-height: 135px;
+    }
+
+    .paso-imagen {
+        max-width: 120px;
+        height: 78px;
+    }
+
+    .paso-texto {
+        font-size: 13px;
+    }
+}
+
+.detalle-ordena-columna-principal:fullscreen,
+.detalle-ordena-columna-principal:-webkit-full-screen {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background-color: #0f172a;
+}
+
+.detalle-ordena-columna-principal:fullscreen .detalle-ordena-descripcion,
+.detalle-ordena-columna-principal:fullscreen .detalle-ordena-caja,
+.detalle-ordena-columna-principal:fullscreen .detalle-ordena-resultado-general,
+.detalle-ordena-columna-principal:fullscreen .detalle-ordena-recomendacion,
+.detalle-ordena-columna-principal:-webkit-full-screen .detalle-ordena-descripcion,
+.detalle-ordena-columna-principal:-webkit-full-screen .detalle-ordena-caja,
+.detalle-ordena-columna-principal:-webkit-full-screen .detalle-ordena-resultado-general,
+.detalle-ordena-columna-principal:-webkit-full-screen .detalle-ordena-recomendacion {
+    max-width: 100%;
+}
+
+.detalle-ordena-columna-principal:fullscreen .lista-pasos,
+.detalle-ordena-columna-principal:fullscreen .resultado-pasos,
+.detalle-ordena-columna-principal:-webkit-full-screen .lista-pasos,
+.detalle-ordena-columna-principal:-webkit-full-screen .resultado-pasos {
+    max-width: 100%;
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .detalle-ordena-columna-principal:fullscreen .lista-pasos,
+    .detalle-ordena-columna-principal:fullscreen .resultado-pasos,
+    .detalle-ordena-columna-principal:-webkit-full-screen .lista-pasos,
+    .detalle-ordena-columna-principal:-webkit-full-screen .resultado-pasos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
