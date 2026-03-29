@@ -17,8 +17,14 @@
         </div>
     {% endif %}
 
+    <div class="detalle-ruleta-mobile-tools">
+        <button type="button" id="btn-fullscreen-ruleta" class="boton-verde">
+            Pantalla completa
+        </button>
+    </div>
+
     {% if sectores %}
-        <div class="detalle-ruleta-caja">
+        <div class="detalle-ruleta-caja" id="ruleta-fullscreen-target">
             <div class="detalle-ruleta-zona">
                 <div class="detalle-ruleta-marcador"></div>
 
@@ -33,28 +39,8 @@
 
             <div id="resultado-ruleta" class="detalle-ruleta-resultado">
                 <div id="resultado-ruleta-caja" class="detalle-ruleta-resultado-caja">
-                    <div id="resultado-tipo" class="resultado-tipo"></div>
                     <p id="resultado-texto" class="resultado-texto"></p>
                 </div>
-            </div>
-
-            <div class="detalle-ruleta-leyenda">
-                <span class="detalle-ruleta-leyenda-item">
-                    <span class="detalle-ruleta-color" style="background-color: #facc15;"></span>
-                    Amarillo
-                </span>
-                <span class="detalle-ruleta-leyenda-item">
-                    <span class="detalle-ruleta-color" style="background-color: #22c55e;"></span>
-                    Verde
-                </span>
-                <span class="detalle-ruleta-leyenda-item">
-                    <span class="detalle-ruleta-color" style="background-color: #38bdf8;"></span>
-                    Celeste
-                </span>
-                <span class="detalle-ruleta-leyenda-item">
-                    <span class="detalle-ruleta-color" style="background-color: #ef4444;"></span>
-                    Rojo
-                </span>
             </div>
 
             <p class="detalle-ruleta-ayuda">
@@ -78,16 +64,17 @@
             const canvas = document.getElementById('ruleta-canvas');
             const ctx = canvas.getContext('2d');
             const btnGirar = document.getElementById('btn-girar');
+            const btnFullscreen = document.getElementById('btn-fullscreen-ruleta');
+            const fullscreenTarget = document.getElementById('ruleta-fullscreen-target');
+
             const resultadoBloque = document.getElementById('resultado-ruleta');
             const resultadoCaja = document.getElementById('resultado-ruleta-caja');
-            const resultadoTipo = document.getElementById('resultado-tipo');
             const resultadoTexto = document.getElementById('resultado-texto');
+
+            const lienzoContenedor = canvas.closest('.detalle-ruleta-lienzo-contenedor');
 
             const sectores = JSON.parse(document.getElementById('sectores-ruleta-data').textContent);
             const coloresBase = ['#facc15', '#22c55e', '#38bdf8', '#ef4444'];
-            const radio = canvas.width / 2;
-            const centroX = radio;
-            const centroY = radio;
 
             let audioContext = null;
             let anguloActual = -Math.PI / 2;
@@ -99,18 +86,13 @@
             let ultimoIndiceTick = null;
             let ultimoTimestamp = null;
 
+            let canvasSize = 380;
+            let radio = canvasSize / 2;
+            let centroX = radio;
+            let centroY = radio;
+
             function obtenerColor(index) {
                 return coloresBase[index % coloresBase.length];
-            }
-
-            function formatearTipo(tipo) {
-                if (tipo === 'prenda_castigo') {
-                    return 'Prenda o castigo';
-                }
-                if (tipo === 'buena_accion') {
-                    return 'Buena acción diaria';
-                }
-                return 'Resultado';
             }
 
             function asegurarAudio() {
@@ -150,8 +132,33 @@
                     oscillator.start(audioContext.currentTime);
                     oscillator.stop(audioContext.currentTime + 0.05);
                 } catch (error) {
-                    // los navegadores aman sabotear cosas simples
+                    // los navegadores aman arruinar cosas simples
                 }
+            }
+
+            function redimensionarCanvas() {
+                if (!lienzoContenedor) {
+                    return;
+                }
+
+                const anchoDisponible = Math.min(lienzoContenedor.clientWidth || 380, 380);
+                const size = Math.max(anchoDisponible, 220);
+                const ratio = window.devicePixelRatio || 1;
+
+                canvasSize = size;
+                radio = canvasSize / 2;
+                centroX = radio;
+                centroY = radio;
+
+                canvas.style.width = `${canvasSize}px`;
+                canvas.style.height = `${canvasSize}px`;
+                canvas.width = Math.floor(canvasSize * ratio);
+                canvas.height = Math.floor(canvasSize * ratio);
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(ratio, ratio);
+
+                dibujarRuleta();
             }
 
             function obtenerAnguloPuntero(evento) {
@@ -167,9 +174,11 @@
 
             function normalizarAngulo(angulo) {
                 let valor = angulo % (Math.PI * 2);
+
                 if (valor < 0) {
                     valor += Math.PI * 2;
                 }
+
                 return valor;
             }
 
@@ -195,7 +204,7 @@
             }
 
             function dibujarRuleta() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.clearRect(0, 0, canvasSize, canvasSize);
 
                 const cantidad = sectores.length;
                 const anguloPorSector = (Math.PI * 2) / cantidad;
@@ -221,17 +230,18 @@
                     ctx.rotate(inicio + anguloPorSector / 2);
                     ctx.textAlign = 'right';
                     ctx.fillStyle = '#0f172a';
-                    ctx.font = 'bold 12px Arial';
+                    ctx.font = `bold ${Math.max(10, Math.floor(canvasSize * 0.032))}px Arial`;
 
                     const textoOriginal = sectores[i].texto || '';
-                    const texto = textoOriginal.length > 18 ? textoOriginal.slice(0, 18) + '…' : textoOriginal;
+                    const limite = canvasSize < 300 ? 14 : 18;
+                    const texto = textoOriginal.length > limite ? textoOriginal.slice(0, limite) + '…' : textoOriginal;
 
                     ctx.fillText(texto, radio - 28, 4);
                     ctx.restore();
                 }
 
                 ctx.beginPath();
-                ctx.arc(centroX, centroY, 30, 0, Math.PI * 2);
+                ctx.arc(centroX, centroY, Math.max(24, Math.floor(canvasSize * 0.08)), 0, Math.PI * 2);
                 ctx.fillStyle = '#0f172a';
                 ctx.fill();
             }
@@ -240,7 +250,6 @@
                 const sector = sectores[indice];
                 const color = obtenerColor(indice);
 
-                resultadoTipo.textContent = formatearTipo(sector.tipo);
                 resultadoTexto.textContent = sector.texto;
                 resultadoCaja.style.backgroundColor = color;
 
@@ -339,6 +348,7 @@
                 ultimoAnguloPuntero = nuevoAngulo;
 
                 const ahora = performance.now();
+
                 if (ultimaMuestraDrag) {
                     const deltaTiempo = Math.max((ahora - ultimaMuestraDrag.tiempo) / 1000, 0.001);
                     let deltaAngulo = nuevoAngulo - ultimaMuestraDrag.angulo;
@@ -381,6 +391,56 @@
                 }
             }
 
+            function estaEnPantallaCompleta() {
+                return Boolean(
+                    document.fullscreenElement ||
+                    document.webkitFullscreenElement ||
+                    document.msFullscreenElement
+                );
+            }
+
+            function actualizarTextoBotonFullscreen() {
+                if (!btnFullscreen) {
+                    return;
+                }
+
+                btnFullscreen.textContent = estaEnPantallaCompleta()
+                    ? 'Salir de pantalla completa'
+                    : 'Pantalla completa';
+            }
+
+            async function entrarPantallaCompleta() {
+                if (!fullscreenTarget) {
+                    return;
+                }
+
+                try {
+                    if (fullscreenTarget.requestFullscreen) {
+                        await fullscreenTarget.requestFullscreen();
+                    } else if (fullscreenTarget.webkitRequestFullscreen) {
+                        fullscreenTarget.webkitRequestFullscreen();
+                    } else if (fullscreenTarget.msRequestFullscreen) {
+                        fullscreenTarget.msRequestFullscreen();
+                    }
+                } catch (error) {
+                    console.error('No se pudo activar pantalla completa.', error);
+                }
+            }
+
+            async function salirPantallaCompleta() {
+                try {
+                    if (document.exitFullscreen) {
+                        await document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                } catch (error) {
+                    console.error('No se pudo salir de pantalla completa.', error);
+                }
+            }
+
             btnGirar.addEventListener('click', girarAleatorio);
 
             canvas.addEventListener('mousedown', iniciarArrastre);
@@ -392,7 +452,36 @@
             window.addEventListener('touchend', terminarArrastre);
             window.addEventListener('touchcancel', terminarArrastre);
 
-            dibujarRuleta();
+            if (btnFullscreen) {
+                btnFullscreen.addEventListener('click', function () {
+                    if (estaEnPantallaCompleta()) {
+                        salirPantallaCompleta();
+                    } else {
+                        entrarPantallaCompleta();
+                    }
+                });
+
+                document.addEventListener('fullscreenchange', function () {
+                    actualizarTextoBotonFullscreen();
+                    setTimeout(redimensionarCanvas, 80);
+                });
+
+                document.addEventListener('webkitfullscreenchange', function () {
+                    actualizarTextoBotonFullscreen();
+                    setTimeout(redimensionarCanvas, 80);
+                });
+
+                document.addEventListener('msfullscreenchange', function () {
+                    actualizarTextoBotonFullscreen();
+                    setTimeout(redimensionarCanvas, 80);
+                });
+
+                actualizarTextoBotonFullscreen();
+            }
+
+            window.addEventListener('resize', redimensionarCanvas);
+
+            redimensionarCanvas();
         });
     </script>
 {% endif %}
