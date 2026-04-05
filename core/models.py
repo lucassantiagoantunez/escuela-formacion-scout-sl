@@ -295,6 +295,11 @@ class Pregunta(models.Model):
         related_name="preguntas",
     )
     texto = models.TextField()
+    imagen = models.ImageField(
+        upload_to="trivias/preguntas/",
+        blank=True,
+        null=True,
+    )
     orden = models.PositiveIntegerField(default=1)
 
     class Meta:

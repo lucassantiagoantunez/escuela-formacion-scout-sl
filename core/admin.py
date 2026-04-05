@@ -152,6 +152,7 @@ class MaterialAdmin(admin.ModelAdmin):
 class OpcionRespuestaInline(admin.TabularInline):
     model = OpcionRespuesta
     extra = 1
+    fields = ("texto", "es_correcta")
 
 
 # ==================================================
@@ -357,6 +358,7 @@ class TriviaAdmin(admin.ModelAdmin):
         "video_recomendado_url",
     )
     ordering = ("titulo",)
+    autocomplete_fields = ("material_recomendado",)
 
     fieldsets = (
         ("Datos básicos de la trivia", {
@@ -374,7 +376,7 @@ class TriviaAdmin(admin.ModelAdmin):
 
 @admin.register(Pregunta)
 class PreguntaAdmin(admin.ModelAdmin):
-    list_display = ("texto", "trivia", "orden")
+    list_display = ("texto_corto", "trivia", "orden", "tiene_imagen")
     list_filter = ("trivia",)
     search_fields = ("texto", "trivia__titulo")
     ordering = ("trivia", "orden")
@@ -382,9 +384,20 @@ class PreguntaAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Datos de la pregunta", {
-            "fields": ("trivia", "texto", "orden"),
+            "fields": ("trivia", "texto", "imagen", "orden"),
         }),
     )
+
+    def texto_corto(self, obj):
+        return obj.texto[:80] + "..." if len(obj.texto) > 80 else obj.texto
+
+    texto_corto.short_description = "Pregunta"
+
+    def tiene_imagen(self, obj):
+        return bool(obj.imagen)
+
+    tiene_imagen.short_description = "Imagen"
+    tiene_imagen.boolean = True
 
 
 @admin.register(ResultadoTrivia)
@@ -446,6 +459,7 @@ class OrdenaPasosAdmin(admin.ModelAdmin):
     )
     ordering = ("titulo",)
     readonly_fields = ("fecha_creacion",)
+    autocomplete_fields = ("material_recomendado",)
     inlines = [EtapaOrdenaPasosInline]
 
     fieldsets = (

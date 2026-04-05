@@ -16,12 +16,20 @@
     <!-- ==========================================
          BLOQUE HTML DETALLE TRIVIA 2 - COLUMNA PRINCIPAL
     ========================================== -->
-    <div class="detalle-trivia-columna-principal">
+    <div class="detalle-trivia-columna-principal" id="trivia-fullscreen-target">
         <h1>{{ trivia.titulo }}</h1>
 
         {% if trivia.descripcion %}
             <div class="detalle-trivia-descripcion">
                 {{ trivia.descripcion }}
+            </div>
+        {% endif %}
+
+        {% if puntaje is None and preguntas %}
+            <div class="detalle-trivia-mobile-tools">
+                <button type="button" id="btn-fullscreen-trivia" class="boton-verde">
+                    Pantalla completa
+                </button>
             </div>
         {% endif %}
 
@@ -32,6 +40,54 @@
                 Tiempo total: {{ tiempo_total_segundos }} segundos<br>
                 {{ mensaje_resultado }}
             </div>
+
+            <div class="detalle-trivia-acciones-superiores">
+                <a href="{% url 'detalle_trivia' trivia.id %}" class="boton-verde">
+                    Intentar de nuevo
+                </a>
+
+                <button type="button" id="btn-toggle-detalle-trivia" class="boton-verde detalle-trivia-boton-detalle">
+                    Ver detalle de las preguntas
+                </button>
+            </div>
+
+            {% if mostrar_recomendacion %}
+                <div class="detalle-trivia-recomendacion">
+                    <h2>Recomendación para repasar</h2>
+                    <p>
+                        Como el resultado fue menor al mínimo esperado para esta trivia,
+                        te recomendamos revisar este material antes de volver a intentarlo.
+                    </p>
+
+                    <div class="detalle-trivia-recomendacion-bloques">
+                        {% if trivia.material_recomendado %}
+                            <div class="detalle-trivia-recomendacion-item">
+                                <h3>Material sugerido</h3>
+                                <p><strong>{{ trivia.material_recomendado.titulo }}</strong></p>
+
+                                {% if trivia.material_recomendado.archivo %}
+                                    <a href="{{ trivia.material_recomendado.archivo.url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                                        Ver material
+                                    </a>
+                                {% else %}
+                                    <p>Este material no tiene archivo cargado todavía.</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if trivia.video_recomendado_url %}
+                            <div class="detalle-trivia-recomendacion-item">
+                                <h3>Video sugerido</h3>
+                                <p>Podés reforzar este tema con un video explicativo.</p>
+
+                                <a href="{{ trivia.video_recomendado_url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
+                                    Ver video
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
 
         {% if puntaje is None %}
@@ -84,19 +140,31 @@
                         <h3>Pregunta {{ forloop.counter }}</h3>
                         <p class="pregunta-texto"><strong>{{ pregunta.texto }}</strong></p>
 
-                        {% for opcion in pregunta.opciones_aleatorias %}
-                            <label class="opcion-label">
-                                <input
-                                    type="radio"
-                                    name="pregunta_{{ pregunta.id }}"
-                                    value="{{ opcion.id }}"
-                                    class="opcion-radio"
+                        {% if pregunta.imagen %}
+                            <div class="detalle-trivia-imagen-contenedor">
+                                <img
+                                    src="{{ pregunta.imagen.url }}"
+                                    alt="Imagen de la pregunta {{ forloop.counter }}"
+                                    class="detalle-trivia-imagen-pregunta"
                                 >
-                                {{ opcion.texto }}
-                            </label>
-                        {% empty %}
-                            <p class="detalle-trivia-sin-opciones">Esta pregunta no tiene opciones cargadas.</p>
-                        {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="pregunta-opciones">
+                            {% for opcion in pregunta.opciones_aleatorias %}
+                                <label class="opcion-label">
+                                    <input
+                                        type="radio"
+                                        name="pregunta_{{ pregunta.id }}"
+                                        value="{{ opcion.id }}"
+                                        class="opcion-radio"
+                                    >
+                                    {{ opcion.texto }}
+                                </label>
+                            {% empty %}
+                                <p class="detalle-trivia-sin-opciones">Esta pregunta no tiene opciones cargadas.</p>
+                            {% endfor %}
+                        </div>
                     </div>
                 {% endfor %}
 
@@ -111,49 +179,21 @@
             <!-- ==========================================
                  BLOQUE HTML DETALLE TRIVIA 5 - RESULTADO DETALLADO
             ========================================== -->
-            <div>
-                {% if mostrar_recomendacion %}
-                    <div class="detalle-trivia-recomendacion">
-                        <h2>Recomendación para repasar</h2>
-                        <p>
-                            Como el resultado fue menor al mínimo esperado para esta trivia,
-                            te recomendamos revisar este material antes de volver a intentarlo.
-                        </p>
-
-                        <div class="detalle-trivia-recomendacion-bloques">
-                            {% if trivia.material_recomendado %}
-                                <div class="detalle-trivia-recomendacion-item">
-                                    <h3>Material sugerido</h3>
-                                    <p><strong>{{ trivia.material_recomendado.titulo }}</strong></p>
-
-                                    {% if trivia.material_recomendado.archivo %}
-                                        <a href="{{ trivia.material_recomendado.archivo.url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
-                                            Ver material
-                                        </a>
-                                    {% else %}
-                                        <p>Este material no tiene archivo cargado todavía.</p>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-
-                            {% if trivia.video_recomendado_url %}
-                                <div class="detalle-trivia-recomendacion-item">
-                                    <h3>Video sugerido</h3>
-                                    <p>Podés reforzar este tema con un video explicativo.</p>
-
-                                    <a href="{{ trivia.video_recomendado_url }}" class="boton-verde" target="_blank" rel="noopener noreferrer">
-                                        Ver video
-                                    </a>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endif %}
-
+            <div id="detalle-preguntas-trivia" class="detalle-trivia-detalle-preguntas">
                 {% for pregunta in preguntas %}
                     <div class="detalle-trivia-caja">
                         <h3>Pregunta {{ forloop.counter }}</h3>
                         <p class="pregunta-texto"><strong>{{ pregunta.texto }}</strong></p>
+
+                        {% if pregunta.imagen %}
+                            <div class="detalle-trivia-imagen-contenedor">
+                                <img
+                                    src="{{ pregunta.imagen.url }}"
+                                    alt="Imagen de la pregunta {{ forloop.counter }}"
+                                    class="detalle-trivia-imagen-pregunta"
+                                >
+                            </div>
+                        {% endif %}
 
                         {% for opcion in pregunta.opciones_aleatorias %}
                             <label
@@ -181,12 +221,12 @@
                         {% endfor %}
                     </div>
                 {% endfor %}
+            </div>
 
-                <div class="detalle-trivia-reinicio">
-                    <a href="{% url 'detalle_trivia' trivia.id %}" class="boton-verde">
-                        Reiniciar trivia
-                    </a>
-                </div>
+            <div class="detalle-trivia-reinicio">
+                <a href="{% url 'detalle_trivia' trivia.id %}" class="boton-verde">
+                    Intentar de nuevo
+                </a>
             </div>
         {% endif %}
     </div>
@@ -230,6 +270,9 @@
         const temporizadorPregunta = document.getElementById('temporizador-pregunta');
         const barraTiempo = document.getElementById('barra-tiempo');
 
+        const btnFullscreen = document.getElementById('btn-fullscreen-trivia');
+        const contenedorJuego = document.getElementById('trivia-fullscreen-target');
+
         let actual = 0;
         let inicioTrivia = null;
         let intervaloTiempoTotal = null;
@@ -255,8 +298,11 @@
 
         function mostrarPregunta(index) {
             bloques.forEach((bloque, i) => {
-                bloque.style.display = i === index ? 'block' : 'none';
-                if (i === index) {
+                const esActual = i === index;
+                bloque.style.display = esActual ? 'block' : 'none';
+                bloque.classList.toggle('activa', esActual);
+
+                if (esActual) {
                     bloque.classList.remove('bloqueado');
                 }
             });
@@ -334,6 +380,56 @@
             });
         }
 
+        function estaEnPantallaCompleta() {
+            return Boolean(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.msFullscreenElement
+            );
+        }
+
+        function actualizarTextoBotonFullscreen() {
+            if (!btnFullscreen) {
+                return;
+            }
+
+            btnFullscreen.textContent = estaEnPantallaCompleta()
+                ? 'Salir de pantalla completa'
+                : 'Pantalla completa';
+        }
+
+        async function entrarPantallaCompleta() {
+            if (!contenedorJuego) {
+                return;
+            }
+
+            try {
+                if (contenedorJuego.requestFullscreen) {
+                    await contenedorJuego.requestFullscreen();
+                } else if (contenedorJuego.webkitRequestFullscreen) {
+                    contenedorJuego.webkitRequestFullscreen();
+                } else if (contenedorJuego.msRequestFullscreen) {
+                    contenedorJuego.msRequestFullscreen();
+                }
+            } catch (error) {
+                console.error('No se pudo activar pantalla completa.', error);
+            }
+        }
+
+        async function salirPantallaCompleta() {
+            try {
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            } catch (error) {
+                console.error('No se pudo salir de pantalla completa.', error);
+            }
+        }
+
         if (btnComenzar) {
             btnComenzar.addEventListener('click', function () {
                 const nombre = nombrePrevio.value.trim();
@@ -347,6 +443,7 @@
                 nombreHidden.value = nombre;
                 pantallaInicio.style.display = 'none';
                 formulario.style.display = 'block';
+                contenedorJuego.classList.add('trivia-en-juego');
 
                 inicioTrivia = Date.now();
 
@@ -358,6 +455,55 @@
                 mostrarPregunta(actual);
             });
         }
+
+        if (btnFullscreen) {
+            btnFullscreen.addEventListener('click', function () {
+                if (estaEnPantallaCompleta()) {
+                    salirPantallaCompleta();
+                } else {
+                    entrarPantallaCompleta();
+                }
+            });
+
+            document.addEventListener('fullscreenchange', function () {
+                actualizarTextoBotonFullscreen();
+            });
+
+            document.addEventListener('webkitfullscreenchange', function () {
+                actualizarTextoBotonFullscreen();
+            });
+
+            document.addEventListener('msfullscreenchange', function () {
+                actualizarTextoBotonFullscreen();
+            });
+
+            actualizarTextoBotonFullscreen();
+        }
+    });
+</script>
+{% endif %}
+
+{% if puntaje is not None %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnToggleDetalle = document.getElementById('btn-toggle-detalle-trivia');
+        const bloqueDetalle = document.getElementById('detalle-preguntas-trivia');
+
+        if (!btnToggleDetalle || !bloqueDetalle) {
+            return;
+        }
+
+        btnToggleDetalle.addEventListener('click', function () {
+            const estaVisible = bloqueDetalle.classList.contains('activo');
+
+            if (estaVisible) {
+                bloqueDetalle.classList.remove('activo');
+                btnToggleDetalle.textContent = 'Ver detalle de las preguntas';
+            } else {
+                bloqueDetalle.classList.add('activo');
+                btnToggleDetalle.textContent = 'Ocultar detalle de las preguntas';
+            }
+        });
     });
 </script>
 {% endif %}
