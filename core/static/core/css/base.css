@@ -11,6 +11,7 @@ body {
     background-color: #1e293b;
     color: #f8fafc;
     line-height: 1.6;
+    overflow-x: hidden;
 }
 
 a {
@@ -67,6 +68,7 @@ ul {
     cursor: pointer;
     font-size: 16px;
     line-height: 1.2;
+    min-height: 44px;
 }
 
 .menu a:hover,
@@ -263,20 +265,17 @@ label {
         padding: 20px 15px 40px;
     }
 
-    .menu {
-        flex-direction: column;
-        align-items: stretch;
-    }
+    .menu {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;margin-bottom:24px}
 
     .menu a,
     .menu-dropdown-boton {
         width: 100%;
         text-align: center;
+        padding:11px 8px;
+        font-size:14px;
     }
 
-    .menu-dropdown {
-        width: 100%;
-    }
+    .menu-dropdown {width:100%;grid-column:1/-1}
 
     .menu-dropdown-listado {
         position: static;
@@ -293,4 +292,14 @@ label {
     .caja {
         padding: 18px;
     }
+
+    h1{font-size:clamp(1.9rem,9vw,2.7rem)}
+
+    .red-social{width:46px;height:46px}
+}
+
+@media (max-width: 390px) {
+    .contenedor-principal{padding-left:11px;padding-right:11px}
+    .menu{grid-template-columns:1fr}
+    .menu-dropdown{grid-column:auto}
 }

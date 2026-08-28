@@ -1,207 +1,26 @@
 {% extends 'core/base.html' %}
 {% load static %}
-
-{% block titulo %}Juegos y Trivias{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/juegos_y_trivias.css' %}">
-{% endblock %}
-
+{% block titulo %}Aprender jugando - EDIFOS{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'core/css/juegos_y_trivias.css' %}">{% endblock %}
 {% block contenido %}
-<!-- ==========================================
-     BLOQUE HTML JUEGOS 1 - CONTENEDOR GENERAL
-========================================== -->
-<div class="juegos-contenedor">
+<main class="juegos-contenedor">
+  <header class="juegos-hero"><span class="juegos-eyebrow">Aprender haciendo</span><h1>Juegos y desafíos</h1><p>Elegí una actividad, poné a prueba lo que sabés y volvé a intentarlo para mejorar tu marca.</p></header>
+  <nav class="juegos-selector" aria-label="Tipos de juego"><a href="#trivias">?<span>Trivias</span></a><a href="#ordena">⇅<span>Ordená</span></a><a href="#ruletas">✦<span>Ruletas</span></a><a href="#caminos">➜<span>Caminos</span></a></nav>
 
-    <!-- ==========================================
-         BLOQUE HTML JUEGOS 2 - TÍTULO E INTRODUCCIÓN
-    ========================================== -->
-    <h1>Juegos y Trivias</h1>
+  <section id="trivias" class="juegos-bloque bloque-trivia"><div class="juegos-titulo"><div><span>Preguntas y respuestas</span><h2>Trivias</h2></div><a href="{% url 'trivias' %}">Ver todas →</a></div><div class="juegos-grid">
+    {% for trivia in trivias_destacadas %}<article class="juego-card"><div class="juego-card-icono">?</div><span class="juego-etiqueta">{{ trivia.cantidad_preguntas }} preguntas</span><h3>{{ trivia.titulo }}</h3><p>{{ trivia.descripcion|default:"Aceptá el desafío y descubrí cuánto sabés."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ trivia.cantidad_partidas }} partidas</span><span>🏆 Con ranking</span></div><a href="{% url 'detalle_trivia' trivia.id %}" class="juego-accion">Jugar trivia</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay trivias cargadas.</p>{% endfor %}
+  </div></section>
 
-    <p class="juegos-intro">
-        Explorá actividades interactivas para aprender, repasar conocimientos y poner a prueba lo que sabés.
-        Esta sección está organizada por categorías, y cada una irá creciendo con nuevos juegos formativos.
-    </p>
+  <section id="ordena" class="juegos-bloque bloque-ordena"><div class="juegos-titulo"><div><span>Secuencias y procedimientos</span><h2>Ordená los pasos</h2></div><a href="{% url 'ordena_pasos' %}">Ver todos →</a></div><div class="juegos-grid">
+    {% for juego in ordena_pasos_destacados %}<article class="juego-card"><div class="juego-card-icono">⇅</div><span class="juego-etiqueta">{{ juego.cantidad_etapas }} etapas</span><h3>{{ juego.titulo }}</h3><p>{{ juego.descripcion|default:"Ordená el procedimiento antes de que se acabe el tiempo."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ juego.cantidad_partidas }} partidas</span><span>🏆 Con ranking</span></div><a href="{% url 'detalle_ordena_pasos' juego.id %}" class="juego-accion">Resolver desafío</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay desafíos cargados.</p>{% endfor %}
+  </div></section>
 
-    <!-- ==========================================
-         BLOQUE HTML JUEGOS 3 - SECCIÓN TRIVIAS
-    ========================================== -->
-    <div class="juegos-seccion">
-        <button type="button"
-                class="juegos-boton-seccion"
-                onclick="toggleSeccion('seccion-trivias')">
-            Trivias
-        </button>
+  <section id="ruletas" class="juegos-bloque bloque-ruleta"><div class="juegos-titulo"><div><span>Azar y acción</span><h2>Ruleta de desafíos</h2></div><a href="{% url 'ruletas' %}">Ver todas →</a></div><div class="juegos-grid">
+    {% for ruleta in ruletas_destacadas %}<article class="juego-card"><div class="juego-card-icono">✦</div><span class="juego-etiqueta">{{ ruleta.cantidad_sectores }} desafíos</span><h3>{{ ruleta.titulo }}</h3><p>{{ ruleta.descripcion|default:"Girarla es fácil; cumplir el desafío es la aventura."|truncatewords:22 }}</p><div class="juego-meta"><span>👥 Ideal para jugar en grupo</span></div><a href="{% url 'detalle_ruleta' ruleta.id %}" class="juego-accion">Girar la ruleta</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay ruletas cargadas.</p>{% endfor %}
+  </div></section>
 
-        <div id="seccion-trivias" class="juegos-contenido-seccion">
-            {% if trivias_destacadas %}
-                {% for trivia in trivias_destacadas %}
-                    <div class="caja juego-item">
-                        <h3>{{ trivia.titulo }}</h3>
-
-                        {% if trivia.descripcion %}
-                            <p>{{ trivia.descripcion|truncatewords:20 }}</p>
-                        {% endif %}
-
-                        <a href="{% url 'detalle_trivia' trivia.id %}" class="boton-verde">
-                            Ver trivia
-                        </a>
-                    </div>
-                {% endfor %}
-
-                <div class="juego-ver-todo">
-                    <a href="{% url 'trivias' %}" class="boton-verde">
-                        Ver todas las trivias
-                    </a>
-                </div>
-            {% else %}
-                <p class="juegos-mensaje-vacio">
-                    Todavía no hay trivias cargadas.
-                </p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- ==========================================
-         BLOQUE HTML JUEGOS 4 - SECCIÓN ORDENA LOS PASOS
-    ========================================== -->
-    <div class="juegos-seccion">
-        <button type="button"
-                class="juegos-boton-seccion"
-                onclick="toggleSeccion('seccion-ordena')">
-            Ordena los pasos
-        </button>
-
-        <div id="seccion-ordena" class="juegos-contenido-seccion">
-            {% if ordena_pasos_destacados %}
-                {% for juego in ordena_pasos_destacados %}
-                    <div class="caja juego-item">
-                        <h3>{{ juego.titulo }}</h3>
-
-                        {% if juego.descripcion %}
-                            <p>{{ juego.descripcion|truncatewords:22 }}</p>
-                        {% endif %}
-
-                        <div class="juego-detalle">
-                            Tema con {{ juego.etapas.count }} etapas
-                        </div>
-
-                        <a href="{% url 'detalle_ordena_pasos' juego.id %}" class="boton-verde">
-                            Comenzar
-                        </a>
-                    </div>
-                {% endfor %}
-
-                <div class="juego-ver-todo">
-                    <a href="{% url 'ordena_pasos' %}" class="boton-verde">
-                        Ver todos
-                    </a>
-                </div>
-            {% else %}
-                <p class="juegos-mensaje-vacio">
-                    Todavía no hay juegos de “Ordena los pasos” cargados.
-                </p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- ==========================================
-         BLOQUE HTML JUEGOS 5 - SECCIÓN RULETA DE DESAFÍOS
-    ========================================== -->
-    <div class="juegos-seccion">
-        <button type="button"
-                class="juegos-boton-seccion"
-                onclick="toggleSeccion('seccion-ruleta')">
-            Ruleta de desafíos
-        </button>
-
-        <div id="seccion-ruleta" class="juegos-contenido-seccion">
-            {% if ruletas_destacadas %}
-                {% for ruleta in ruletas_destacadas %}
-                    <div class="caja juego-item">
-                        <h3>{{ ruleta.titulo }}</h3>
-
-                        {% if ruleta.descripcion %}
-                            <p>{{ ruleta.descripcion|truncatewords:22 }}</p>
-                        {% endif %}
-
-                        <div class="juego-detalle">
-                            Sectores disponibles: {{ ruleta.sectores.count }}
-                        </div>
-
-                        <a href="{% url 'detalle_ruleta' ruleta.id %}" class="boton-verde">
-                            Girar ruleta
-                        </a>
-                    </div>
-                {% endfor %}
-
-                <div class="juego-ver-todo">
-                    <a href="{% url 'ruletas' %}" class="boton-verde">
-                        Ver todas las ruletas
-                    </a>
-                </div>
-            {% else %}
-                <p class="juegos-mensaje-vacio">
-                    Todavía no hay ruletas cargadas.
-                </p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- ==========================================
-         BLOQUE HTML JUEGOS 6 - SECCIÓN ELIGE EL CAMINO
-    ========================================== -->
-    <div class="juegos-seccion">
-        <button type="button"
-                class="juegos-boton-seccion"
-                onclick="toggleSeccion('seccion-caminos')">
-            Elige el camino
-        </button>
-
-        <div id="seccion-caminos" class="juegos-contenido-seccion">
-            {% if caminos_destacados %}
-                {% for camino in caminos_destacados %}
-                    <div class="caja juego-item">
-                        <h3>{{ camino.titulo }}</h3>
-
-                        {% if camino.descripcion %}
-                            <p>{{ camino.descripcion|truncatewords:22 }}</p>
-                        {% endif %}
-
-                        <div class="juego-detalle">
-                            Escenas disponibles: {{ camino.escenas.count }}
-                        </div>
-
-                        <a href="{% url 'detalle_camino' camino.id %}" class="boton-verde">
-                            Comenzar recorrido
-                        </a>
-                    </div>
-                {% endfor %}
-
-                <div class="juego-ver-todo">
-                    <a href="{% url 'caminos' %}" class="boton-verde">
-                        Ver todos los caminos
-                    </a>
-                </div>
-            {% else %}
-                <p class="juegos-mensaje-vacio">
-                    Todavía no hay caminos cargados.
-                </p>
-            {% endif %}
-        </div>
-    </div>
-
-</div>
-
-<script>
-    function toggleSeccion(id) {
-        const seccion = document.getElementById(id);
-
-        if (seccion.style.display === "none" || seccion.style.display === "") {
-            seccion.style.display = "block";
-        } else {
-            seccion.style.display = "none";
-        }
-    }
-</script>
+  <section id="caminos" class="juegos-bloque bloque-camino"><div class="juegos-titulo"><div><span>Historias y decisiones</span><h2>Elegí el camino</h2></div><a href="{% url 'caminos' %}">Ver todos →</a></div><div class="juegos-grid">
+    {% for camino in caminos_destacados %}<article class="juego-card"><div class="juego-card-icono">➜</div><span class="juego-etiqueta">{{ camino.cantidad_escenas }} escenas</span><h3>{{ camino.titulo }}</h3><p>{{ camino.descripcion|default:"Cada decisión cambia la historia. Elegí con atención."|truncatewords:22 }}</p><div class="juego-meta"><span>🧭 Decisiones con consecuencias</span></div><a href="{% url 'detalle_camino' camino.id %}" class="juego-accion">Comenzar recorrido</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay caminos cargados.</p>{% endfor %}
+  </div></section>
+</main>
 {% endblock %}

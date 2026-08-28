@@ -1,6 +1,6 @@
 import random
 
-from django.db.models import Case, IntegerField, Prefetch, Q, Value, When
+from django.db.models import Case, Count, IntegerField, Prefetch, Q, Value, When
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
@@ -32,6 +32,16 @@ from .models import (
 def inicio(request):
     noticias = Noticia.objects.filter(publicada=True).order_by("-destacada", "-fecha_creacion")[:3]
     contenido_inicio = ContenidoInicio.objects.filter(activo=True).first()
+    trivias_destacadas = Trivia.objects.annotate(
+        cantidad_preguntas=Count("preguntas", distinct=True),
+        cantidad_partidas=Count("resultados", distinct=True),
+    ).order_by("-cantidad_partidas", "titulo")[:3]
+    juegos_disponibles = (
+        Trivia.objects.count()
+        + OrdenaPasos.objects.filter(activo=True).count()
+        + RuletaDesafio.objects.filter(activo=True).count()
+        + EligeCamino.objects.filter(activo=True).count()
+    )
 
     return render(
         request,
@@ -39,6 +49,12 @@ def inicio(request):
         {
             "noticias": noticias,
             "contenido_inicio": contenido_inicio,
+            "trivias_destacadas": trivias_destacadas,
+            "juegos_disponibles": juegos_disponibles,
+            "materiales_disponibles": Material.objects.filter(
+                mostrar_en_biblioteca=True,
+                archivo__isnull=False,
+            ).count(),
         },
     )
 
@@ -255,12 +271,15 @@ def detalle_trivia(request, trivia_id):
 
     if request.method == "POST":
         puntaje = 0
-        nombre_participante = request.POST.get("nombre_participante", "").strip()
+        nombre_participante = " ".join(
+            request.POST.get("nombre_participante", "").strip().split()
+        )[:100]
 
         try:
             tiempo_total_segundos = int(request.POST.get("tiempo_total_segundos", 0) or 0)
         except ValueError:
             tiempo_total_segundos = 0
+        tiempo_total_segundos = max(1, min(tiempo_total_segundos, 86400))
 
         for pregunta in preguntas:
             respuesta_id = request.POST.get(f"pregunta_{pregunta.id}")
@@ -316,6 +335,15 @@ def detalle_trivia(request, trivia_id):
             nombres_vistos.add(nombre_normalizado)
 
     ranking = ranking_unico[:10]
+    posicion_participante = next(
+        (
+            posicion
+            for posicion, resultado in enumerate(ranking_unico, start=1)
+            if nombre_participante
+            and resultado.nombre.strip().casefold() == nombre_participante.casefold()
+        ),
+        None,
+    )
 
     return render(
         request,
@@ -331,15 +359,27 @@ def detalle_trivia(request, trivia_id):
             "tiempo_total_segundos": tiempo_total_segundos,
             "mostrar_recomendacion": mostrar_recomendacion,
             "ranking": ranking,
+            "cantidad_participantes": len(ranking_unico),
+            "posicion_participante": posicion_participante,
         },
     )
 
 
 def juegos_y_trivias(request):
-    trivias_destacadas = Trivia.objects.all().order_by("titulo")[:3]
-    ordena_pasos_destacados = OrdenaPasos.objects.filter(activo=True).order_by("titulo")[:3]
-    ruletas_destacadas = RuletaDesafio.objects.filter(activo=True).order_by("titulo")[:3]
-    caminos_destacados = EligeCamino.objects.filter(activo=True).order_by("titulo")[:3]
+    trivias_destacadas = Trivia.objects.annotate(
+        cantidad_preguntas=Count("preguntas", distinct=True),
+        cantidad_partidas=Count("resultados", distinct=True),
+    ).order_by("-cantidad_partidas", "titulo")[:3]
+    ordena_pasos_destacados = OrdenaPasos.objects.filter(activo=True).annotate(
+        cantidad_etapas=Count("etapas", distinct=True),
+        cantidad_partidas=Count("resultados", distinct=True),
+    ).order_by("-cantidad_partidas", "titulo")[:3]
+    ruletas_destacadas = RuletaDesafio.objects.filter(activo=True).annotate(
+        cantidad_sectores=Count("sectores", distinct=True),
+    ).order_by("titulo")[:3]
+    caminos_destacados = EligeCamino.objects.filter(activo=True).annotate(
+        cantidad_escenas=Count("escenas", distinct=True),
+    ).order_by("titulo")[:3]
 
     return render(
         request,
@@ -393,12 +433,15 @@ def detalle_ordena_pasos(request, tema_id):
     mostrar_recomendacion = False
 
     if request.method == "POST":
-        nombre_participante = request.POST.get("nombre_participante", "").strip()
+        nombre_participante = " ".join(
+            request.POST.get("nombre_participante", "").strip().split()
+        )[:100]
 
         try:
             tiempo_total_segundos = int(request.POST.get("tiempo_total_segundos", 0) or 0)
         except ValueError:
             tiempo_total_segundos = 0
+        tiempo_total_segundos = max(1, min(tiempo_total_segundos, 86400))
 
         puntaje = 0
 
@@ -412,9 +455,10 @@ def detalle_ordena_pasos(request, tema_id):
                 ids_usuario = []
 
             pasos_por_id = {paso.id: paso for paso in pasos_orden_correcto}
+            ids_usuario_sin_repetidos = list(dict.fromkeys(ids_usuario))
             pasos_resultado = [
                 pasos_por_id[paso_id]
-                for paso_id in ids_usuario
+                for paso_id in ids_usuario_sin_repetidos
                 if paso_id in pasos_por_id
             ]
 
@@ -488,6 +532,15 @@ def detalle_ordena_pasos(request, tema_id):
             nombres_vistos.add(nombre_normalizado)
 
     ranking = ranking_unico[:10]
+    posicion_participante = next(
+        (
+            posicion
+            for posicion, resultado in enumerate(ranking_unico, start=1)
+            if nombre_participante
+            and resultado.nombre.strip().casefold() == nombre_participante.casefold()
+        ),
+        None,
+    )
 
     return render(
         request,
@@ -503,6 +556,8 @@ def detalle_ordena_pasos(request, tema_id):
             "tiempo_total_segundos": tiempo_total_segundos,
             "mostrar_recomendacion": mostrar_recomendacion,
             "ranking": ranking,
+            "cantidad_participantes": len(ranking_unico),
+            "posicion_participante": posicion_participante,
         },
     )
 

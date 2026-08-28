@@ -236,14 +236,20 @@
     ========================================== -->
     <div class="detalle-trivia-columna-lateral">
         <div class="detalle-trivia-ranking">
-            <h2>Ranking</h2>
+            <div class="ranking-cabecera">
+                <div><span class="ranking-eyebrow">Mejores marcas</span><h2>Ranking</h2></div>
+                {% if cantidad_participantes %}<span class="ranking-total">{{ cantidad_participantes }} jugadores</span>{% endif %}
+            </div>
+
+            {% if posicion_participante and puntaje is not None %}
+                <div class="ranking-posicion-propia">Tu mejor posición: <strong>#{{ posicion_participante }}</strong></div>
+            {% endif %}
 
             {% for resultado in ranking %}
-                <div class="detalle-trivia-ranking-item">
-                    <strong>{{ forloop.counter }}. {{ resultado.nombre }}</strong><br>
-                    {{ resultado.puntaje }}/{{ resultado.total_preguntas }}<br>
-                    {{ resultado.porcentaje }}%<br>
-                    Tiempo: {{ resultado.tiempo_total_segundos }} s
+                <div class="detalle-trivia-ranking-item {% if forloop.counter <= 3 %}ranking-podio ranking-podio-{{ forloop.counter }}{% endif %}">
+                    <span class="ranking-puesto">{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}</span>
+                    <div class="ranking-datos"><strong>{{ resultado.nombre }}</strong><span>{{ resultado.puntaje }}/{{ resultado.total_preguntas }} correctas · {{ resultado.tiempo_total_segundos }} s</span></div>
+                    <strong class="ranking-porcentaje">{{ resultado.porcentaje }}%</strong>
                 </div>
             {% empty %}
                 <p class="detalle-trivia-ranking-vacio">
