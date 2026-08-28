@@ -1,0 +1,4 @@
+{% extends 'core/base.html' %}{% load static %}
+{% block titulo %}Memoria Scout - EDIFOS{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'core/css/nuevos_juegos.css' %}?v=2">{% endblock %}
+{% block contenido %}<main class="catalogo-juego"><header><span>Observá y relacioná</span><h1>Memoria Scout</h1><p>Encontrá las parejas y descubrí cómo se relacionan los conceptos scouts.</p></header><div class="catalogo-grid">{% for juego in juegos %}<article><span class="catalogo-icono">▦</span><small>{{ juego.cantidad_parejas }} parejas</small><h2>{{ juego.titulo }}</h2><p>{{ juego.descripcion }}</p><a href="{% url 'detalle_memoria' juego.id %}">Jugar memoria</a></article>{% empty %}<p>Próximamente habrá nuevos desafíos.</p>{% endfor %}</div></main>{% endblock %}

@@ -4,23 +4,82 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'core/css/juegos_y_trivias.css' %}">{% endblock %}
 {% block contenido %}
 <main class="juegos-contenedor">
-  <header class="juegos-hero"><span class="juegos-eyebrow">Aprender haciendo</span><h1>Juegos y desafíos</h1><p>Elegí una actividad, poné a prueba lo que sabés y volvé a intentarlo para mejorar tu marca.</p></header>
-  <nav class="juegos-selector" aria-label="Tipos de juego"><a href="#trivias">?<span>Trivias</span></a><a href="#ordena">⇅<span>Ordená</span></a><a href="#ruletas">✦<span>Ruletas</span></a><a href="#caminos">➜<span>Caminos</span></a></nav>
+  <header class="juegos-hero">
+    <span class="juegos-eyebrow">Aprender haciendo</span>
+    <h1>Juegos y desafíos</h1>
+    <p>Primero elegí cómo querés jugar. Vas a ver solamente ese tipo de actividad y después podés cambiar cuando quieras.</p>
+  </header>
 
-  <section id="trivias" class="juegos-bloque bloque-trivia"><div class="juegos-titulo"><div><span>Preguntas y respuestas</span><h2>Trivias</h2></div><a href="{% url 'trivias' %}">Ver todas →</a></div><div class="juegos-grid">
-    {% for trivia in trivias_destacadas %}<article class="juego-card"><div class="juego-card-icono">?</div><span class="juego-etiqueta">{{ trivia.cantidad_preguntas }} preguntas</span><h3>{{ trivia.titulo }}</h3><p>{{ trivia.descripcion|default:"Aceptá el desafío y descubrí cuánto sabés."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ trivia.cantidad_partidas }} partidas</span><span>🏆 Con ranking</span></div><a href="{% url 'detalle_trivia' trivia.id %}" class="juego-accion">Jugar trivia</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay trivias cargadas.</p>{% endfor %}
-  </div></section>
+  <nav class="juegos-selector" aria-label="Elegir un tipo de juego">
+    <button type="button" class="selector-opcion activo" data-panel="trivias" aria-selected="true"><span class="selector-icono">?</span><span><strong>Trivias</strong><small>Preguntas y respuestas</small></span></button>
+    <button type="button" class="selector-opcion" data-panel="ordena" aria-selected="false"><span class="selector-icono">⇅</span><span><strong>Ordená</strong><small>Pasos y procedimientos</small></span></button>
+    <button type="button" class="selector-opcion" data-panel="ruletas" aria-selected="false"><span class="selector-icono">✦</span><span><strong>Ruletas</strong><small>Misiones al azar</small></span></button>
+    <button type="button" class="selector-opcion" data-panel="caminos" aria-selected="false"><span class="selector-icono">➜</span><span><strong>Caminos</strong><small>Historias y decisiones</small></span></button>
+    <button type="button" class="selector-opcion" data-panel="memorias" aria-selected="false"><span class="selector-icono">▦</span><span><strong>Memoria</strong><small>Encontrá las parejas</small></span></button>
+    <button type="button" class="selector-opcion" data-panel="palabras" aria-selected="false"><span class="selector-icono">A_</span><span><strong>Palabra secreta</strong><small>Pistas y letras</small></span></button>
+  </nav>
 
-  <section id="ordena" class="juegos-bloque bloque-ordena"><div class="juegos-titulo"><div><span>Secuencias y procedimientos</span><h2>Ordená los pasos</h2></div><a href="{% url 'ordena_pasos' %}">Ver todos →</a></div><div class="juegos-grid">
-    {% for juego in ordena_pasos_destacados %}<article class="juego-card"><div class="juego-card-icono">⇅</div><span class="juego-etiqueta">{{ juego.cantidad_etapas }} etapas</span><h3>{{ juego.titulo }}</h3><p>{{ juego.descripcion|default:"Ordená el procedimiento antes de que se acabe el tiempo."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ juego.cantidad_partidas }} partidas</span><span>🏆 Con ranking</span></div><a href="{% url 'detalle_ordena_pasos' juego.id %}" class="juego-accion">Resolver desafío</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay desafíos cargados.</p>{% endfor %}
-  </div></section>
+  <p class="selector-ayuda" aria-live="polite"><strong>Estás viendo:</strong> <span id="selector-estado">Trivias · Preguntas y respuestas</span></p>
 
-  <section id="ruletas" class="juegos-bloque bloque-ruleta"><div class="juegos-titulo"><div><span>Azar y acción</span><h2>Ruleta de desafíos</h2></div><a href="{% url 'ruletas' %}">Ver todas →</a></div><div class="juegos-grid">
-    {% for ruleta in ruletas_destacadas %}<article class="juego-card"><div class="juego-card-icono">✦</div><span class="juego-etiqueta">{{ ruleta.cantidad_sectores }} desafíos</span><h3>{{ ruleta.titulo }}</h3><p>{{ ruleta.descripcion|default:"Girarla es fácil; cumplir el desafío es la aventura."|truncatewords:22 }}</p><div class="juego-meta"><span>👥 Ideal para jugar en grupo</span></div><a href="{% url 'detalle_ruleta' ruleta.id %}" class="juego-accion">Girar la ruleta</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay ruletas cargadas.</p>{% endfor %}
-  </div></section>
+  <div class="juegos-paneles">
+    <section id="trivias" class="juegos-bloque bloque-trivia panel-juego activo">
+      <div class="juegos-titulo"><div><span>Preguntas y respuestas</span><h2>Trivias</h2></div><a href="{% url 'trivias' %}">Ver todas →</a></div>
+      <div class="juegos-grid">{% for trivia in trivias_destacadas %}<article class="juego-card"><div class="juego-card-icono">?</div><span class="juego-etiqueta">{{ trivia.cantidad_preguntas }} preguntas</span><h3>{{ trivia.titulo }}</h3><p>{{ trivia.descripcion|default:"Aceptá el desafío y descubrí cuánto sabés."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ trivia.cantidad_partidas }} partidas</span><span>🏆 Con ranking</span></div><a href="{% url 'detalle_trivia' trivia.id %}" class="juego-accion">Jugar trivia</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay trivias cargadas.</p>{% endfor %}</div>
+    </section>
 
-  <section id="caminos" class="juegos-bloque bloque-camino"><div class="juegos-titulo"><div><span>Historias y decisiones</span><h2>Elegí el camino</h2></div><a href="{% url 'caminos' %}">Ver todos →</a></div><div class="juegos-grid">
-    {% for camino in caminos_destacados %}<article class="juego-card"><div class="juego-card-icono">➜</div><span class="juego-etiqueta">{{ camino.cantidad_escenas }} escenas</span><h3>{{ camino.titulo }}</h3><p>{{ camino.descripcion|default:"Cada decisión cambia la historia. Elegí con atención."|truncatewords:22 }}</p><div class="juego-meta"><span>🧭 Decisiones con consecuencias</span></div><a href="{% url 'detalle_camino' camino.id %}" class="juego-accion">Comenzar recorrido</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay caminos cargados.</p>{% endfor %}
-  </div></section>
+    <section id="ordena" class="juegos-bloque bloque-ordena panel-juego" hidden>
+      <div class="juegos-titulo"><div><span>Secuencias y procedimientos</span><h2>Ordená los pasos</h2></div><a href="{% url 'ordena_pasos' %}">Ver todos →</a></div>
+      <div class="juegos-grid">{% for juego in ordena_pasos_destacados %}<article class="juego-card"><div class="juego-card-icono">⇅</div><span class="juego-etiqueta">{{ juego.cantidad_etapas }} etapas</span><h3>{{ juego.titulo }}</h3><p>{{ juego.descripcion|default:"Ordená el procedimiento antes de que se acabe el tiempo."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ juego.cantidad_partidas }} partidas</span><span>🏆 Con ranking</span></div><a href="{% url 'detalle_ordena_pasos' juego.id %}" class="juego-accion">Resolver desafío</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay desafíos cargados.</p>{% endfor %}</div>
+    </section>
+
+    <section id="ruletas" class="juegos-bloque bloque-ruleta panel-juego" hidden>
+      <div class="juegos-titulo"><div><span>Azar y acción</span><h2>Ruleta de desafíos</h2></div><a href="{% url 'ruletas' %}">Ver todas →</a></div>
+      <div class="juegos-grid">{% for ruleta in ruletas_destacadas %}<article class="juego-card"><div class="juego-card-icono">✦</div><span class="juego-etiqueta">{{ ruleta.cantidad_sectores }} desafíos</span><h3>{{ ruleta.titulo }}</h3><p>{{ ruleta.descripcion|default:"Girala y dejá que el azar elija la próxima misión."|truncatewords:22 }}</p><div class="juego-meta"><span>👥 Ideal para jugar en grupo</span></div><a href="{% url 'detalle_ruleta' ruleta.id %}" class="juego-accion">Girar la ruleta</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay ruletas cargadas.</p>{% endfor %}</div>
+    </section>
+
+    <section id="caminos" class="juegos-bloque bloque-camino panel-juego" hidden>
+      <div class="juegos-titulo"><div><span>Historias y decisiones</span><h2>Elegí el camino</h2></div><a href="{% url 'caminos' %}">Ver todos →</a></div>
+      <div class="juegos-grid">{% for camino in caminos_destacados %}<article class="juego-card"><div class="juego-card-icono">➜</div><span class="juego-etiqueta">{{ camino.cantidad_escenas }} escenas</span><h3>{{ camino.titulo }}</h3><p>{{ camino.descripcion|default:"Cada decisión cambia la historia. Elegí con atención."|truncatewords:22 }}</p><div class="juego-meta"><span>🧭 Decisiones con consecuencias</span></div><a href="{% url 'detalle_camino' camino.id %}" class="juego-accion">Comenzar recorrido</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay caminos cargados.</p>{% endfor %}</div>
+    </section>
+
+    <section id="memorias" class="juegos-bloque bloque-memoria panel-juego" hidden>
+      <div class="juegos-titulo"><div><span>Conceptos relacionados</span><h2>Juegos de memoria</h2></div><a href="{% url 'juegos_memoria' %}">Ver todos →</a></div>
+      <div class="juegos-grid">{% for juego in memorias_destacadas %}<article class="juego-card"><div class="juego-card-icono">▦</div><span class="juego-etiqueta">{{ juego.cantidad_parejas }} parejas</span><h3>{{ juego.titulo }}</h3><p>{{ juego.descripcion|default:"Encontrá cada concepto y su relación."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ juego.cantidad_partidas }} partidas</span><span>🏆 Menos movimientos gana</span></div><a href="{% url 'detalle_memoria' juego.id %}" class="juego-accion">Jugar memoria</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay juegos de memoria cargados.</p>{% endfor %}</div>
+    </section>
+
+    <section id="palabras" class="juegos-bloque bloque-palabra panel-juego" hidden>
+      <div class="juegos-titulo"><div><span>Pistas y vocabulario</span><h2>Palabra secreta</h2></div><a href="{% url 'juegos_palabra' %}">Ver todos →</a></div>
+      <div class="juegos-grid">{% for juego in palabras_destacadas %}<article class="juego-card"><div class="juego-card-icono">A_</div><span class="juego-etiqueta">{{ juego.cantidad_palabras }} palabras</span><h3>{{ juego.titulo }}</h3><p>{{ juego.descripcion|default:"Usá las pistas y descubrí cada palabra."|truncatewords:22 }}</p><div class="juego-meta"><span>🏁 {{ juego.cantidad_partidas }} partidas</span><span>🏆 Con ranking</span></div><a href="{% url 'detalle_palabra' juego.id %}" class="juego-accion">Descubrir palabras</a></article>{% empty %}<p class="juegos-vacio">Todavía no hay juegos de palabras cargados.</p>{% endfor %}</div>
+    </section>
+  </div>
 </main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const botones = Array.from(document.querySelectorAll('.selector-opcion'));
+    const paneles = Array.from(document.querySelectorAll('.panel-juego'));
+    const estado = document.getElementById('selector-estado');
+
+    function mostrarPanel(id, actualizarDireccion) {
+      const boton = botones.find(item => item.dataset.panel === id) || botones[0];
+      const panel = document.getElementById(boton.dataset.panel);
+      botones.forEach(item => {
+        const seleccionado = item === boton;
+        item.classList.toggle('activo', seleccionado);
+        item.setAttribute('aria-selected', seleccionado ? 'true' : 'false');
+      });
+      paneles.forEach(item => {
+        const visible = item === panel;
+        item.classList.toggle('activo', visible);
+        item.hidden = !visible;
+      });
+      estado.textContent = boton.querySelector('strong').textContent + ' · ' + boton.querySelector('small').textContent;
+      if (actualizarDireccion) history.replaceState(null, '', '#' + boton.dataset.panel);
+    }
+
+    botones.forEach(boton => boton.addEventListener('click', () => mostrarPanel(boton.dataset.panel, true)));
+    const solicitado = window.location.hash.replace('#', '');
+    if (solicitado) mostrarPanel(solicitado, false);
+  });
+</script>
 {% endblock %}

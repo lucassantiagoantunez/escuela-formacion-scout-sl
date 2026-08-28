@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block coltype %}colMS{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard edifos-dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <section class="admin-bienvenida">
+    <span>Panel de EDIFOS</span>
+    <h1>¿Qué querés actualizar?</h1>
+    <p>Los accesos están ordenados por tarea. Entrá a una sección para crear, editar, publicar o desactivar contenido.</p>
+  </section>
+
+  <section class="admin-grupo">
+    <div class="admin-grupo-titulo"><span>01</span><div><h2>Publicar y organizar</h2><p>Lo que se ve en el inicio, las noticias, la biblioteca y las páginas.</p></div></div>
+    <div class="admin-atajos">
+      <a href="{% url 'admin:core_noticia_changelist' %}"><b>Noticias</b><span>Crear y destacar novedades</span></a>
+      <a href="{% url 'admin:core_material_changelist' %}"><b>Biblioteca</b><span>Subir y ordenar materiales</span></a>
+      <a href="{% url 'admin:core_pagina_changelist' %}"><b>Páginas</b><span>Editar páginas y sus bloques</span></a>
+      <a href="{% url 'admin:core_contenidoinicio_changelist' %}"><b>Página de inicio</b><span>Textos e imagen institucional</span></a>
+      <a href="{% url 'admin:core_programa_changelist' %}"><b>Programas</b><span>Secciones y áreas formativas</span></a>
+      <a href="{% url 'admin:core_interescurso_changelist' %}"><b>Propuestas recibidas</b><span>Ver y exportar intereses</span></a>
+    </div>
+  </section>
+
+  <section class="admin-grupo">
+    <div class="admin-grupo-titulo"><span>02</span><div><h2>Juegos y actividades</h2><p>Cada juego se abre con sus preguntas, pasos, escenas o tarjetas relacionadas.</p></div></div>
+    <div class="admin-atajos admin-atajos-juegos">
+      <a href="{% url 'admin:core_trivia_changelist' %}"><b>Trivias</b><span>Preguntas y respuestas</span></a>
+      <a href="{% url 'admin:core_ordenapasos_changelist' %}"><b>Ordená los pasos</b><span>Etapas y procedimientos</span></a>
+      <a href="{% url 'admin:core_ruletadesafio_changelist' %}"><b>Ruletas</b><span>Desafíos al azar</span></a>
+      <a href="{% url 'admin:core_eligecamino_changelist' %}"><b>Elegí el camino</b><span>Escenas y decisiones</span></a>
+      <a href="{% url 'admin:core_juegomemoria_changelist' %}"><b>Memoria</b><span>Conceptos y parejas</span></a>
+      <a href="{% url 'admin:core_juegopalabrasecreta_changelist' %}"><b>Palabra secreta</b><span>Palabras, pistas y explicación</span></a>
+    </div>
+  </section>
+
+  <section class="admin-grupo admin-resultados">
+    <div class="admin-grupo-titulo"><span>03</span><div><h2>Participación y rankings</h2><p>Consultá los resultados guardados; estos datos son de solo lectura.</p></div></div>
+    <div class="admin-atajos">
+      <a href="{% url 'admin:core_resultadotrivia_changelist' %}"><b>Resultados de trivias</b><span>Puntajes y tiempos</span></a>
+      <a href="{% url 'admin:core_resultadoordenapasos_changelist' %}"><b>Resultados de pasos</b><span>Aciertos y tiempos</span></a>
+      <a href="{% url 'admin:core_resultadomemoria_changelist' %}"><b>Resultados de memoria</b><span>Movimientos y tiempos</span></a>
+      <a href="{% url 'admin:core_resultadopalabra_changelist' %}"><b>Resultados de palabras</b><span>Puntajes y tiempos</span></a>
+    </div>
+  </section>
+
+  <details class="admin-todos-modelos">
+    <summary>Ver todas las opciones avanzadas</summary>
+    {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+  </details>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

@@ -12,6 +12,8 @@ from .models import (
     EligeCamino,
     EscenaCamino,
     InteresCurso,
+    JuegoMemoria,
+    JuegoPalabraSecreta,
     Material,
     Noticia,
     OpcionEscenaCamino,
@@ -19,6 +21,8 @@ from .models import (
     Pagina,
     Programa,
     ResultadoOrdenaPasos,
+    ResultadoMemoria,
+    ResultadoPalabra,
     ResultadoTrivia,
     RuletaDesafio,
     SectorRuleta,
@@ -41,6 +45,8 @@ def inicio(request):
         + OrdenaPasos.objects.filter(activo=True).count()
         + RuletaDesafio.objects.filter(activo=True).count()
         + EligeCamino.objects.filter(activo=True).count()
+        + JuegoMemoria.objects.filter(activo=True).count()
+        + JuegoPalabraSecreta.objects.filter(activo=True).count()
     )
 
     return render(
@@ -380,6 +386,14 @@ def juegos_y_trivias(request):
     caminos_destacados = EligeCamino.objects.filter(activo=True).annotate(
         cantidad_escenas=Count("escenas", distinct=True),
     ).order_by("titulo")[:3]
+    memorias_destacadas = JuegoMemoria.objects.filter(activo=True).annotate(
+        cantidad_parejas=Count("parejas", distinct=True),
+        cantidad_partidas=Count("resultados", distinct=True),
+    ).order_by("-cantidad_partidas", "titulo")[:3]
+    palabras_destacadas = JuegoPalabraSecreta.objects.filter(activo=True).annotate(
+        cantidad_palabras=Count("palabras", distinct=True),
+        cantidad_partidas=Count("resultados", distinct=True),
+    ).order_by("-cantidad_partidas", "titulo")[:3]
 
     return render(
         request,
@@ -389,6 +403,8 @@ def juegos_y_trivias(request):
             "ordena_pasos_destacados": ordena_pasos_destacados,
             "ruletas_destacadas": ruletas_destacadas,
             "caminos_destacados": caminos_destacados,
+            "memorias_destacadas": memorias_destacadas,
+            "palabras_destacadas": palabras_destacadas,
         },
     )
 
@@ -704,3 +720,101 @@ def quiero_aprender(request):
             "contenido_inicio": contenido_inicio,
         },
     )
+
+
+# ==================================================
+# BLOQUE 10 - JUEGOS DE MEMORIA
+# ==================================================
+def juegos_memoria(request):
+    juegos = JuegoMemoria.objects.filter(activo=True).annotate(
+        cantidad_parejas=Count("parejas", distinct=True)
+    )
+    return render(request, "core/juegos_memoria.html", {"juegos": juegos})
+
+
+def detalle_memoria(request, juego_id):
+    juego = get_object_or_404(
+        JuegoMemoria.objects.prefetch_related("parejas"), id=juego_id, activo=True
+    )
+    nombre = ""
+    movimientos = None
+    tiempo = 0
+    if request.method == "POST":
+        nombre = " ".join(request.POST.get("nombre_participante", "").split())[:100]
+        try:
+            movimientos = max(1, min(int(request.POST.get("movimientos", 0)), 9999))
+            tiempo = max(1, min(int(request.POST.get("tiempo_total_segundos", 0)), 86400))
+        except (TypeError, ValueError):
+            movimientos = None
+        if nombre and movimientos:
+            ResultadoMemoria.objects.create(
+                juego=juego, nombre=nombre, movimientos=movimientos,
+                tiempo_total_segundos=tiempo,
+            )
+
+    resultados = juego.resultados.order_by("movimientos", "tiempo_total_segundos", "fecha")
+    ranking, vistos = [], set()
+    for resultado in resultados:
+        clave = resultado.nombre.strip().casefold()
+        if clave not in vistos:
+            ranking.append(resultado)
+            vistos.add(clave)
+        if len(ranking) == 10:
+            break
+
+    tarjetas = []
+    for pareja in juego.parejas.all():
+        tarjetas.extend([
+            {"pareja": pareja.id, "texto": pareja.concepto},
+            {"pareja": pareja.id, "texto": pareja.relacion},
+        ])
+    random.shuffle(tarjetas)
+    return render(request, "core/detalle_memoria.html", {
+        "juego": juego, "tarjetas": tarjetas, "ranking": ranking,
+        "movimientos": movimientos, "tiempo_total_segundos": tiempo,
+    })
+
+
+# ==================================================
+# BLOQUE 11 - JUEGOS DE PALABRA SECRETA
+# ==================================================
+def juegos_palabra(request):
+    juegos = JuegoPalabraSecreta.objects.filter(activo=True).annotate(
+        cantidad_palabras=Count("palabras", distinct=True)
+    )
+    return render(request, "core/juegos_palabra.html", {"juegos": juegos})
+
+
+def detalle_palabra(request, juego_id):
+    juego = get_object_or_404(
+        JuegoPalabraSecreta.objects.prefetch_related("palabras"), id=juego_id, activo=True
+    )
+    puntaje = None
+    tiempo = 0
+    if request.method == "POST":
+        nombre = " ".join(request.POST.get("nombre_participante", "").split())[:100]
+        total = juego.palabras.count()
+        try:
+            puntaje = max(0, min(int(request.POST.get("puntaje", 0)), total))
+            tiempo = max(1, min(int(request.POST.get("tiempo_total_segundos", 0)), 86400))
+        except (TypeError, ValueError):
+            puntaje = None
+        if nombre and puntaje is not None and total:
+            ResultadoPalabra.objects.create(
+                juego=juego, nombre=nombre, puntaje=puntaje,
+                total_palabras=total, tiempo_total_segundos=tiempo,
+            )
+
+    resultados = juego.resultados.order_by("-puntaje", "tiempo_total_segundos", "fecha")
+    ranking, vistos = [], set()
+    for resultado in resultados:
+        clave = resultado.nombre.strip().casefold()
+        if clave not in vistos:
+            ranking.append(resultado)
+            vistos.add(clave)
+        if len(ranking) == 10:
+            break
+    return render(request, "core/detalle_palabra.html", {
+        "juego": juego, "palabras": juego.palabras.all(), "ranking": ranking,
+        "puntaje": puntaje, "tiempo_total_segundos": tiempo,
+    })

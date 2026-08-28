@@ -13,21 +13,45 @@ from .models import (
     EtapaOrdenaPasos,
     ImagenBloquePagina,
     InteresCurso,
+    JuegoMemoria,
+    JuegoPalabraSecreta,
     Material,
     Noticia,
     OpcionEscenaCamino,
     OpcionRespuesta,
     OrdenaPasos,
+    PalabraJuego,
+    ParejaMemoria,
     Pagina,
     PasoOrdenaPasos,
     Pregunta,
     Programa,
     ResultadoOrdenaPasos,
+    ResultadoMemoria,
+    ResultadoPalabra,
     ResultadoTrivia,
     RuletaDesafio,
     SectorRuleta,
     Trivia,
 )
+
+
+admin.site.site_header = "EDIFOS · Administración"
+admin.site.site_title = "Administrador EDIFOS"
+admin.site.index_title = "Gestioná el contenido de la web"
+
+
+class ResultadoSoloLecturaAdmin(admin.ModelAdmin):
+    """Los rankings se consultan, pero no se fabrican ni se borran desde el panel."""
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 # ==================================================
@@ -230,6 +254,18 @@ class OpcionEscenaCaminoInline(admin.TabularInline):
     fields = ("texto_opcion", "escena_destino", "orden", "activo")
 
 
+class ParejaMemoriaInline(admin.TabularInline):
+    model = ParejaMemoria
+    extra = 1
+    fields = ("concepto", "relacion", "explicacion", "orden")
+
+
+class PalabraJuegoInline(admin.TabularInline):
+    model = PalabraJuego
+    extra = 1
+    fields = ("palabra", "pista", "explicacion", "orden")
+
+
 # ==================================================
 # BLOQUE 13 - ADMIN DE PÁGINAS
 # ==================================================
@@ -401,7 +437,7 @@ class PreguntaAdmin(admin.ModelAdmin):
 
 
 @admin.register(ResultadoTrivia)
-class ResultadoTriviaAdmin(admin.ModelAdmin):
+class ResultadoTriviaAdmin(ResultadoSoloLecturaAdmin):
     list_display = (
         "nombre",
         "trivia",
@@ -545,7 +581,7 @@ class PasoOrdenaPasosAdmin(admin.ModelAdmin):
 # BLOQUE 20 - ADMIN DE RESULTADOS DE ORDENA LOS PASOS
 # ==================================================
 @admin.register(ResultadoOrdenaPasos)
-class ResultadoOrdenaPasosAdmin(admin.ModelAdmin):
+class ResultadoOrdenaPasosAdmin(ResultadoSoloLecturaAdmin):
     list_display = (
         "nombre",
         "tema",
@@ -809,3 +845,87 @@ class InteresCursoAdmin(admin.ModelAdmin):
             "fields": ("fecha",),
         }),
     )
+
+
+# ==================================================
+# BLOQUE 26 - ADMIN DE MEMORIA
+# ==================================================
+@admin.register(JuegoMemoria)
+class JuegoMemoriaAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "activo", "cantidad_parejas", "cantidad_partidas", "fecha_creacion")
+    list_filter = ("activo", "fecha_creacion")
+    search_fields = ("titulo", "descripcion", "parejas__concepto", "parejas__relacion")
+    readonly_fields = ("fecha_creacion",)
+    inlines = [ParejaMemoriaInline]
+    fieldsets = (
+        ("Presentación del juego", {"fields": ("titulo", "descripcion")}),
+        ("Publicación", {"fields": ("activo",)}),
+        ("Registro", {"fields": ("fecha_creacion",)}),
+    )
+
+    @admin.display(description="Parejas")
+    def cantidad_parejas(self, obj):
+        return obj.parejas.count()
+
+    @admin.display(description="Partidas")
+    def cantidad_partidas(self, obj):
+        return obj.resultados.count()
+
+
+@admin.register(ParejaMemoria)
+class ParejaMemoriaAdmin(admin.ModelAdmin):
+    list_display = ("concepto", "relacion", "juego", "orden")
+    list_filter = ("juego",)
+    search_fields = ("concepto", "relacion", "explicacion", "juego__titulo")
+    ordering = ("juego", "orden", "id")
+
+
+@admin.register(ResultadoMemoria)
+class ResultadoMemoriaAdmin(ResultadoSoloLecturaAdmin):
+    list_display = ("nombre", "juego", "movimientos", "tiempo_total_segundos", "fecha")
+    list_filter = ("juego", "fecha")
+    search_fields = ("nombre", "juego__titulo")
+    ordering = ("-fecha",)
+    readonly_fields = ("nombre", "juego", "movimientos", "tiempo_total_segundos", "fecha")
+
+
+# ==================================================
+# BLOQUE 27 - ADMIN DE PALABRA SECRETA
+# ==================================================
+@admin.register(JuegoPalabraSecreta)
+class JuegoPalabraSecretaAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "activo", "cantidad_palabras", "cantidad_partidas", "fecha_creacion")
+    list_filter = ("activo", "fecha_creacion")
+    search_fields = ("titulo", "descripcion", "palabras__palabra", "palabras__pista")
+    readonly_fields = ("fecha_creacion",)
+    inlines = [PalabraJuegoInline]
+    fieldsets = (
+        ("Presentación del juego", {"fields": ("titulo", "descripcion")}),
+        ("Publicación", {"fields": ("activo",)}),
+        ("Registro", {"fields": ("fecha_creacion",)}),
+    )
+
+    @admin.display(description="Palabras")
+    def cantidad_palabras(self, obj):
+        return obj.palabras.count()
+
+    @admin.display(description="Partidas")
+    def cantidad_partidas(self, obj):
+        return obj.resultados.count()
+
+
+@admin.register(PalabraJuego)
+class PalabraJuegoAdmin(admin.ModelAdmin):
+    list_display = ("palabra", "pista", "juego", "orden")
+    list_filter = ("juego",)
+    search_fields = ("palabra", "pista", "explicacion", "juego__titulo")
+    ordering = ("juego", "orden", "id")
+
+
+@admin.register(ResultadoPalabra)
+class ResultadoPalabraAdmin(ResultadoSoloLecturaAdmin):
+    list_display = ("nombre", "juego", "puntaje", "total_palabras", "tiempo_total_segundos", "fecha")
+    list_filter = ("juego", "fecha")
+    search_fields = ("nombre", "juego__titulo")
+    ordering = ("-fecha",)
+    readonly_fields = ("nombre", "juego", "puntaje", "total_palabras", "tiempo_total_segundos", "fecha")

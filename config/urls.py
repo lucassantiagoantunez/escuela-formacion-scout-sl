@@ -25,6 +25,8 @@ urlpatterns = [
     path("ordena-pasos/", views.ordena_pasos, name="ordena_pasos"),
     path("ruletas/", views.ruletas, name="ruletas"),
     path("elige-camino/", views.caminos, name="caminos"),
+    path("memoria/", views.juegos_memoria, name="juegos_memoria"),
+    path("palabra-secreta/", views.juegos_palabra, name="juegos_palabra"),
     path("noticias/", views.noticias, name="noticias"),
     path("quiero-aprender/", views.quiero_aprender, name="quiero_aprender"),
 
@@ -36,6 +38,8 @@ urlpatterns = [
     path("ordena-pasos/<int:tema_id>/", views.detalle_ordena_pasos, name="detalle_ordena_pasos"),
     path("ruletas/<int:ruleta_id>/", views.detalle_ruleta, name="detalle_ruleta"),
     path("elige-camino/<int:camino_id>/", views.detalle_camino, name="detalle_camino"),
+    path("memoria/<int:juego_id>/", views.detalle_memoria, name="detalle_memoria"),
+    path("palabra-secreta/<int:juego_id>/", views.detalle_palabra, name="detalle_palabra"),
     path("noticias/<int:noticia_id>/", views.detalle_noticia, name="detalle_noticia"),
 
     # ==================================================

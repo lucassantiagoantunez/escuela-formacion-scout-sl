@@ -1,0 +1,4 @@
+{% extends 'core/base.html' %}{% load static %}
+{% block titulo %}Palabra secreta - EDIFOS{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'core/css/nuevos_juegos.css' %}?v=2">{% endblock %}
+{% block contenido %}<main class="catalogo-juego"><header><span>Pistas y vocabulario</span><h1>Palabra secreta</h1><p>Descubrí cada término antes de quedarte sin intentos.</p></header><div class="catalogo-grid">{% for juego in juegos %}<article><span class="catalogo-icono">Aa</span><small>{{ juego.cantidad_palabras }} palabras</small><h2>{{ juego.titulo }}</h2><p>{{ juego.descripcion }}</p><a href="{% url 'detalle_palabra' juego.id %}">Descubrir palabras</a></article>{% empty %}<p>Próximamente habrá nuevos desafíos.</p>{% endfor %}</div></main>{% endblock %}

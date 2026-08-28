@@ -14,10 +14,20 @@
     <div class="inicio-hero-insignia" aria-hidden="true"><span>⚜</span><strong>Siempre listos</strong><small>para aprender haciendo</small></div>
   </section>
 
+  {% if noticias %}
+  <section class="inicio-noticias-widget" aria-labelledby="ultimas-noticias">
+    <div class="noticias-widget-etiqueta"><span>Nuevo</span><strong id="ultimas-noticias">Últimas noticias</strong></div>
+    <div class="noticias-widget-lista">
+      {% for noticia in noticias %}<a href="{% url 'detalle_noticia' noticia.id %}"><time>{{ noticia.fecha_creacion|date:"d/m" }}</time><span>{{ noticia.titulo }}</span><b aria-hidden="true">→</b></a>{% endfor %}
+    </div>
+    <a href="{% url 'noticias' %}" class="noticias-widget-todas">Ver todas</a>
+  </section>
+  {% endif %}
+
   <section class="inicio-estadisticas" aria-label="Contenido disponible">
     <div><strong>{{ juegos_disponibles }}</strong><span>juegos y desafíos</span></div>
     <div><strong>{{ materiales_disponibles }}</strong><span>materiales para descubrir</span></div>
-    <div><strong>4</strong><span>formas de aprender jugando</span></div>
+    <div><strong>6</strong><span>formas de aprender jugando</span></div>
   </section>
 
   <section class="inicio-aprender" aria-labelledby="titulo-aprender">
@@ -27,6 +37,8 @@
       <a href="{% url 'ordena_pasos' %}" class="inicio-modo modo-ordena"><span class="inicio-modo-icono">⇅</span><h3>Ordená los pasos</h3><p>Reconstruí procedimientos antes de que termine el tiempo.</p><strong>Resolver →</strong></a>
       <a href="{% url 'ruletas' %}" class="inicio-modo modo-ruleta"><span class="inicio-modo-icono">✦</span><h3>Ruleta de desafíos</h3><p>Girala y dejá que el azar elija la próxima misión.</p><strong>Girar →</strong></a>
       <a href="{% url 'caminos' %}" class="inicio-modo modo-camino"><span class="inicio-modo-icono">➜</span><h3>Elegí el camino</h3><p>Tomá decisiones y descubrí adónde conduce cada elección.</p><strong>Comenzar →</strong></a>
+      <a href="{% url 'juegos_memoria' %}" class="inicio-modo modo-memoria"><span class="inicio-modo-icono">▦</span><h3>Memoria</h3><p>Relacioná conceptos, encontrá las parejas y mejorá tu marca.</p><strong>Encontrar parejas →</strong></a>
+      <a href="{% url 'juegos_palabra' %}" class="inicio-modo modo-palabra"><span class="inicio-modo-icono">A_</span><h3>Palabra secreta</h3><p>Interpretá las pistas y descubrí el vocabulario escondido.</p><strong>Descubrir →</strong></a>
     </div>
   </section>
 
@@ -39,14 +51,11 @@
     </article>{% endfor %}</div>
   </section>{% endif %}
 
-  <section class="inicio-informacion">
+  <section class="inicio-informacion inicio-informacion-simple">
     <article class="inicio-quienes"><h2>{{ contenido_inicio.titulo_quienes_somos|default:"Quiénes somos" }}</h2>
       {% if contenido_inicio and contenido_inicio.imagen_quienes_somos %}<img src="{{ contenido_inicio.imagen_quienes_somos.url }}" alt="{{ contenido_inicio.titulo_quienes_somos }}" class="inicio-imagen">{% endif %}
       <div class="inicio-texto">{% if contenido_inicio %}{{ contenido_inicio.texto_quienes_somos|safe }}{% else %}<p>Somos la Escuela Diocesana de Formación Scout de San Luis: un espacio para compartir recursos y aprender haciendo.</p>{% endif %}</div>
     </article>
-    <aside class="inicio-noticias"><div class="inicio-noticias-titulo"><h2>Noticias</h2><a href="{% url 'noticias' %}">Ver todas</a></div>
-      {% for noticia in noticias %}<article class="noticia-item"><time>{{ noticia.fecha_creacion|date:"d/m/Y" }}</time><h3><a href="{% url 'detalle_noticia' noticia.id %}">{{ noticia.titulo }}</a></h3><p>{{ noticia.resumen|truncatewords:24 }}</p></article>{% empty %}<p>No hay noticias publicadas por el momento.</p>{% endfor %}
-    </aside>
   </section>
 
   <section class="inicio-propuesta"><div><span class="inicio-eyebrow">Construimos EDIFOS entre todos</span><h2>¿Qué te gustaría aprender?</h2><p>Proponé un tema, taller o juego que pueda servirle a la comunidad scout.</p></div><a href="{% url 'quiero_aprender' %}" class="boton-verde">Enviar una propuesta</a></section>

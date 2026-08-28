@@ -676,3 +676,104 @@ class InteresCurso(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {self.curso_interes}"
+
+
+# ==================================================
+# BLOQUE 25 - JUEGOS DE MEMORIA
+# ==================================================
+class JuegoMemoria(models.Model):
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["titulo"]
+        verbose_name = "Juego de memoria"
+        verbose_name_plural = "Juegos de memoria"
+
+    def __str__(self):
+        return self.titulo
+
+
+class ParejaMemoria(models.Model):
+    juego = models.ForeignKey(JuegoMemoria, on_delete=models.CASCADE, related_name="parejas")
+    concepto = models.CharField(max_length=120)
+    relacion = models.CharField(max_length=180)
+    explicacion = models.TextField(blank=True)
+    orden = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["orden", "id"]
+        verbose_name = "Pareja de memoria"
+        verbose_name_plural = "Parejas de memoria"
+
+    def __str__(self):
+        return f"{self.concepto} ↔ {self.relacion}"
+
+
+class ResultadoMemoria(models.Model):
+    juego = models.ForeignKey(JuegoMemoria, on_delete=models.CASCADE, related_name="resultados")
+    nombre = models.CharField(max_length=100)
+    movimientos = models.PositiveIntegerField()
+    tiempo_total_segundos = models.PositiveIntegerField(default=0)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["movimientos", "tiempo_total_segundos", "fecha"]
+        verbose_name = "Resultado de memoria"
+        verbose_name_plural = "Resultados de memoria"
+
+    def __str__(self):
+        return f"{self.nombre} - {self.juego.titulo}"
+
+
+# ==================================================
+# BLOQUE 26 - JUEGOS DE PALABRA SECRETA
+# ==================================================
+class JuegoPalabraSecreta(models.Model):
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["titulo"]
+        verbose_name = "Juego de palabra secreta"
+        verbose_name_plural = "Juegos de palabra secreta"
+
+    def __str__(self):
+        return self.titulo
+
+
+class PalabraJuego(models.Model):
+    juego = models.ForeignKey(JuegoPalabraSecreta, on_delete=models.CASCADE, related_name="palabras")
+    palabra = models.CharField(max_length=40)
+    pista = models.CharField(max_length=240)
+    explicacion = models.TextField(blank=True)
+    orden = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["orden", "id"]
+        verbose_name = "Palabra del juego"
+        verbose_name_plural = "Palabras del juego"
+
+    def __str__(self):
+        return f"{self.juego.titulo} - {self.palabra}"
+
+
+class ResultadoPalabra(models.Model):
+    juego = models.ForeignKey(JuegoPalabraSecreta, on_delete=models.CASCADE, related_name="resultados")
+    nombre = models.CharField(max_length=100)
+    puntaje = models.PositiveIntegerField()
+    total_palabras = models.PositiveIntegerField()
+    tiempo_total_segundos = models.PositiveIntegerField(default=0)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-puntaje", "tiempo_total_segundos", "fecha"]
+        verbose_name = "Resultado de palabra secreta"
+        verbose_name_plural = "Resultados de palabra secreta"
+
+    def __str__(self):
+        return f"{self.nombre} - {self.juego.titulo}"
