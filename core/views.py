@@ -1,5 +1,6 @@
 import random
 
+from django.http import JsonResponse
 from django.db.models import Case, Count, IntegerField, Prefetch, Q, Value, When
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.clickjacking import xframe_options_sameorigin
@@ -28,6 +29,24 @@ from .models import (
     SectorRuleta,
     Trivia,
 )
+
+
+def manifest_web(request):
+    """Datos para instalar EDIFOS como aplicación desde la pantalla de inicio."""
+    return JsonResponse(
+        {
+            "name": "EDIFOS · Escuela de Formación Scout",
+            "short_name": "EDIFOS",
+            "description": "Biblioteca, noticias, juegos y desafíos scouts de San Luis.",
+            "start_url": "/",
+            "scope": "/",
+            "display": "standalone",
+            "background_color": "#1e293b",
+            "theme_color": "#1e293b",
+            "lang": "es-AR",
+        },
+        content_type="application/manifest+json",
+    )
 
 
 # ==================================================
@@ -301,13 +320,13 @@ def detalle_trivia(request, trivia_id):
             porcentaje = round((puntaje / total_preguntas) * 100)
 
             if porcentaje == 100:
-                mensaje_resultado = "¡Excelente! Respondiste todo correctamente."
+                mensaje_resultado = "¡Impecable! Las respondiste todas bien."
             elif porcentaje >= 70:
-                mensaje_resultado = "Muy bien. Tenés una buena base."
+                mensaje_resultado = "¡Muy bien! Tenés una base firme."
             elif porcentaje >= 50:
-                mensaje_resultado = "Aprobado, pero hay temas para repasar."
+                mensaje_resultado = "Vas bien. Pegale una repasada a las que se complicaron."
             else:
-                mensaje_resultado = "Necesitás repasar este tema."
+                mensaje_resultado = "Todavía falta un poco. Repasá el tema y probá de nuevo."
         else:
             porcentaje = 0
             mensaje_resultado = "Esta trivia no tiene preguntas cargadas."
@@ -503,13 +522,13 @@ def detalle_ordena_pasos(request, tema_id):
             porcentaje = round((puntaje / total_pasos) * 100)
 
             if porcentaje == 100:
-                mensaje_resultado = "¡Excelente! Ordenaste correctamente todas las etapas."
+                mensaje_resultado = "¡Impecable! Ordenaste bien todas las etapas."
             elif porcentaje >= 70:
-                mensaje_resultado = "Muy bien. Tenés una buena comprensión de la secuencia."
+                mensaje_resultado = "¡Muy bien! Se nota que entendiste la secuencia."
             elif porcentaje >= 50:
-                mensaje_resultado = "Vas bien, pero todavía hay pasos para repasar."
+                mensaje_resultado = "Vas bien. Fijate en los pasos que quedaron cruzados y probá otra vez."
             else:
-                mensaje_resultado = "Necesitás revisar mejor la secuencia general del tema."
+                mensaje_resultado = "Esta vez se complicó. Repasá el orden y volvé a intentarlo."
         else:
             porcentaje = 0
             mensaje_resultado = "Este tema todavía no tiene etapas con pasos cargados."

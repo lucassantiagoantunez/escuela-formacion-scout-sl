@@ -42,7 +42,7 @@ admin.site.index_title = "Gestioná el contenido de la web"
 
 
 class ResultadoSoloLecturaAdmin(admin.ModelAdmin):
-    """Los rankings se consultan, pero no se fabrican ni se borran desde el panel."""
+    """Los resultados no se fabrican ni se editan, pero sí se pueden limpiar."""
 
     def has_add_permission(self, request):
         return False
@@ -51,7 +51,7 @@ class ResultadoSoloLecturaAdmin(admin.ModelAdmin):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
 
 # ==================================================

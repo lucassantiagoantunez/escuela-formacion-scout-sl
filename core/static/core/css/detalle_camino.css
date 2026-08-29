@@ -35,6 +35,20 @@
     text-align: center;
 }
 
+.camino-progreso {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.camino-progreso > span { min-width: 135px; }
+.camino-progreso > div { flex: 1; height: 6px; overflow: hidden; border-radius: 999px; background: #1e293b; }
+.camino-progreso i { display: block; width: 16%; height: 100%; border-radius: inherit; background: #22c55e; transition: width .25s ease; }
+
 /* ==================================================
    BLOQUE CAMINO DETALLE 4 - ESCENA ACTUAL
 ================================================== */
@@ -205,13 +219,28 @@
 ================================================== */
 .camino-acciones {
     margin-top: 25px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .camino-acciones .boton-verde {
     font-size: 14px;
     padding: 8px 18px;
 }
+
+.boton-camino-secundario {
+    padding: 8px 18px;
+    border: 1px solid #64748b;
+    border-radius: 8px;
+    background: transparent;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.boton-camino-secundario:disabled { opacity: .35; cursor: not-allowed; }
 
 /* ==================================================
    BLOQUE CAMINO DETALLE 9 - MENSAJES VACÍOS
@@ -241,4 +270,8 @@
     .camino-final-texto {
         font-size: 19px;
     }
+
+    .camino-progreso { align-items: stretch; flex-direction: column; gap: 7px; }
+    .camino-progreso > span { min-width: 0; }
+    .camino-acciones > * { width: 100% !important; margin: 0 !important; }
 }

@@ -28,7 +28,7 @@
         {% if puntaje is None and preguntas %}
             <div class="detalle-trivia-mobile-tools">
                 <button type="button" id="btn-fullscreen-trivia" class="boton-verde">
-                    Pantalla completa
+                    Modo juego
                 </button>
             </div>
         {% endif %}
@@ -97,10 +97,10 @@
             <div id="pantalla-inicio" class="detalle-trivia-caja">
                 <h2>Antes de comenzar</h2>
                 <p class="detalle-trivia-inicio-texto">
-                    Ingresá tu nombre y luego presioná <strong>Comenzar trivia</strong>.
+                    Escribí tu nombre y tocá <strong>Empezar la trivia</strong>.
                 </p>
 
-                <label for="nombre_previo"><strong>Nombre del participante:</strong></label>
+                <label for="nombre_previo"><strong>¿Cómo te llamás?</strong></label>
                 <input
                     type="text"
                     id="nombre_previo"
@@ -399,9 +399,10 @@
                 return;
             }
 
-            btnFullscreen.textContent = estaEnPantallaCompleta()
-                ? 'Salir de pantalla completa'
-                : 'Pantalla completa';
+            const activo = window.EDIFOSModoJuego
+                ? window.EDIFOSModoJuego.estaActivo(contenedorJuego)
+                : estaEnPantallaCompleta();
+            btnFullscreen.textContent = activo ? 'Salir del modo juego' : 'Modo juego';
         }
 
         async function entrarPantallaCompleta() {
@@ -441,7 +442,7 @@
                 const nombre = nombrePrevio.value.trim();
 
                 if (!nombre) {
-                    alert('Ingresá tu nombre antes de comenzar.');
+                    alert('Escribí tu nombre antes de empezar.');
                     nombrePrevio.focus();
                     return;
                 }
@@ -463,12 +464,13 @@
         }
 
         if (btnFullscreen) {
-            btnFullscreen.addEventListener('click', function () {
-                if (estaEnPantallaCompleta()) {
+            btnFullscreen.addEventListener('click', async function () {
+                if (window.EDIFOSModoJuego) {
+                    await window.EDIFOSModoJuego.alternar(btnFullscreen, contenedorJuego);
+                    actualizarTextoBotonFullscreen();
+                } else if (estaEnPantallaCompleta()) {
                     salirPantallaCompleta();
-                } else {
-                    entrarPantallaCompleta();
-                }
+                } else entrarPantallaCompleta();
             });
 
             document.addEventListener('fullscreenchange', function () {

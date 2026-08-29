@@ -1,11 +1,83 @@
-{% extends 'core/base.html' %}{% load static %}
+{% extends 'core/base.html' %}
+{% load static %}
 {% block titulo %}{{ juego.titulo }} - EDIFOS{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'core/css/nuevos_juegos.css' %}?v=2">{% endblock %}
-{% block contenido %}<main class="juego-nuevo"><section class="juego-principal"><a class="volver-juegos" href="{% url 'juegos_y_trivias' %}">← Volver a juegos</a><h1>{{ juego.titulo }}</h1><p class="juego-descripcion">{{ juego.descripcion }}</p>
-{% if movimientos is not None %}<div class="resultado-nuevo"><strong>¡Desafío completado!</strong><span>{{ movimientos }} movimientos · {{ tiempo_total_segundos }} segundos</span><a href="{% url 'detalle_memoria' juego.id %}">Volver a jugar</a></div>{% else %}
-<div id="inicio-juego" class="inicio-juego"><label for="nombre-jugador">Tu nombre para el ranking</label><input id="nombre-jugador" maxlength="100" autocomplete="nickname"><button id="comenzar" type="button">Comenzar</button></div>
-<div id="estado-juego" class="estado-juego" hidden><span>Movimientos: <strong id="movimientos">0</strong></span><span>Tiempo: <strong id="tiempo">0</strong> s</span></div>
-<div id="tablero-memoria" class="tablero-memoria" hidden>{% for tarjeta in tarjetas %}<button type="button" class="tarjeta-memoria" data-pareja="{{ tarjeta.pareja }}"><span class="dorso">⚜</span><span class="frente">{{ tarjeta.texto }}</span></button>{% endfor %}</div>
-<form method="post" id="resultado-form" hidden>{% csrf_token %}<input type="hidden" name="nombre_participante" id="nombre-hidden"><input type="hidden" name="movimientos" id="movimientos-hidden"><input type="hidden" name="tiempo_total_segundos" id="tiempo-hidden"></form>{% endif %}</section>
-<aside class="ranking-nuevo"><span>Mejores marcas</span><h2>Ranking</h2>{% for r in ranking %}<div><b>{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}.{% endif %} {{ r.nombre }}</b><small>{{ r.movimientos }} mov. · {{ r.tiempo_total_segundos }} s</small></div>{% empty %}<p>Todavía no hay resultados.</p>{% endfor %}</aside></main>
-{% if movimientos is None %}<script>document.addEventListener('DOMContentLoaded',()=>{const inicio=document.getElementById('inicio-juego'),tablero=document.getElementById('tablero-memoria'),estado=document.getElementById('estado-juego'),cartas=[...document.querySelectorAll('.tarjeta-memoria')];let abiertas=[],resueltas=0,mov=0,seg=0,reloj=null,bloqueado=false;document.getElementById('comenzar').onclick=()=>{const n=document.getElementById('nombre-jugador').value.trim();if(!n){alert('Ingresá tu nombre para comenzar.');return}document.getElementById('nombre-hidden').value=n;inicio.hidden=true;tablero.hidden=false;estado.hidden=false;reloj=setInterval(()=>{seg++;document.getElementById('tiempo').textContent=seg},1000)};cartas.forEach(c=>c.onclick=()=>{if(bloqueado||c.classList.contains('abierta')||c.classList.contains('resuelta'))return;c.classList.add('abierta');abiertas.push(c);if(abiertas.length===2){mov++;document.getElementById('movimientos').textContent=mov;bloqueado=true;const[a,b]=abiertas;if(a.dataset.pareja===b.dataset.pareja){a.classList.add('resuelta');b.classList.add('resuelta');abiertas=[];bloqueado=false;resueltas+=2;if(resueltas===cartas.length){clearInterval(reloj);document.getElementById('movimientos-hidden').value=mov;document.getElementById('tiempo-hidden').value=seg;setTimeout(()=>document.getElementById('resultado-form').submit(),500)}}else setTimeout(()=>{a.classList.remove('abierta');b.classList.remove('abierta');abiertas=[];bloqueado=false},800)}})})</script>{% endif %}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'core/css/nuevos_juegos.css' %}?v=3">{% endblock %}
+{% block contenido %}
+<main class="juego-nuevo">
+  <section class="juego-principal">
+    <a class="volver-juegos" href="{% url 'juegos_y_trivias' %}">← Volver a juegos</a>
+    <h1>{{ juego.titulo }}</h1>
+    <p class="juego-descripcion">{{ juego.descripcion }}</p>
+    {% if movimientos is not None %}
+      <div class="resultado-nuevo"><strong>¡Bien ahí, desafío completado!</strong><span>{{ movimientos }} movimientos · {{ tiempo_total_segundos }} segundos</span><a href="{% url 'detalle_memoria' juego.id %}">Jugar de nuevo</a></div>
+    {% else %}
+      <div id="inicio-juego" class="inicio-juego"><label for="nombre-jugador">¿Cómo te llamás?</label><input id="nombre-jugador" maxlength="100" autocomplete="nickname"><button id="comenzar" type="button">Empezar</button></div>
+      <div id="estado-juego" class="estado-juego" hidden><span>Movimientos: <strong id="movimientos">0</strong></span><span>Tiempo: <strong id="tiempo">0</strong> s</span><button type="button" id="pista-memoria" class="boton-pista">Dame una pista</button></div>
+      <p id="aviso-pista-memoria" class="aviso-pista" hidden>Te mostramos una pareja por un momento. La pista suma dos movimientos.</p>
+      <div id="tablero-memoria" class="tablero-memoria" hidden>{% for tarjeta in tarjetas %}<button type="button" class="tarjeta-memoria" data-pareja="{{ tarjeta.pareja }}"><span class="dorso">⚜</span><span class="frente">{{ tarjeta.texto }}</span></button>{% endfor %}</div>
+      <form method="post" id="resultado-form" hidden>{% csrf_token %}<input type="hidden" name="nombre_participante" id="nombre-hidden"><input type="hidden" name="movimientos" id="movimientos-hidden"><input type="hidden" name="tiempo_total_segundos" id="tiempo-hidden"></form>
+    {% endif %}
+  </section>
+  <aside class="ranking-nuevo"><span>Mejores marcas</span><h2>Ranking</h2>{% for r in ranking %}<div><b>{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}.{% endif %} {{ r.nombre }}</b><small>{{ r.movimientos }} mov. · {{ r.tiempo_total_segundos }} s</small></div>{% empty %}<p>Todavía no hay resultados.</p>{% endfor %}</aside>
+</main>
+{% if movimientos is None %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const inicio = document.getElementById('inicio-juego');
+  const tablero = document.getElementById('tablero-memoria');
+  const estado = document.getElementById('estado-juego');
+  const cartas = [...document.querySelectorAll('.tarjeta-memoria')];
+  const btnPista = document.getElementById('pista-memoria');
+  const avisoPista = document.getElementById('aviso-pista-memoria');
+  let abiertas = [], resueltas = 0, mov = 0, seg = 0, reloj = null, bloqueado = false;
+
+  function actualizarMovimientos() { document.getElementById('movimientos').textContent = mov; }
+  function terminarSiCorresponde() {
+    if (resueltas !== cartas.length) return;
+    clearInterval(reloj);
+    document.getElementById('movimientos-hidden').value = mov;
+    document.getElementById('tiempo-hidden').value = seg;
+    setTimeout(function () { document.getElementById('resultado-form').submit(); }, 500);
+  }
+
+  document.getElementById('comenzar').addEventListener('click', function () {
+    const nombre = document.getElementById('nombre-jugador').value.trim();
+    if (!nombre) { alert('Escribí tu nombre para empezar.'); return; }
+    document.getElementById('nombre-hidden').value = nombre;
+    inicio.hidden = true; tablero.hidden = false; estado.hidden = false;
+    reloj = setInterval(function () { seg++; document.getElementById('tiempo').textContent = seg; }, 1000);
+  });
+
+  btnPista.addEventListener('click', function () {
+    if (bloqueado) return;
+    abiertas.forEach(function (carta) { carta.classList.remove('abierta'); });
+    abiertas = [];
+    const pendientes = cartas.filter(function (carta) { return !carta.classList.contains('resuelta'); });
+    const primera = pendientes[0];
+    if (!primera) return;
+    const pareja = pendientes.find(function (carta) { return carta !== primera && carta.dataset.pareja === primera.dataset.pareja; });
+    if (!pareja) return;
+    bloqueado = true; btnPista.disabled = true; avisoPista.hidden = false; mov += 2; actualizarMovimientos();
+    primera.classList.add('abierta', 'pista-activa'); pareja.classList.add('abierta', 'pista-activa');
+    setTimeout(function () {
+      primera.classList.remove('abierta', 'pista-activa'); pareja.classList.remove('abierta', 'pista-activa');
+      bloqueado = false; btnPista.disabled = false;
+    }, 1500);
+  });
+
+  cartas.forEach(function (carta) {
+    carta.addEventListener('click', function () {
+      if (bloqueado || carta.classList.contains('abierta') || carta.classList.contains('resuelta')) return;
+      carta.classList.add('abierta'); abiertas.push(carta);
+      if (abiertas.length !== 2) return;
+      mov++; actualizarMovimientos(); bloqueado = true;
+      const [a, b] = abiertas;
+      if (a.dataset.pareja === b.dataset.pareja) {
+        a.classList.add('resuelta'); b.classList.add('resuelta'); abiertas = []; bloqueado = false; resueltas += 2; terminarSiCorresponde();
+      } else setTimeout(function () { a.classList.remove('abierta'); b.classList.remove('abierta'); abiertas = []; bloqueado = false; }, 800);
+    });
+  });
+});
+</script>
+{% endif %}
+{% endblock %}

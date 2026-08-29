@@ -19,7 +19,7 @@
 
     <div class="detalle-ruleta-mobile-tools">
         <button type="button" id="btn-fullscreen-ruleta" class="boton-verde">
-            Pantalla completa
+            Modo juego
         </button>
     </div>
 
@@ -404,9 +404,10 @@
                     return;
                 }
 
-                btnFullscreen.textContent = estaEnPantallaCompleta()
-                    ? 'Salir de pantalla completa'
-                    : 'Pantalla completa';
+                const activo = window.EDIFOSModoJuego
+                    ? window.EDIFOSModoJuego.estaActivo(fullscreenTarget)
+                    : estaEnPantallaCompleta();
+                btnFullscreen.textContent = activo ? 'Salir del modo juego' : 'Modo juego';
             }
 
             async function entrarPantallaCompleta() {
@@ -453,12 +454,14 @@
             window.addEventListener('touchcancel', terminarArrastre);
 
             if (btnFullscreen) {
-                btnFullscreen.addEventListener('click', function () {
-                    if (estaEnPantallaCompleta()) {
+                btnFullscreen.addEventListener('click', async function () {
+                    if (window.EDIFOSModoJuego) {
+                        await window.EDIFOSModoJuego.alternar(btnFullscreen, fullscreenTarget);
+                        actualizarTextoBotonFullscreen();
+                        setTimeout(redimensionarCanvas, 80);
+                    } else if (estaEnPantallaCompleta()) {
                         salirPantallaCompleta();
-                    } else {
-                        entrarPantallaCompleta();
-                    }
+                    } else entrarPantallaCompleta();
                 });
 
                 document.addEventListener('fullscreenchange', function () {

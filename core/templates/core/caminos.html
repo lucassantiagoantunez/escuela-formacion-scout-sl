@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block titulo %}Elige el camino{% endblock %}
+{% block titulo %}Elegí el camino{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'core/css/caminos.css' %}">
@@ -16,14 +16,14 @@
     <!-- ==========================================
          BLOQUE HTML CAMINOS 2 - TÍTULO
     ========================================== -->
-    <h1>Elige el camino</h1>
+    <h1>Elegí el camino</h1>
 
     <!-- ==========================================
          BLOQUE HTML CAMINOS 3 - TEXTO INTRODUCTORIO
     ========================================== -->
     <p class="caminos-intro">
-        Leé una situación, tomá decisiones y descubrí a dónde te lleva cada elección.
-        Algunos recorridos terminan bien, otros regular y otros... como suelen terminar las malas decisiones humanas.
+        Metete en la situación, elegí qué harías y bancate las consecuencias de cada decisión.
+        No siempre hay una opción perfecta: a veces hay que comparar riesgos, tiempo e información.
     </p>
 
     <!-- ==========================================
@@ -38,11 +38,11 @@
             {% endif %}
 
             <div class="camino-detalle">
-                Escenas disponibles: {{ camino.escenas.count }}
+                {{ camino.escenas.count }} escenas y varios finales posibles
             </div>
 
             <a href="{% url 'detalle_camino' camino.id %}" class="boton-verde">
-                Comenzar recorrido
+                Empezar recorrido
             </a>
         </div>
     {% empty %}

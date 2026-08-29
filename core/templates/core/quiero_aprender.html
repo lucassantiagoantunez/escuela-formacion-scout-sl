@@ -19,7 +19,7 @@
     <div class="quiero-aprender-encabezado">
         <h1>{{ contenido_inicio.titulo_quiero_aprender|default:"Quiero aprender" }}</h1>
         <p class="quiero-aprender-subtitulo">
-            {{ contenido_inicio.subtitulo_quiero_aprender|default:"Este espacio permite proponer cursos, talleres o temas de formación que te gustaría realizar. La idea es conocer mejor los intereses de la comunidad y organizar propuestas útiles y concretas." }}
+            {{ contenido_inicio.subtitulo_quiero_aprender|default:"Contanos qué tema, taller o juego te gustaría encontrar en EDIFOS. Las propuestas nos ayudan a preparar contenido que de verdad le sirva a la comunidad scout de San Luis." }}
         </p>
     </div>
 
@@ -35,7 +35,7 @@
              BLOQUE HTML QUIERO APRENDER 4 - MENSAJE DE ÉXITO
         ========================================== -->
         <div class="quiero-aprender-exito">
-            Tu propuesta fue enviada correctamente. Gracias por compartir tu interés formativo.
+            ¡Listo! Recibimos tu propuesta. Gracias por sumar una idea para EDIFOS.
         </div>
     {% endif %}
 
@@ -78,7 +78,7 @@
             </div>
 
             <div class="quiero-aprender-campo">
-                <label for="detalle">Detalle adicional</label>
+                <label for="detalle">Contanos un poco más</label>
                 <textarea
                     name="detalle"
                     id="detalle"

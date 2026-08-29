@@ -43,11 +43,11 @@
   </section>
 
   {% if trivias_destacadas %}<section class="inicio-destacadas">
-    <div class="inicio-seccion-cabecera"><span class="inicio-eyebrow">Desafíos populares</span><h2>¿Hasta dónde llega tu conocimiento?</h2></div>
+    <div class="inicio-seccion-cabecera"><span class="inicio-eyebrow">Los más jugados</span><h2>¿Cuánto sabés? Probalo jugando</h2></div>
     <div class="inicio-destacadas-grid">{% for trivia in trivias_destacadas %}<article class="inicio-desafio">
       <span class="inicio-chip">Trivia · {{ trivia.cantidad_preguntas }} preguntas</span><h3>{{ trivia.titulo }}</h3>
       <p>{{ trivia.descripcion|default:"Poné a prueba lo que sabés y superá tu mejor resultado."|truncatewords:22 }}</p>
-      <div class="inicio-desafio-pie"><span>{{ trivia.cantidad_partidas }} participaciones</span><a href="{% url 'detalle_trivia' trivia.id %}">Aceptar desafío</a></div>
+      <div class="inicio-desafio-pie"><span>{{ trivia.cantidad_partidas }} partidas</span><a href="{% url 'detalle_trivia' trivia.id %}">Me animo</a></div>
     </article>{% endfor %}</div>
   </section>{% endif %}
 

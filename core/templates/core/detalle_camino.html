@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block titulo %}{{ camino.titulo }} - Elige el camino{% endblock %}
+{% block titulo %}{{ camino.titulo }} - Elegí el camino{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'core/css/detalle_camino.css' %}">
@@ -20,6 +20,10 @@
 
     {% if escena_inicial %}
         <div class="detalle-camino-caja">
+            <div class="camino-progreso" aria-live="polite">
+                <span id="camino-progreso-texto">Primera decisión</span>
+                <div><i id="camino-progreso-barra"></i></div>
+            </div>
             <h2 id="camino-escena-titulo" class="camino-escena-titulo"></h2>
 
             <div id="camino-escena-texto" class="camino-escena-texto"></div>
@@ -43,6 +47,9 @@
             </div>
 
             <div class="camino-acciones">
+                <button type="button" id="btn-volver-camino" class="boton-camino-secundario" disabled>
+                    ← Volver una decisión
+                </button>
                 <button type="button" id="btn-reiniciar-camino" class="boton-verde">
                     Volver a empezar
                 </button>
@@ -111,8 +118,13 @@
         const recomendacionContenedor = document.getElementById('camino-recomendacion-bloques');
 
         const btnReiniciar = document.getElementById('btn-reiniciar-camino');
+        const btnVolver = document.getElementById('btn-volver-camino');
+        const progresoTexto = document.getElementById('camino-progreso-texto');
+        const progresoBarra = document.getElementById('camino-progreso-barra');
 
         const escenasCamino = {};
+        const historial = [];
+        let escenaActualId = escenaInicialId;
 
         document.querySelectorAll('.escena-data').forEach(function (nodoEscena) {
             const id = nodoEscena.dataset.id;
@@ -141,18 +153,29 @@
 
         function obtenerTextoTipoFinal(tipo) {
             if (tipo === 'bueno') {
-                return 'Final bueno';
+                return 'Muy buen cierre';
             }
 
             if (tipo === 'neutro') {
-                return 'Final neutro';
+                return 'Cierre con cosas para revisar';
             }
 
             if (tipo === 'malo') {
-                return 'Final malo';
+                return 'Esta decisión complicó la situación';
             }
 
-            return 'Final';
+            return 'Recorrido terminado';
+        }
+
+        function actualizarProgreso(esFinal) {
+            const decisiones = historial.length;
+            progresoTexto.textContent = esFinal
+                ? `Recorrido completo · ${decisiones} ${decisiones === 1 ? 'decisión' : 'decisiones'}`
+                : decisiones === 0
+                    ? 'Primera decisión'
+                    : `Decisión ${decisiones + 1}`;
+            progresoBarra.style.width = `${Math.min(100, 16 + (decisiones * 14))}%`;
+            btnVolver.disabled = historial.length === 0;
         }
 
         function limpiarClasesFinal() {
@@ -210,6 +233,9 @@
                 return;
             }
 
+            escenaActualId = String(escenaId);
+            actualizarProgreso(escena.es_final);
+
             titulo.textContent = escena.titulo;
             texto.innerHTML = escena.texto;
             opcionesContenedor.innerHTML = '';
@@ -251,6 +277,7 @@
                 boton.textContent = opcion.texto;
 
                 boton.addEventListener('click', function () {
+                    historial.push(escenaActualId);
                     renderizarEscena(opcion.destino_id);
                 });
 
@@ -260,7 +287,15 @@
 
         if (btnReiniciar) {
             btnReiniciar.addEventListener('click', function () {
+                historial.length = 0;
                 renderizarEscena(escenaInicialId);
+            });
+        }
+
+        if (btnVolver) {
+            btnVolver.addEventListener('click', function () {
+                const escenaAnterior = historial.pop();
+                if (escenaAnterior) renderizarEscena(escenaAnterior);
             });
         }
 

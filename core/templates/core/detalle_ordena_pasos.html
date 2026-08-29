@@ -20,7 +20,7 @@
 
         <div class="detalle-ordena-mobile-tools">
             <button type="button" id="btn-fullscreen-ordena" class="boton-verde">
-                Pantalla completa
+                Modo juego
             </button>
 
             <p class="detalle-ordena-mobile-aviso">
@@ -32,11 +32,11 @@
             <div id="pantalla-inicio" class="detalle-ordena-caja">
                 <h2>Antes de comenzar</h2>
                 <p>
-                    Ingresá tu nombre y resolvé las etapas en orden.
+                    Escribí tu nombre y acomodá las etapas en orden.
                     No vas a poder volver atrás una vez que avances.
                 </p>
 
-                <label for="nombre_previo"><strong>Nombre del participante:</strong></label>
+                <label for="nombre_previo"><strong>¿Cómo te llamás?</strong></label>
                 <input
                     type="text"
                     id="nombre_previo"
@@ -437,9 +437,10 @@
                 return;
             }
 
-            btnFullscreen.textContent = estaEnPantallaCompleta()
-                ? 'Salir de pantalla completa'
-                : 'Pantalla completa';
+            const activo = window.EDIFOSModoJuego
+                ? window.EDIFOSModoJuego.estaActivo(contenedorJuego)
+                : estaEnPantallaCompleta();
+            btnFullscreen.textContent = activo ? 'Salir del modo juego' : 'Modo juego';
         }
 
         async function intentarBloquearHorizontal() {
@@ -513,7 +514,7 @@
                 const nombre = nombrePrevio.value.trim();
 
                 if (!nombre) {
-                    alert('Ingresá tu nombre antes de comenzar.');
+                    alert('Escribí tu nombre antes de empezar.');
                     nombrePrevio.focus();
                     return;
                 }
@@ -534,12 +535,15 @@
         }
 
         if (btnFullscreen) {
-            btnFullscreen.addEventListener('click', function () {
-                if (estaEnPantallaCompleta()) {
+            btnFullscreen.addEventListener('click', async function () {
+                if (window.EDIFOSModoJuego) {
+                    await window.EDIFOSModoJuego.alternar(btnFullscreen, contenedorJuego);
+                    actualizarTextoBotonFullscreen();
+                    if (window.EDIFOSModoJuego.estaActivo(contenedorJuego)) await intentarBloquearHorizontal();
+                    else await desbloquearOrientacion();
+                } else if (estaEnPantallaCompleta()) {
                     salirPantallaCompleta();
-                } else {
-                    entrarPantallaCompleta();
-                }
+                } else entrarPantallaCompleta();
             });
 
             document.addEventListener('fullscreenchange', async function () {
