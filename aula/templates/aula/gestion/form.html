@@ -1,0 +1,13 @@
+{% extends 'aula/gestion/base.html' %}
+{% block gestion %}
+<a href="{{ volver }}">← Volver sin guardar</a>
+<section class="gestion-formulario"><h2>{{ titulo }}</h2><p>{{ descripcion }}</p>
+<form method="post">{% csrf_token %}
+{% if form.errors %}<div class="gestion-error" role="alert"><strong>No se guardaron los cambios.</strong> Revisá los campos señalados.</div>{% endif %}
+{{ form.non_field_errors }}
+{% for field in form %}<div class="gestion-campo{% if field.errors %} gestion-campo-error{% endif %}">
+{% if field.field.widget.input_type == 'checkbox' %}<div class="gestion-checkbox">{{ field }} {{ field.label_tag }}</div>{% else %}{{ field.label_tag }}{{ field }}{% endif %}
+{% if field.help_text %}<div class="gestion-ayuda" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}{{ field.errors }}</div>{% endfor %}
+<div class="gestion-acciones"><button type="submit">{{ boton }}</button><a href="{{ volver }}">Cancelar</a></div>
+</form></section>
+{% endblock %}

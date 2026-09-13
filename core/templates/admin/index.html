@@ -7,6 +7,7 @@
 
 {% block content %}
 <div id="content-main">
+  {% if user.is_superuser %}<section class="admin-bienvenida"><h1>Administrar el Aula, paso a paso</h1><p>Creá cursos, prepará clases y agregá personas desde el panel sencillo.</p><a href="{% url 'aula:gestion' %}">Abrir Gestión de EDiFoS →</a></section>{% endif %}
   <section class="admin-bienvenida">
     <span>Panel de EDIFOS</span>
     <h1>¿Qué querés actualizar?</h1>

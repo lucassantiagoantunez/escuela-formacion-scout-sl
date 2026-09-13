@@ -1,0 +1,9 @@
+{% extends 'aula/base.html' %}
+{% load static %}
+{% block titulo %}Gestionar EDiFoS{% endblock %}
+{% block extra_css %}{{ block.super }}<link rel="stylesheet" href="{% static 'aula/gestion.css' %}">{% endblock %}
+{% block aula %}
+<nav class="gestion-ruta" aria-label="Gestión"><a href="{% url 'aula:gestion' %}">Gestionar EDiFoS</a>{% block ruta %}{% endblock %}</nav>
+{% if messages %}<div aria-live="polite">{% for message in messages %}<p class="gestion-aviso">{{ message }}</p>{% endfor %}</div>{% endif %}
+{% block gestion %}{% endblock %}
+{% endblock %}

@@ -5,7 +5,7 @@
 {% block contenido %}
 <main class="aula">
   <header class="aula-cabecera"><p>EDiFoS San Luis · Julio R. Menvielle</p><h1>Aula Virtual</h1>
-  {% if user.is_authenticated %}<nav aria-label="Aula"><a href="{% url 'aula:panel' %}">Mis cursos</a><form method="post" action="{% url 'aula:logout' %}">{% csrf_token %}<button>Salir</button></form></nav>{% endif %}</header>
+  {% if user.is_authenticated %}<nav aria-label="Aula"><a href="{% url 'aula:panel' %}">Mis cursos</a>{% if user.is_superuser %}<a href="{% url 'aula:gestion' %}">Gestionar EDiFoS</a>{% endif %}<form method="post" action="{% url 'aula:logout' %}">{% csrf_token %}<button>Salir</button></form></nav>{% endif %}</header>
   {% block aula %}{% endblock %}
 </main>
 {% endblock %}

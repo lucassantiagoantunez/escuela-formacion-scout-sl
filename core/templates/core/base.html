@@ -32,6 +32,7 @@
             <a href="{% url 'juegos_y_trivias' %}">Juegos y desafíos</a>
             <a href="{% url 'quiero_aprender' %}">Quiero aprender</a>
             <a href="{% url 'aula:panel' %}">Aula Virtual</a>
+            {% if user.is_superuser %}<a href="{% url 'aula:gestion' %}">Gestionar EDiFoS</a>{% endif %}
 
             {% if paginas_personalizadas_menu %}
                 <div class="menu-dropdown">

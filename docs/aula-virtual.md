@@ -53,6 +53,20 @@ Esta es la primera etapa funcional, todavía no la primera versión utilizable c
 
 ## Siguientes bloques compatibles
 
+### Gestión sencilla implementada
+
+El acceso «Gestionar EDiFoS» abre `/aula/gestion/` para Dirección. Aparece en el menú de la web para superusuarios y también como acceso destacado en `/admin/`. No cambia las cuentas, cursos ni matrículas existentes.
+
+Desde allí se puede crear o editar un curso; agregar o renombrar módulos; agregar o editar clases con texto y enlace HTTPS a video; elegir qué está publicado; crear una persona e inscribirla o asignarla como formador en una sola operación; agregar cuentas existentes sin duplicar matrículas; y consultar participantes y avance de lecturas. Las clases nuevas se añaden al final del módulo. Todavía no hay reordenamiento visual, gestión de tutores ni baja de participantes en este panel.
+
+La creación de cuentas conserva los validadores y el cifrado de contraseñas de Django. Cuenta e inscripción se guardan juntas o se revierten juntas si falla una operación. No se conceden permisos administrativos desde estos formularios. Se registra quién realizó cada modificación en el historial de Django Admin sin guardar contraseñas en ese registro. Las invitaciones por correo aún no están implementadas; Dirección comparte el acceso de forma privada.
+
+Noticias, biblioteca, páginas, programas y juegos tienen accesos organizados a sus editores existentes; sus formularios aún no han sido rediseñados. La simplificación completa de esos editores es una etapa posterior.
+
+Validación de esta etapa: 30 pruebas automatizadas del conjunto del proyecto, incluidos permisos, CSRF, publicación, aislamiento de módulos por curso, duplicados y reversión de creación de cuentas. Revisión visual de vistas renderizadas con datos ficticios, incluida la pantalla de alta a 390 píxeles de ancho. No se requiere una nueva migración de base de datos.
+
+### Desarrollo pendiente
+
 1. Almacenamiento privado y recursos: validar formatos/tamaños, nombres aleatorios, descarga autorizada y conservación de archivos. Actividades con fechas y entregas versionadas; devoluciones y registro de cada cambio sin sobrescribir historial.
 2. Consultas de tema y privadas; tablero del formador con autorización por curso. Roles editoriales explícitos antes de permitirle modificar contenido.
 3. Evaluaciones separadas de las trivias públicas: intentos y respuestas en servidor, ventanas, límites, corrección automática y manual, resultados e historial.
