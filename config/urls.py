@@ -11,6 +11,7 @@ from core import views
 # BLOQUE 1 - RUTAS DEL ADMIN Y HERRAMIENTAS
 # ==================================================
 urlpatterns = [
+    path("aula/", include("aula.urls")),
     path("admin/", admin.site.urls),
     path("ckeditor5/", include("django_ckeditor_5.urls")),
     path("manifest.webmanifest", views.manifest_web, name="manifest_web"),

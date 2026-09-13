@@ -1,0 +1,3 @@
+{% extends 'aula/base.html' %}
+{% block aula %}<section class="aula-tarjeta"><h2>Ingresar al Aula</h2><p>Usá la cuenta que te proporcionó EDiFoS. Si necesitás ayuda para ingresar, contactá a Dirección.</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<input type="hidden" name="next" value="{{ next }}"><button>Ingresar</button></form></section>{% endblock %}

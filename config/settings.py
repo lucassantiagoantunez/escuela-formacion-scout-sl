@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_ckeditor_5",
     "core",
+    "aula",
 ]
 
 
@@ -225,3 +226,6 @@ CKEDITOR_5_CONFIGS = {
 # BLOQUE 14 - CONFIGURACIÓN GENERAL DE DJANGO
 # ==================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGIN_URL = 'aula:login'
+LOGIN_REDIRECT_URL = 'aula:panel'
