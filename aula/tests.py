@@ -214,3 +214,55 @@ class GestionTests(TestCase):
         self.assertEqual(client.post(url, self.nueva_persona()).status_code, 403)
         self.assertEqual(client.get(url).status_code, 200)
         self.assertFalse(Inscripcion.objects.exists())
+
+    def test_agregar_clase_desde_modulo_fija_el_destino(self):
+        url = reverse('aula:gestion_modulo_leccion_nueva', args=[self.curso.pk, self.modulo.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.context['form']['modulo'].value(), self.modulo.pk)
+        self.assertTrue(response.context['form'].fields['modulo'].disabled)
+        response = self.client.post(url, {'titulo': 'Clase del módulo', 'texto': 'Contenido', 'modulo': self.otro_modulo.pk})
+        leccion = Leccion.objects.get(titulo='Clase del módulo')
+        self.assertEqual(leccion.modulo, self.modulo)
+        self.assertRedirects(response, f"{reverse('aula:gestion_curso', args=[self.curso.pk])}?modulo={self.modulo.pk}#modulo-{self.modulo.pk}")
+        self.assertContains(self.client.get(response.url), f'id="modulo-{self.modulo.pk}" open')
+
+    def test_ruta_de_modulo_rechaza_otro_curso_y_formador(self):
+        url = reverse('aula:gestion_modulo_leccion_nueva', args=[self.curso.pk, self.otro_modulo.pk])
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(self.client.post(url, {'titulo': 'No guardar'}).status_code, 404)
+        self.client.force_login(self.persona)
+        self.assertEqual(self.client.post(reverse('aula:gestion_modulo_leccion_nueva', args=[self.curso.pk, self.modulo.pk]), {'titulo': 'No guardar'}).status_code, 403)
+
+    def test_inscripcion_en_preparacion_visible_sin_filtrar_borradores(self):
+        self.curso.descripcion = 'Descripción interna reservada'
+        self.curso.save()
+        Leccion.objects.create(modulo=self.modulo, titulo='Borrador secreto')
+        Inscripcion.objects.create(curso=self.curso, cursante=self.persona)
+        self.client.force_login(self.persona)
+        response = self.client.get('/aula/')
+        self.assertContains(response, 'Nivel I')
+        self.assertContains(response, 'Inscripción confirmada · En preparación')
+        self.assertNotContains(response, 'Descripción interna reservada')
+        self.assertNotContains(response, 'Borrador secreto')
+        self.assertNotContains(response, 'Nivel II')
+        self.assertNotContains(response, 'Entrar al curso')
+        self.assertNotContains(response, 'Todavía no tenés cursos asignados')
+        self.assertEqual(self.client.get(reverse('aula:curso', args=[self.curso.pk])).status_code, 404)
+        self.curso.publicado = True
+        self.curso.save()
+        self.assertContains(self.client.get('/aula/'), 'Entrar al curso')
+        self.assertNotContains(self.client.get('/aula/'), 'Inscripción confirmada · En preparación')
+        self.assertNotContains(self.client.get(reverse('aula:curso', args=[self.curso.pk])), 'Borrador secreto')
+
+    def test_inscripcion_pausada_no_muestra_curso_en_preparacion(self):
+        Inscripcion.objects.create(curso=self.curso, cursante=self.persona, activa=False)
+        self.client.force_login(self.persona)
+        self.assertNotContains(self.client.get('/aula/'), 'Nivel I')
+
+    def test_modulos_plegados_y_aviso_de_acceso(self):
+        response = self.client.get(reverse('aula:gestion_curso', args=[self.curso.pk]))
+        self.assertContains(response, f'<details class="aula-modulo" id="modulo-{self.modulo.pk}">')
+        self.assertContains(response, reverse('aula:gestion_modulo_leccion_nueva', args=[self.curso.pk, self.modulo.pk]))
+        self.assertContains(response, 'El curso todavía está en preparación.')
+        response = self.client.post(reverse('aula:gestion_persona_existente', args=[self.curso.pk]), {'persona': self.persona.pk, 'rol': 'cursante'}, follow=True)
+        self.assertContains(response, 'La inscripción está lista.')

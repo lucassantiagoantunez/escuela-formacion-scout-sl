@@ -49,6 +49,7 @@ def detalle(request, pk):
     return render(request, 'aula/gestion/curso.html', {
         'curso': curso, 'modulos': curso.modulos.prefetch_related('lecciones'),
         'inscripciones': inscripciones, 'total': total, 'formadores': curso.formadores.all(),
+        'modulo_abierto': request.GET.get('modulo', ''),
     })
 
 
@@ -98,13 +99,18 @@ def editar_modulo(request, curso_pk, pk=None):
 
 @direccion
 @require_http_methods(['GET', 'POST'])
-def editar_leccion(request, curso_pk, pk=None):
+def editar_leccion(request, curso_pk, pk=None, modulo_pk=None):
     curso = get_object_or_404(Curso, pk=curso_pk)
+    modulo = get_object_or_404(Modulo, pk=modulo_pk, curso=curso) if modulo_pk else None
     leccion = get_object_or_404(Leccion, pk=pk, modulo__curso=curso) if pk else None
     if not curso.modulos.exists():
         messages.info(request, 'Primero agregá un módulo para organizar las clases.')
         return redirect('aula:gestion_modulo_nuevo', curso_pk=curso.pk)
-    form = LeccionForm(request.POST if request.method == 'POST' else None, instance=leccion, curso=curso)
+    form = LeccionForm(request.POST if request.method == 'POST' else None, instance=leccion, curso=curso,
+                       initial={'modulo': modulo.pk} if modulo else None)
+    if modulo:
+        form.fields['modulo'].disabled = True
+        form.fields['modulo'].help_text = 'La clase se guardará en este módulo.'
     if request.method == 'POST' and form.is_valid():
         with transaction.atomic():
             Curso.objects.select_for_update().get(pk=curso.pk)
@@ -113,9 +119,9 @@ def editar_leccion(request, curso_pk, pk=None):
             leccion = form.save()
             registrar(request, leccion, CHANGE if pk else ADDITION, 'Clase guardada desde Gestión.')
         messages.success(request, 'Clase guardada.' if leccion.publicada else 'Clase guardada como borrador.')
-        return redirect('aula:gestion_curso', pk=curso.pk)
+        return redirect(f"{reverse('aula:gestion_curso', args=[curso.pk])}?modulo={leccion.modulo_id}#modulo-{leccion.modulo_id}")
     return formulario(request, form, 'Editar clase' if pk else 'Agregar una clase',
-                      f'Curso: {curso.titulo}. Escribí el contenido y, si tenés un video, pegá su enlace.',
+                      f'Curso: {curso.titulo}. ' + (f'Módulo: {modulo.titulo}. ' if modulo else '') + 'Escribí el contenido y, si tenés un video, pegá su enlace.',
                       reverse('aula:gestion_curso', args=[curso.pk]), 'Guardar clase')
 
 
@@ -141,6 +147,8 @@ def agregar_persona(request, curso_pk, existente=False):
                 registrar(request, persona, ADDITION, 'Cuenta creada desde Gestión.')
             asignar(request, curso, persona, form.cleaned_data['rol'])
         messages.success(request, f'{persona.get_full_name() or persona.username} ya tiene acceso asignado a {curso.titulo}. Usuario para ingresar: {persona.username}.')
+        if not curso.publicado and form.cleaned_data['rol'] == 'cursante':
+            messages.info(request, 'La inscripción está lista. El curso aparecerá como «En preparación» hasta que habilites su acceso en «Editar presentación y acceso».')
         return redirect('aula:gestion_curso', pk=curso.pk)
     descripcion = (f'Curso: {curso.titulo}. Elegí a alguien que ya tenga cuenta. Si su inscripción estaba pausada, se reactivará.' if existente else
                    f'Curso: {curso.titulo}. Creá su cuenta y agregala al curso en un solo paso. Compartí el usuario y la contraseña de forma privada; todavía no enviamos invitaciones por correo.')

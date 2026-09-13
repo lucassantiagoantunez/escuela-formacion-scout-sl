@@ -78,3 +78,11 @@ Validación de esta etapa: 30 pruebas automatizadas del conjunto del proyecto, i
 Usar Python 3.12 o superior compatible con Django 6 (validación realizada con Python 3.13). Instalar `requirements.txt`, ejecutar `python manage.py migrate` y `python manage.py createsuperuser` para una instalación nueva. Dirección crea usuarios en Usuarios, crea curso y módulos/lecciones en Aula, asigna formadores y matrículas y publica cuando corresponde. No se crean contraseñas predeterminadas ni datos de alumnos de ejemplo.
 
 Antes de publicar: respaldar base actual, verificar PostgreSQL y configuración de producción, ejecutar pruebas, aplicar migraciones, recopilar estáticos y comprobar `/`, `/biblioteca/`, `/juegos/`, `/admin/` y `/aula/`. No se cambió la configuración del servicio Render ni se desplegó en esta etapa.
+
+## Ajustes verificados en edifos.com
+
+La web publicada está en https://edifos.com. Se verificó en Gestión que el Nivel I estaba en preparación y que su cursante tenía inscripción activa. Ahora Mis cursos muestra el título y la inscripción confirmada de los cursos propios en preparación, sin exponer descripción ni clases ni permitir su acceso antes de publicación. Las matrículas pausadas siguen ocultas.
+
+Los módulos de Gestión son desplegables cerrados inicialmente. Cada uno permite agregar una clase con el módulo seleccionado y fijado en el servidor. Al guardar se vuelve al módulo abierto. Dirección recibe un aviso explícito si inscribe personas en un curso sin habilitar. No se publican cursos automáticamente ni se modifica la matrícula para resolver la confusión de estados.
+
+Validación: 35 pruebas, incluyendo aislamiento por curso, rechazo de rutas ajenas, destino fijo de la clase y transición de inscripción en preparación a curso accesible. Sin migraciones nuevas. La carga actual permite texto y enlaces a videos; los archivos adjuntos privados continúan pendientes de la etapa de almacenamiento.

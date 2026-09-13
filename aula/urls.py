@@ -12,6 +12,7 @@ urlpatterns = [
     path('gestion/cursos/<int:curso_pk>/modulos/nuevo/', gestion.editar_modulo, name='gestion_modulo_nuevo'),
     path('gestion/cursos/<int:curso_pk>/modulos/<int:pk>/', gestion.editar_modulo, name='gestion_modulo_editar'),
     path('gestion/cursos/<int:curso_pk>/clases/nueva/', gestion.editar_leccion, name='gestion_leccion_nueva'),
+    path('gestion/cursos/<int:curso_pk>/modulos/<int:modulo_pk>/clases/nueva/', gestion.editar_leccion, name='gestion_modulo_leccion_nueva'),
     path('gestion/cursos/<int:curso_pk>/clases/<int:pk>/', gestion.editar_leccion, name='gestion_leccion_editar'),
     path('gestion/cursos/<int:curso_pk>/personas/nueva/', gestion.agregar_persona, name='gestion_persona_nueva'),
     path('gestion/cursos/<int:curso_pk>/personas/existente/', gestion.agregar_persona, {'existente': True}, name='gestion_persona_existente'),

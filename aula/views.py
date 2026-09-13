@@ -16,7 +16,12 @@ def cursos_permitidos(user):
 
 @login_required
 def panel(request):
-    return render(request, 'aula/panel.html', {'cursos': cursos_permitidos(request.user)})
+    cursos = cursos_permitidos(request.user)
+    # Mostrar solo la inscripción propia, sin abrir contenidos en preparación.
+    pendientes = Curso.objects.filter(
+        publicado=False, inscripciones__cursante=request.user, inscripciones__activa=True,
+    ).exclude(pk__in=cursos).only('pk', 'titulo').distinct()
+    return render(request, 'aula/panel.html', {'cursos': cursos, 'pendientes': pendientes})
 
 
 @login_required

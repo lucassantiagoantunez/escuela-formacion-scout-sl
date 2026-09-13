@@ -1,4 +1,8 @@
 {% extends 'aula/base.html' %}
 {% block aula %}<h2>Hola, {{ user.first_name|default:user.username }}</h2><p>Este es tu espacio de formación.</p>
-<div class="aula-cursos">{% for curso in cursos %}<article class="aula-tarjeta"><h3>{{ curso.titulo }}</h3><p>{{ curso.descripcion|linebreaksbr }}</p>{% if not curso.publicado %}<p>Borrador · solo equipo</p>{% endif %}<a href="{% url 'aula:curso' curso.pk %}">Entrar al curso →</a></article>{% empty %}<section class="aula-tarjeta"><h3>Todavía no tenés cursos disponibles</h3><p>Cuando Dirección active tu inscripción, aparecerá aquí.</p></section>{% endfor %}</div>
+<div class="aula-cursos">
+{% for curso in cursos %}<article class="aula-tarjeta"><h3>{{ curso.titulo }}</h3><p>{{ curso.descripcion|linebreaksbr }}</p>{% if not curso.publicado %}<p>Borrador · solo equipo</p>{% endif %}<a href="{% url 'aula:curso' curso.pk %}">Entrar al curso →</a></article>{% endfor %}
+{% for curso in pendientes %}<article class="aula-tarjeta"><h3>{{ curso.titulo }}</h3><p><strong>Inscripción confirmada · En preparación</strong></p><p>Ya estás en este curso. El equipo está preparando las clases; podrás entrar cuando Dirección habilite el acceso.</p></article>{% endfor %}
+{% if not cursos and not pendientes %}<section class="aula-tarjeta"><h3>Todavía no tenés cursos asignados</h3><p>Cuando Dirección active tu inscripción, aparecerá aquí.</p></section>{% endif %}
+</div>
 {% if user.is_superuser %}<p><a href="{% url 'aula:gestion' %}">Gestionar cursos y personas</a></p>{% endif %}{% endblock %}
