@@ -1,0 +1,7 @@
+{% load static %}
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ recurso.nombre }} · EDiFoS</title><link rel="stylesheet" href="{% static 'aula/visor.css' %}"></head>
+<body><main data-pdf-url="{% url 'aula:recurso_archivo' recurso.pk %}?vista=1">
+<header><strong>{{ recurso.nombre }}</strong><nav aria-label="Documento"><button id="anterior" disabled>← Anterior</button><span id="pagina" aria-live="polite"></span><button id="siguiente" disabled>Siguiente →</button><label>Tamaño <select id="zoom"><option value="1">Ajustar</option><option value="1.3">130%</option><option value="1.6">160%</option></select></label><button id="pantalla">Pantalla completa</button><a href="{% url 'aula:recurso_archivo' recurso.pk %}?descargar=1">Descargar original</a></nav></header>
+<p id="estado" role="status">Preparando documento…</p><div class="pagina"><canvas aria-label="Página del documento"></canvas></div>
+<details><summary>Leer el texto de esta página</summary><p id="texto"></p></details>
+</main><script type="module" src="{% static 'aula/visor.js' %}"></script></body></html>

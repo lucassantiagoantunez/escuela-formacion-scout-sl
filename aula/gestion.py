@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Count, Max
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,7 +12,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from .forms import CursoForm, InscribirForm, LeccionForm, ModuloForm, PersonaForm
-from .models import Curso, Inscripcion, Leccion, Modulo, Progreso
+from .models import Curso, Inscripcion, Leccion, Modulo, Progreso, RecursoLeccion
+from .archivos import preparar_recursos, guardar_recursos
 
 
 def direccion(view):
@@ -106,23 +107,50 @@ def editar_leccion(request, curso_pk, pk=None, modulo_pk=None):
     if not curso.modulos.exists():
         messages.info(request, 'Primero agregá un módulo para organizar las clases.')
         return redirect('aula:gestion_modulo_nuevo', curso_pk=curso.pk)
-    form = LeccionForm(request.POST if request.method == 'POST' else None, instance=leccion, curso=curso,
+    form = LeccionForm(request.POST if request.method == 'POST' else None, request.FILES if request.method == 'POST' else None, instance=leccion, curso=curso,
                        initial={'modulo': modulo.pk} if modulo else None)
     if modulo:
         form.fields['modulo'].disabled = True
         form.fields['modulo'].help_text = 'La clase se guardará en este módulo.'
     if request.method == 'POST' and form.is_valid():
-        with transaction.atomic():
-            Curso.objects.select_for_update().get(pk=curso.pk)
-            if not pk or 'modulo' in form.changed_data:
-                form.instance.orden = (form.cleaned_data['modulo'].lecciones.aggregate(n=Max('orden'))['n'] or 0) + 1
-            leccion = form.save()
-            registrar(request, leccion, CHANGE if pk else ADDITION, 'Clase guardada desde Gestión.')
-        messages.success(request, 'Clase guardada.' if leccion.publicada else 'Clase guardada como borrador.')
-        return redirect(f"{reverse('aula:gestion_curso', args=[curso.pk])}?modulo={leccion.modulo_id}#modulo-{leccion.modulo_id}")
+        guardados = []
+        try:
+            preparados = preparar_recursos(form.cleaned_data['archivos'])
+            with transaction.atomic():
+                Curso.objects.select_for_update().get(pk=curso.pk)
+                if not pk or 'modulo' in form.changed_data:
+                    form.instance.orden = (form.cleaned_data['modulo'].lecciones.aggregate(n=Max('orden'))['n'] or 0) + 1
+                form.instance.texto_enriquecido = True
+                leccion = form.save()
+                guardar_recursos(leccion, preparados, guardados)
+                registrar(request, leccion, CHANGE if pk else ADDITION, 'Clase y recursos guardados desde Gestión.')
+        except Exception as exc:
+            for campo in guardados:
+                try:
+                    campo.storage.delete(campo.name)
+                except OSError:
+                    pass
+            if not isinstance(exc, (ValidationError, OSError)):
+                raise
+            form.add_error('archivos', exc if isinstance(exc, ValidationError) else 'No pudimos guardar los archivos. Intentá nuevamente; la clase no se modificó.')
+        else:
+            messages.success(request, 'Clase guardada.' if leccion.publicada else 'Clase guardada como borrador.')
+            return redirect(f"{reverse('aula:gestion_curso', args=[curso.pk])}?modulo={leccion.modulo_id}#modulo-{leccion.modulo_id}")
     return formulario(request, form, 'Editar clase' if pk else 'Agregar una clase',
-                      f'Curso: {curso.titulo}. ' + (f'Módulo: {modulo.titulo}. ' if modulo else '') + 'Escribí el contenido y, si tenés un video, pegá su enlace.',
+                      f'Curso: {curso.titulo}. ' + (f'Módulo: {modulo.titulo}. ' if modulo else '') + 'Combiná texto, documentos, imágenes y videos en tu clase.',
                       reverse('aula:gestion_curso', args=[curso.pk]), 'Guardar clase')
+
+
+@direccion
+@require_http_methods(['POST'])
+def retirar_recurso(request, pk):
+    recurso = get_object_or_404(RecursoLeccion, pk=pk, activo=True)
+    with transaction.atomic():
+        recurso.activo = False
+        recurso.save(update_fields=['activo'])
+        registrar(request, recurso, CHANGE, 'Recurso retirado de la clase; archivo conservado.')
+    messages.success(request, 'El archivo ya no se muestra en la clase.')
+    return redirect('aula:gestion_leccion_editar', curso_pk=recurso.leccion.modulo.curso_id, pk=recurso.leccion_id)
 
 
 def asignar(request, curso, persona, rol):

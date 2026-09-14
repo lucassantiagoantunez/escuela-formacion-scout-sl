@@ -8,3 +8,5 @@ staticfiles/
 .env.*
 .DS_Store
 Thumbs.db
+.office/
+.office-build/

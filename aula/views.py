@@ -3,7 +3,7 @@ from django.db.models import Q, Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .models import Curso, Leccion, Modulo, Progreso
+from .models import Curso, Leccion, Modulo, Progreso, RecursoLeccion
 
 
 def cursos_permitidos(user):
@@ -28,7 +28,8 @@ def panel(request):
 def curso(request, pk):
     curso = get_object_or_404(cursos_permitidos(request.user), pk=pk)
     equipo = request.user.is_superuser or curso.formadores.filter(pk=request.user.pk).exists()
-    lecciones = Leccion.objects.filter(modulo__curso=curso)
+    lecciones = Leccion.objects.filter(modulo__curso=curso).prefetch_related(
+        Prefetch('recursos', queryset=RecursoLeccion.objects.filter(activo=True), to_attr='recursos_visibles'))
     if not equipo:
         lecciones = lecciones.filter(publicada=True)
     modulos = Modulo.objects.filter(curso=curso).prefetch_related(Prefetch('lecciones', queryset=lecciones))

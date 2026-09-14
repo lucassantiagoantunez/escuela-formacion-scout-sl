@@ -1,13 +1,23 @@
 {% extends 'aula/gestion/base.html' %}
+{% load static %}
+{% block extra_css %}{{ block.super }}{{ form.media.css }}<link rel="stylesheet" href="{% static 'aula/editor.css' %}">{% endblock %}
 {% block gestion %}
 <a href="{{ volver }}">← Volver sin guardar</a>
-<section class="gestion-formulario"><h2>{{ titulo }}</h2><p>{{ descripcion }}</p>
-<form method="post">{% csrf_token %}
+<section class="gestion-formulario{% if form.archivos %} gestion-editor{% endif %}"><h2>{{ titulo }}</h2><p>{{ descripcion }}</p>
+{% if form.archivos %}<p class="gestion-aviso">Combiná texto con formato, tablas, videos y documentos en una misma clase. Podés pegar texto desde Word y seguir editándolo aquí.</p>{% endif %}
+<form method="post" enctype="multipart/form-data"{% if form.archivos %} data-editor-clase{% endif %}>{% csrf_token %}
 {% if form.errors %}<div class="gestion-error" role="alert"><strong>No se guardaron los cambios.</strong> Revisá los campos señalados.</div>{% endif %}
 {{ form.non_field_errors }}
 {% for field in form %}<div class="gestion-campo{% if field.errors %} gestion-campo-error{% endif %}">
 {% if field.field.widget.input_type == 'checkbox' %}<div class="gestion-checkbox">{{ field }} {{ field.label_tag }}</div>{% else %}{{ field.label_tag }}{{ field }}{% endif %}
 {% if field.help_text %}<div class="gestion-ayuda" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}{{ field.errors }}</div>{% endfor %}
-<div class="gestion-acciones"><button type="submit">{{ boton }}</button><a href="{{ volver }}">Cancelar</a></div>
+<div class="gestion-acciones"><button type="submit">{{ boton }}</button><a href="{{ volver }}">Cancelar</a></div><p role="status" data-estado-guardado></p>
 </form></section>
+{% if form.archivos and form.instance.pk %}
+<section class="gestion-formulario gestion-editor"><h3>Archivos que ya están en esta clase</h3><p>Agregar archivos nuevos conserva los anteriores.</p>
+<ul class="gestion-lista">{% for recurso in form.instance.recursos.all %}{% if recurso.activo %}<li><div><strong>{{ recurso.nombre }}</strong><a href="{% url 'aula:recurso_archivo' recurso.pk %}?descargar=1">Descargar original</a>{% if recurso.tipo == 'documento' %} · <a href="{% url 'aula:recurso_visor' recurso.pk %}" target="_blank" rel="noopener">Ver documento</a>{% endif %}</div><form method="post" action="{% url 'aula:recurso_retirar' recurso.pk %}">{% csrf_token %}<button>Quitar de la clase</button></form></li>{% endif %}{% endfor %}</ul>
+<a href="{% url 'aula:curso' form.instance.modulo.curso_id %}#clase-{{ form.instance.pk }}" target="_blank" rel="noopener">Ver la clase guardada →</a></section>
+{% endif %}
+{{ form.media.js }}
+{% if form.archivos %}<script src="{% static 'aula/editor.js' %}" defer></script>{% endif %}
 {% endblock %}

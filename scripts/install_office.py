@@ -8,6 +8,8 @@ import os
 import re
 import subprocess
 import shutil
+import tempfile
+from pypdf import PdfReader
 
 root = Path(os.getenv('EDIFOS_OFFICE_BUILD_ROOT', str(Path(__file__).resolve().parents[1]))).resolve()
 work = root / '.office-build'
@@ -46,4 +48,16 @@ fundamental.write_text(text)
 env = os.environ.copy()
 env['LD_LIBRARY_PATH'] = ':'.join(str(dest / p) for p in ['usr/lib/libreoffice/program', 'usr/lib/x86_64-linux-gnu', 'lib/x86_64-linux-gnu'])
 subprocess.run([str(dest / 'usr/lib/libreoffice/program/soffice'), '--headless', '--version'], env=env, check=True)
+fixtures = Path(__file__).resolve().parents[1] / 'aula/fixtures_multimedia'
+env['SAL_USE_VCLPLUGIN'] = 'svp'
+with tempfile.TemporaryDirectory(prefix='edifos-build-office-') as temp:
+    for extension, pages in [('docx', 1), ('pptx', 2)]:
+        subprocess.run([str(dest / 'usr/lib/libreoffice/program/soffice'),
+            f'-env:UserInstallation={Path(temp).as_uri()}/perfil', '--headless',
+            '--convert-to', 'pdf', '--outdir', temp, str(fixtures / f'ejemplo.{extension}')],
+            env=env, check=True, timeout=25)
+        pdf = Path(temp) / 'ejemplo.pdf'
+        if len(PdfReader(pdf).pages) != pages:
+            raise RuntimeError('La conversión de prueba no produjo las páginas esperadas.')
+        pdf.unlink()
 print('Conversor de documentos preparado.')

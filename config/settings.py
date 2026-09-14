@@ -229,3 +229,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = 'aula:login'
 LOGIN_REDIRECT_URL = 'aula:panel'
+
+AULA_PRIVATE_ROOT = Path(os.getenv('AULA_PRIVATE_ROOT', str(MEDIA_ROOT / '.aula_privada')))
+AULA_OFFICE_EXECUTABLE = os.getenv('AULA_OFFICE_EXECUTABLE', str(BASE_DIR / '.office' / 'usr/lib/libreoffice/program/soffice'))
+AULA_DOCUMENT_MAX_BYTES = 20 * 1024 * 1024
+AULA_VIDEO_MAX_BYTES = 150 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+
+CKEDITOR_5_CONFIGS['aula'] = {
+    'language': 'es',
+    'fontSize': {'options': [12, 14, 'default', 18, 22, 28]},
+    'toolbar': {'items': ['heading', '|', 'bold', 'italic', 'underline', 'strikethrough',
+        'fontColor', 'fontBackgroundColor', 'fontSize', '|', 'alignment',
+        'bulletedList', 'numberedList', 'link', 'blockQuote', 'insertTable',
+        'horizontalLine', 'removeFormat', 'undo', 'redo'], 'shouldNotGroupWhenFull': False},
+    'table': {'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']},
+    'removePlugins': ['Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageResize',
+        'ImageInsert', 'LinkImage', 'CKFinderUploadAdapter', 'SimpleUploadAdapter', 'MediaEmbed'],
+}

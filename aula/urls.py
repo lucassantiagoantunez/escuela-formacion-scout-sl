@@ -2,9 +2,13 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 from . import views
 from . import gestion
+from . import recursos
 
 app_name = 'aula'
 urlpatterns = [
+    path('recursos/<uuid:pk>/archivo/', recursos.archivo, name='recurso_archivo'),
+    path('recursos/<uuid:pk>/ver/', recursos.visor, name='recurso_visor'),
+    path('gestion/recursos/<uuid:pk>/retirar/', gestion.retirar_recurso, name='recurso_retirar'),
     path('gestion/', gestion.inicio, name='gestion'),
     path('gestion/cursos/nuevo/', gestion.editar_curso, name='gestion_curso_nuevo'),
     path('gestion/cursos/<int:pk>/', gestion.detalle, name='gestion_curso'),
