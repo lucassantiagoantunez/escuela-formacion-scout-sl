@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Curso, Inscripcion, Modulo, Leccion, Progreso
+from .models import Curso, Inscripcion, Modulo, Leccion, Progreso, PermisoFormador
 
 
 class DireccionAdmin(admin.ModelAdmin):
@@ -50,3 +50,10 @@ class ProgresoAdmin(DireccionAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(PermisoFormador)
+class PermisoFormadorAdmin(DireccionAdmin):
+    list_display=['formador','curso','responder_foro','moderar_foro','corregir','validar','emitir','disenar']
+    list_filter=['curso','emitir','validar']
+    fields=['curso','formador','responder_foro','moderar_foro','ver_seguimiento','corregir','validar','emitir','disenar']

@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST,require_http_methods
 from .models import Curso,Leccion,Inscripcion,Prueba,ItemPrueba,IntentoPrueba,CorreccionPrueba,RecursoLeccion
 from .gestion import direccion,registrar,formulario
+from .permisos import exigir
 from .pruebas_forms import PruebaForm,ItemForm,CorreccionForm,ReglasForm
 from .pruebas_motor import FUENTES,importar,preparar,corregir,escena_actual
 
@@ -223,8 +224,7 @@ def resolver(request,pk):
 def revisar(request,pk):
     intento=get_object_or_404(IntentoPrueba.objects.select_related('prueba__leccion__modulo__curso','cursante'),pk=pk)
     curso=intento.prueba.leccion.modulo.curso
-    if not (request.user.is_superuser or curso.formadores.filter(pk=request.user.pk).exists()):
-        raise PermissionDenied
+    exigir(request.user,curso,'corregir')
     form=CorreccionForm(request.POST or None)
     if intento.estado=='abierto':
         raise Http404

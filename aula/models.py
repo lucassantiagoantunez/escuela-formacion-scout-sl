@@ -7,6 +7,11 @@ from .almacenamiento import privado, ruta_archivo
 from .contenido import limpiar_html, youtube_embed
 
 
+def ruta_plantilla(instance, filename):
+    from pathlib import Path
+    return f'certificados/plantillas/{uuid4().hex}{Path(filename).suffix.lower()}'
+
+
 class Curso(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
@@ -198,3 +203,66 @@ class Certificado(models.Model):
     motivo_revocacion = models.TextField(blank=True)
     fecha_revocacion = models.DateTimeField(null=True)
     revocado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.PROTECT, related_name='certificados_revocados')
+
+
+class PermisoFormador(models.Model):
+    curso = models.ForeignKey(Curso,on_delete=models.CASCADE)
+    formador = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    responder_foro = models.BooleanField('Participar en el foro',default=True)
+    moderar_foro = models.BooleanField('Moderar el foro',default=False)
+    ver_seguimiento = models.BooleanField('Ver seguimiento de cursantes',default=True)
+    corregir = models.BooleanField('Corregir evaluaciones',default=True)
+    validar = models.BooleanField('Validar aprobación y registrar actas',default=False)
+    emitir = models.BooleanField('Emitir, descargar y revocar certificados',default=False)
+    disenar = models.BooleanField('Editar plantillas de certificados',default=False)
+
+    class Meta:
+        constraints=[models.UniqueConstraint(fields=['curso','formador'],name='aula_permiso_formador_unico')]
+        verbose_name='permisos de un formador'
+        verbose_name_plural='permisos de formadores por curso'
+
+    def __str__(self):
+        return f'{self.formador} — {self.curso}'
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.curso_id and self.formador_id and not self.curso.formadores.filter(pk=self.formador_id).exists():
+            raise ValidationError('Primero asigná esta persona como formador del curso.')
+
+
+class TemaForo(models.Model):
+    curso=models.ForeignKey(Curso,on_delete=models.PROTECT,related_name='temas_foro')
+    autor=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT)
+    titulo=models.CharField(max_length=160)
+    texto=models.TextField()
+    creado=models.DateTimeField(auto_now_add=True)
+    actualizado=models.DateTimeField(auto_now_add=True)
+    resuelto=models.BooleanField(default=False)
+    cerrado=models.BooleanField(default=False)
+    oculto=models.BooleanField(default=False)
+
+    class Meta:
+        ordering=['-actualizado','-pk']
+
+
+class RespuestaForo(models.Model):
+    tema=models.ForeignKey(TemaForo,on_delete=models.PROTECT,related_name='respuestas')
+    autor=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT)
+    texto=models.TextField()
+    creado=models.DateTimeField(auto_now_add=True)
+    oculto=models.BooleanField(default=False)
+
+    class Meta:
+        ordering=['creado','pk']
+
+
+class DisenoCertificado(models.Model):
+    curso=models.ForeignKey(Curso,on_delete=models.PROTECT)
+    tipo=models.CharField(max_length=20,choices=Certificado._meta.get_field('tipo').choices)
+    activo=models.BooleanField(default=True)
+    fondo=models.FileField(storage=privado,upload_to=ruta_plantilla,blank=True)
+    configuracion=models.JSONField(default=dict)
+    actualizado=models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints=[models.UniqueConstraint(fields=['curso','tipo'],name='aula_diseno_certificado_unico')]

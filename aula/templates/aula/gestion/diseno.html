@@ -1,0 +1,14 @@
+{% extends 'aula/gestion/base.html' %}{% load static %}
+{% block extra_css %}{{ block.super }}<link rel="stylesheet" href="{% static 'aula/diseno.css' %}">{% endblock %}
+{% block gestion %}<a href="{% url 'aula:registro_curso' curso.pk %}">← Seguimiento del curso</a>
+<h2>Diseñar certificado de {% if tipo == 'participacion' %}participación{% else %}participación y aprobación{% endif %}</h2>
+<p>Subí una plantilla de fondo y acomodá los campos arrastrándolos. También podés ajustar sus posiciones con los controles. El nombre, el curso y los demás datos se completarán al emitir cada certificado.</p>
+<div class="diseno-editor"><form method="post" enctype="multipart/form-data" id="form-diseno" class="gestion-formulario">{% csrf_token %}{{ form.non_field_errors }}
+<p>{{ form.activo }} {{ form.activo.label_tag }}</p><p>{{ form.fondo.label_tag }}{{ form.fondo }}{{ form.fondo.errors }}<small>{{ form.fondo.help_text }}</small></p><p>{{ form.quitar_fondo }} {{ form.quitar_fondo.label_tag }}</p>
+<p>{{ form.encabezado.label_tag }}{{ form.encabezado }}{{ form.encabezado.errors }}</p><p>{{ form.libre.label_tag }}{{ form.libre }}{{ form.libre.errors }}</p><p>{{ form.color.label_tag }}{{ form.color }}{{ form.color.errors }}</p><p>{{ form.fuente.label_tag }}{{ form.fuente }}{{ form.fuente.errors }}</p>
+{% for campo in campos %}<details {% if form.errors %}open{% endif %}><summary>{{ campo.label }}</summary>{% for field in campo.fields %}<p>{{ field.label_tag }}{{ field }}{{ field.errors }}</p>{% endfor %}</details>{% endfor %}
+<button>Guardar diseño</button>{% if diseno.pk %}<p><a href="{% url 'aula:diseno_previa' curso.pk tipo %}" target="_blank" rel="noopener">Abrir ejemplo PDF del diseño guardado ↗</a></p>{% endif %}<p>Guardar cambia los próximos certificados. Los ya emitidos conservan su diseño.</p></form>
+<section class="diseno-vista"><h3>Vista de trabajo</h3><p>Los recuadros sirven para ubicar los campos; no aparecen en el PDF. Guardá el diseño para revisar el archivo final.</p>
+<div id="diseno-lienzo" {% if diseno.fondo %}data-fondo="{% url 'aula:diseno_fondo' curso.pk tipo %}" data-pdf="{{ pdf_fondo|yesno:'1,0' }}"{% endif %}>
+<canvas id="diseno-fondo"></canvas>{% for campo in campos %}<div class="diseno-campo" data-key="{{ campo.key }}" title="Arrastrar {{ campo.label }}">{{ campo.texto }}</div>{% endfor %}<div class="diseno-pie">Código y verificación · Espacio reservado</div></div><p id="diseno-estado" role="status"></p></section></div>
+<script type="module" src="{% static 'aula/diseno.js' %}"></script>{% endblock %}

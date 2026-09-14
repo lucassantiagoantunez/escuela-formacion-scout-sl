@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST,require_http_methods
 from .gestion import direccion,registrar,formulario
+from .permisos import exigir,permisos,puede_seguimiento
 from .models import Curso,Inscripcion,Leccion,Progreso,Prueba,IntentoPrueba,CierreCurso,MovimientoAcademico,Certificado
 
 
@@ -107,7 +108,7 @@ def retirar_aprobacion(inscripcion,responsable,motivo):
 
 
 def autorizado_equipo(request,curso):
-    if not (request.user.is_superuser or curso.formadores.filter(pk=request.user.pk).exists()):
+    if not puede_seguimiento(request.user,curso):
         raise PermissionDenied
 
 
@@ -115,12 +116,15 @@ def autorizado_equipo(request,curso):
 def registro(request,pk):
     curso=get_object_or_404(Curso,pk=pk)
     autorizado_equipo(request,curso)
-    inscripciones=list(curso.inscripciones.select_related('cursante').prefetch_related('certificados'))
+    acciones=permisos(request.user,curso)
+    ve_cursantes=acciones['ver_seguimiento'] or acciones['validar'] or acciones['emitir']
+    ve_entregas=acciones['ver_seguimiento'] or acciones['corregir']
+    inscripciones=list(curso.inscripciones.select_related('cursante').prefetch_related('certificados')) if ve_cursantes else []
     for inscripcion in inscripciones:
         inscripcion.cierre_actual=CierreCurso.objects.filter(inscripcion=inscripcion).first()
         inscripcion.faltan_lecturas,inscripcion.faltan_pruebas=pendientes(inscripcion)
-    intentos=IntentoPrueba.objects.filter(prueba__leccion__modulo__curso=curso).exclude(estado='abierto').select_related('cursante','prueba__leccion')[:200]
-    return render(request,'aula/gestion/registro.html',{'curso':curso,'inscripciones':inscripciones,'intentos':intentos})
+    intentos=IntentoPrueba.objects.filter(prueba__leccion__modulo__curso=curso).exclude(estado='abierto').select_related('cursante','prueba__leccion')[:200] if ve_entregas else []
+    return render(request,'aula/gestion/registro.html',{'curso':curso,'inscripciones':inscripciones,'intentos':intentos,'acciones':acciones,'ve_cursantes':ve_cursantes,'ve_entregas':ve_entregas})
 
 
 @direccion
@@ -137,10 +141,11 @@ def configurar(request,pk):
     return formulario(request,form,'Certificados y libro de actas','Definí cómo se acredita este curso antes de emitir certificados.',reverse('aula:registro_curso',args=[pk]))
 
 
-@direccion
+@login_required
 @require_http_methods(['GET','POST'])
 def cierre(request,pk):
     inscripcion=get_object_or_404(Inscripcion.objects.select_related('curso','cursante'),pk=pk)
+    exigir(request.user,inscripcion.curso,'validar')
     instancia=CierreCurso.objects.filter(inscripcion=inscripcion).first() or CierreCurso(inscripcion=inscripcion,responsable=request.user,nombre_certificado=inscripcion.cursante.get_full_name())
     form=CierreForm(request.POST or None,instance=instancia)
     if request.method=='POST' and form.is_valid():
@@ -168,10 +173,11 @@ def cierre(request,pk):
         'Confirmá los requisitos con la documentación institucional. El asiento digital no reemplaza la escritura en el libro.',reverse('aula:registro_curso',args=[inscripcion.curso_id]))
 
 
-@direccion
+@login_required
 @require_POST
 def emitir(request,pk):
     inscripcion=get_object_or_404(Inscripcion.objects.select_related('curso','cursante'),pk=pk)
+    exigir(request.user,inscripcion.curso,'emitir')
     tipo=request.POST.get('tipo')
     try:
         with transaction.atomic():
@@ -202,6 +208,10 @@ def emitir(request,pk):
                     'requiere_acta':curso.requiere_acta,'libro':cierre.libro if tipo=='aprobacion' else '',
                     'acta':cierre.acta if tipo=='aprobacion' else '', 'folio':cierre.folio if tipo=='aprobacion' else '',
                     'fecha_acta':str(cierre.fecha_acta) if cierre.fecha_acta and tipo=='aprobacion' else ''}
+                from .models import DisenoCertificado
+                diseno=DisenoCertificado.objects.filter(curso=curso,tipo=tipo,activo=True).first()
+                if diseno:
+                    datos['diseno']={'fondo':diseno.fondo.name or '', 'configuracion':diseno.configuracion}
                 certificado=Certificado.objects.create(inscripcion=inscripcion,tipo=tipo,datos=datos,responsable=request.user)
                 registrar(request,certificado,ADDITION,'Certificado emitido con datos y referencias inmutables.')
                 messages.success(request,'Certificado emitido y disponible para el cursante.')
@@ -210,10 +220,11 @@ def emitir(request,pk):
     return redirect('aula:registro_curso',pk=inscripcion.curso_id)
 
 
-@direccion
+@login_required
 @require_POST
 def revocar(request,pk):
     certificado=get_object_or_404(Certificado,pk=pk)
+    exigir(request.user,certificado.inscripcion.curso,'emitir')
     motivo=request.POST.get('motivo','').strip()
     if not motivo or len(motivo)>2000:
         messages.error(request,'Escribí un motivo de revocación de hasta 2000 caracteres.')
@@ -230,6 +241,9 @@ def revocar(request,pk):
 
 
 def generar_pdf(certificado):
+    if certificado.datos.get('diseno'):
+        from .disenos import dibujar
+        return dibujar(certificado)
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4,landscape
     from reportlab.lib.styles import ParagraphStyle
@@ -274,7 +288,7 @@ def generar_pdf(certificado):
 @login_required
 def descargar(request,pk):
     certificado=get_object_or_404(Certificado.objects.select_related('inscripcion__curso'),pk=pk,revocado=False)
-    if certificado.inscripcion.cursante_id!=request.user.pk and not request.user.is_superuser:
+    if certificado.inscripcion.cursante_id!=request.user.pk and not permisos(request.user,certificado.inscripcion.curso)['emitir']:
         raise PermissionDenied
     respuesta=HttpResponse(generar_pdf(certificado),content_type='application/pdf')
     respuesta['Content-Disposition']=f'inline; filename="certificado-edifos-{certificado.pk}.pdf"'

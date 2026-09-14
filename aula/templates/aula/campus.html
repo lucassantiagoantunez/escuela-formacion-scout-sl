@@ -2,14 +2,14 @@
 {% block titulo %}{{ curso.titulo }} · Aula EDiFoS{% endblock %}
 {% block body_class %}campus-pagina{% endblock %}
 {% block menu_arriba %}{% endblock %}{% block menu_abajo %}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/editor.css' %}"><link rel="stylesheet" href="{% static 'aula/campus.css' %}"><link rel="stylesheet" href="{% static 'aula/pruebas.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/editor.css' %}"><link rel="stylesheet" href="{% static 'aula/campus.css' %}"><link rel="stylesheet" href="{% static 'aula/pruebas.css' %}"><link rel="stylesheet" href="{% static 'aula/foro.css' %}">{% endblock %}
 {% block contenido %}
 <a class="campus-salto" href="#contenido-clase">Saltar al contenido</a>
 <div class="campus aula">
   <header class="campus-cabecera">
     <a class="campus-marca" href="{% url 'aula:panel' %}"><strong>EDiFoS</strong><span>SAN LUIS · AULA VIRTUAL</span></a>
     <h1>{{ curso.titulo }}</h1>
-    <nav aria-label="Curso"><a href="{% url 'aula:curso' curso.pk %}?{% if actual %}clase={{ actual.pk }}{% endif %}"{% if vista == 'contenido' %} aria-current="page"{% endif %}>Cursar</a><a href="{% url 'aula:curso' curso.pk %}?vista=avance"{% if vista == 'avance' %} aria-current="page"{% endif %}>Mi avance</a><a href="{% url 'aula:panel' %}">Mis cursos</a></nav>
+    <nav aria-label="Curso"><a href="{% url 'aula:curso' curso.pk %}?{% if actual %}clase={{ actual.pk }}{% endif %}"{% if vista == 'contenido' %} aria-current="page"{% endif %}>Cursar</a><a href="{% url 'aula:curso' curso.pk %}?vista=avance"{% if vista == 'avance' %} aria-current="page"{% endif %}>Mi avance</a><a href="{% url 'aula:curso' curso.pk %}?vista=foro"{% if vista == 'foro' %} aria-current="page"{% endif %}>Foro</a><a href="{% url 'aula:panel' %}">Mis cursos</a></nav>
   </header>
   <div class="campus-cuerpo">
     <aside class="campus-indice" id="indice-curso" aria-label="Índice del curso">
@@ -25,13 +25,14 @@
       </details>{% empty %}<p class="campus-proximamente">El equipo está preparando los módulos.</p>{% endfor %}
       </nav>
       <a class="campus-materiales" href="{% url 'aula:curso' curso.pk %}?vista=materiales"{% if vista == 'materiales' %} aria-current="page"{% endif %}>Documentos y materiales →</a>
-      {% if equipo %}<a class="campus-materiales" href="{% url 'aula:registro_curso' curso.pk %}">Seguimiento y resultados →</a>{% endif %}{% if user.is_superuser %}<a class="campus-materiales" href="{% url 'aula:gestion_curso' curso.pk %}">Gestionar este curso →</a>{% endif %}
+      {% if puede_seguimiento %}<a class="campus-materiales" href="{% url 'aula:registro_curso' curso.pk %}">Seguimiento y resultados →</a>{% endif %}{% if user.is_superuser %}<a class="campus-materiales" href="{% url 'aula:gestion_curso' curso.pk %}">Gestionar este curso →</a>{% endif %}
     </aside>
     <main class="campus-lectura" id="contenido-clase" tabindex="-1">
-      <div class="campus-herramientas"><button type="button" id="alternar-indice" aria-expanded="true" aria-controls="indice-curso">☰ Índice</button><span>{% if vista == 'contenido' and actual %}Clase {{ posicion_clase }} de {{ cantidad_clases }}{% elif vista == 'avance' %}Tu recorrido{% elif vista == 'materiales' %}Biblioteca del curso{% else %}Bienvenida{% endif %}</span><div><button type="button" id="tamano-texto" aria-pressed="false">A+ <span>Texto grande</span></button></div></div>
+      <div class="campus-herramientas"><button type="button" id="alternar-indice" aria-expanded="true" aria-controls="indice-curso">☰ Índice</button><span>{% if vista == 'contenido' and actual %}Clase {{ posicion_clase }} de {{ cantidad_clases }}{% elif vista == 'avance' %}Tu recorrido{% elif vista == 'foro' %}Preguntas y respuestas{% elif vista == 'materiales' %}Biblioteca del curso{% else %}Bienvenida{% endif %}</span><div><button type="button" id="tamano-texto" aria-pressed="false">A+ <span>Texto grande</span></button></div></div>
       <div class="campus-papel">{% for message in messages %}<p class="campus-mensaje" role="status">{{ message }}</p>{% endfor %}
       {% if equipo %}<p class="campus-equipo">Vista del equipo de formación. Incluye borradores; los cursantes solo ven las clases publicadas.</p>{% endif %}
-      {% if vista == 'avance' %}
+      {% if vista == 'foro' %}{% include 'aula/foro.html' %}
+      {% elif vista == 'avance' %}
         <p class="campus-etiqueta">MI RECORRIDO</p><h2>Tu avance en el curso</h2>
         <div class="campus-resumen"><strong>{{ porcentaje }}%</strong><div><p>{{ hechas }} de {{ total }} lecciones obligatorias completadas</p><progress value="{{ hechas }}" max="{{ total|default:1 }}" aria-label="Progreso de lectura"></progress></div></div>
         <p>Este avance registra tu confirmación de lectura; la aprobación del curso se evalúa por separado.</p>

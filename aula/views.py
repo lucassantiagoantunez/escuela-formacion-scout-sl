@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from .models import Curso, Leccion, Modulo, Progreso, RecursoLeccion, Prueba, IntentoPrueba, Inscripcion, Certificado
 from .pruebas_motor import escena_actual
+from .permisos import puede_seguimiento
 
 
 def cursos_permitidos(user):
@@ -29,7 +30,7 @@ def panel(request):
 
 
 @login_required
-def curso(request, pk, intento=None):
+def curso(request, pk, intento=None, foro_extra=None):
     curso = get_object_or_404(cursos_permitidos(request.user), pk=pk)
     equipo = request.user.is_superuser or curso.formadores.filter(pk=request.user.pk).exists()
     lecciones = Leccion.objects.filter(modulo__curso=curso).select_related('prueba').prefetch_related(
@@ -65,16 +66,20 @@ def curso(request, pk, intento=None):
         actual = next((clase for clase in ordenadas if clase.pk not in completadas), ordenadas[0])
     posicion = ordenadas.index(actual) if actual else -1
     vista = request.GET.get('vista', 'contenido')
-    if vista not in {'contenido', 'materiales', 'avance'}:
+    if vista not in {'contenido', 'materiales', 'avance', 'foro'}:
         vista = 'contenido'
     if intento:
         vista='contenido'
+    if foro_extra is not None:
+        vista='foro'
+    from .foro import contexto
+    foro_contexto=contexto(request,curso,foro_extra) if vista=='foro' else {}
     prueba_actual=next((p for p in pruebas if actual and p.leccion_id==actual.pk),None)
     inscripcion=Inscripcion.objects.filter(curso=curso,cursante=request.user).first()
     return render(request, 'aula/campus.html', {
         'curso': curso, 'modulos': modulos, 'completadas': completadas,
         'total': total, 'hechas': hechas, 'porcentaje': round(100 * hechas / total) if total else 0,
-        'equipo': equipo,
+        'equipo': equipo,'puede_seguimiento':puede_seguimiento(request.user,curso),**foro_contexto,
         'actual': actual, 'vista': vista, 'cantidad_clases': len(ordenadas),
         'hay_materiales': any(clase.recursos_visibles for clase in ordenadas),
         'posicion_clase': posicion + 1,

@@ -4,9 +4,16 @@ from . import views
 from . import gestion
 from . import recursos
 from . import pruebas, certificados
+from . import foro,disenos
 
 app_name = 'aula'
 urlpatterns = [
+    path('cursos/<int:pk>/foro/nuevo/',foro.nuevo,name='foro_nuevo'),
+    path('foro/<int:pk>/responder/',foro.responder,name='foro_responder'),
+    path('foro/<int:pk>/moderar/',foro.moderar,name='foro_moderar'),
+    path('gestion/cursos/<int:pk>/diseno/<str:tipo>/',disenos.editar,name='diseno_certificado'),
+    path('gestion/cursos/<int:pk>/diseno/<str:tipo>/fondo/',disenos.fondo,name='diseno_fondo'),
+    path('gestion/cursos/<int:pk>/diseno/<str:tipo>/ejemplo.pdf',disenos.vista_previa,name='diseno_previa'),
     path('gestion/cursos/<int:curso_pk>/pruebas/nueva/',pruebas.nueva,name='prueba_nueva'),
     path('gestion/pruebas/<int:pk>/',pruebas.editar,name='prueba_editar'),
     path('gestion/pruebas/<int:pk>/actividades/nueva/',pruebas.item,name='prueba_item_nuevo'),
