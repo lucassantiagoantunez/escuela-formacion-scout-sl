@@ -2,18 +2,18 @@
 {% block titulo %}{{ curso.titulo }} · Aula EDiFoS{% endblock %}
 {% block body_class %}campus-pagina{% endblock %}
 {% block menu_arriba %}{% endblock %}{% block menu_abajo %}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/editor.css' %}"><link rel="stylesheet" href="{% static 'aula/campus.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/editor.css' %}"><link rel="stylesheet" href="{% static 'aula/campus.css' %}"><link rel="stylesheet" href="{% static 'aula/pruebas.css' %}">{% endblock %}
 {% block contenido %}
 <a class="campus-salto" href="#contenido-clase">Saltar al contenido</a>
 <div class="campus aula">
   <header class="campus-cabecera">
     <a class="campus-marca" href="{% url 'aula:panel' %}"><strong>EDiFoS</strong><span>SAN LUIS · AULA VIRTUAL</span></a>
     <h1>{{ curso.titulo }}</h1>
-    <nav aria-label="Curso"><a href="?{% if actual %}clase={{ actual.pk }}{% endif %}"{% if vista == 'contenido' %} aria-current="page"{% endif %}>Cursar</a><a href="?vista=avance"{% if vista == 'avance' %} aria-current="page"{% endif %}>Mi avance</a><a href="{% url 'aula:panel' %}">Mis cursos ↗</a></nav>
+    <nav aria-label="Curso"><a href="{% url 'aula:curso' curso.pk %}?{% if actual %}clase={{ actual.pk }}{% endif %}"{% if vista == 'contenido' %} aria-current="page"{% endif %}>Cursar</a><a href="{% url 'aula:curso' curso.pk %}?vista=avance"{% if vista == 'avance' %} aria-current="page"{% endif %}>Mi avance</a><a href="{% url 'aula:panel' %}">Mis cursos</a></nav>
   </header>
   <div class="campus-cuerpo">
     <aside class="campus-indice" id="indice-curso" aria-label="Índice del curso">
-      <div class="campus-indice-titulo"><h2>Contenido del curso</h2><span>{{ cantidad_clases }} clases</span></div>
+      <div class="campus-indice-titulo"><h2>Contenido del curso</h2><span>{{ cantidad_clases }} clase{{ cantidad_clases|pluralize }}</span></div>
       {% if not equipo %}<p class="campus-proximamente">Tu avance de lectura: <strong>{{ porcentaje }}%</strong></p>{% endif %}
       <label class="campus-buscar">Buscar en el índice<input type="search" id="buscar-clase" placeholder="Nombre del módulo o clase" autocomplete="off"></label>
       <p class="campus-sin-resultados" hidden role="status">No hay clases con ese nombre.</p>
@@ -21,38 +21,39 @@
       {% for modulo in modulos %}<details class="campus-modulo" data-modulo data-nombre="{{ modulo.titulo }}"{% if actual.modulo_id == modulo.pk or not actual and forloop.first %} open{% endif %}>
         <summary><span class="campus-numero">{{ forloop.counter|stringformat:'02d' }}</span><span>{{ modulo.titulo }}<small>{{ modulo.lecturas_hechas }} / {{ modulo.total_lecturas }} lecturas obligatorias</small></span><span class="campus-flecha" aria-hidden="true">⌄</span></summary>
         <progress value="{{ modulo.lecturas_hechas }}" max="{{ modulo.total_lecturas|default:1 }}" aria-label="Avance en {{ modulo.titulo }}"></progress>
-        <ol>{% for clase in modulo.clases %}<li data-clase data-nombre="{{ clase.titulo }}"><a href="?clase={{ clase.pk }}"{% if clase.pk == actual.pk and vista == 'contenido' %} aria-current="page"{% endif %}><span class="campus-estado{% if clase.pk in completadas %} hecha{% endif %}" aria-label="{% if clase.pk in completadas %}Completada{% else %}Pendiente{% endif %}">{% if clase.pk in completadas %}✓{% else %}○{% endif %}</span><span>{{ clase.titulo }}{% if not clase.publicada %}<small>Borrador</small>{% elif not clase.obligatoria %}<small>Lectura opcional</small>{% endif %}</span></a></li>{% empty %}<li class="campus-proximamente">Clases en preparación</li>{% endfor %}</ol>
+        <ol>{% for clase in modulo.clases %}<li data-clase data-nombre="{{ clase.titulo }}"><a href="{% url 'aula:curso' curso.pk %}?clase={{ clase.pk }}"{% if clase.pk == actual.pk and vista == 'contenido' %} aria-current="page"{% endif %}><span class="campus-estado{% if clase.pk in completadas %} hecha{% endif %}" aria-label="{% if clase.pk in completadas %}Completada{% else %}Pendiente{% endif %}">{% if clase.pk in completadas %}✓{% else %}○{% endif %}</span><span>{{ clase.titulo }}{% if not clase.publicada %}<small>Borrador</small>{% elif clase.prueba %}<small>Prueba · {{ clase.prueba.get_tipo_display }}</small>{% elif not clase.obligatoria %}<small>Lectura opcional</small>{% endif %}</span></a></li>{% empty %}<li class="campus-proximamente">Clases en preparación</li>{% endfor %}</ol>
       </details>{% empty %}<p class="campus-proximamente">El equipo está preparando los módulos.</p>{% endfor %}
       </nav>
-      <a class="campus-materiales" href="?vista=materiales"{% if vista == 'materiales' %} aria-current="page"{% endif %}>Documentos y materiales →</a>
-      {% if user.is_superuser %}<a class="campus-materiales" href="{% url 'aula:gestion_curso' curso.pk %}">Gestionar este curso →</a>{% endif %}
+      <a class="campus-materiales" href="{% url 'aula:curso' curso.pk %}?vista=materiales"{% if vista == 'materiales' %} aria-current="page"{% endif %}>Documentos y materiales →</a>
+      {% if equipo %}<a class="campus-materiales" href="{% url 'aula:registro_curso' curso.pk %}">Seguimiento y resultados →</a>{% endif %}{% if user.is_superuser %}<a class="campus-materiales" href="{% url 'aula:gestion_curso' curso.pk %}">Gestionar este curso →</a>{% endif %}
     </aside>
     <main class="campus-lectura" id="contenido-clase" tabindex="-1">
       <div class="campus-herramientas"><button type="button" id="alternar-indice" aria-expanded="true" aria-controls="indice-curso">☰ Índice</button><span>{% if vista == 'contenido' and actual %}Clase {{ posicion_clase }} de {{ cantidad_clases }}{% elif vista == 'avance' %}Tu recorrido{% elif vista == 'materiales' %}Biblioteca del curso{% else %}Bienvenida{% endif %}</span><div><button type="button" id="tamano-texto" aria-pressed="false">A+ <span>Texto grande</span></button></div></div>
-      <div class="campus-papel">
+      <div class="campus-papel">{% for message in messages %}<p class="campus-mensaje" role="status">{{ message }}</p>{% endfor %}
       {% if equipo %}<p class="campus-equipo">Vista del equipo de formación. Incluye borradores; los cursantes solo ven las clases publicadas.</p>{% endif %}
       {% if vista == 'avance' %}
         <p class="campus-etiqueta">MI RECORRIDO</p><h2>Tu avance en el curso</h2>
         <div class="campus-resumen"><strong>{{ porcentaje }}%</strong><div><p>{{ hechas }} de {{ total }} lecciones obligatorias completadas</p><progress value="{{ hechas }}" max="{{ total|default:1 }}" aria-label="Progreso de lectura"></progress></div></div>
         <p>Este avance registra tu confirmación de lectura; la aprobación del curso se evalúa por separado.</p>
         <div class="campus-tabla"><table><caption>Lecturas por módulo</caption><thead><tr><th>Módulo</th><th>Completadas</th><th>Avance</th></tr></thead><tbody>{% for modulo in modulos %}<tr><th scope="row">{{ modulo.titulo }}</th><td>{{ modulo.lecturas_hechas }} / {{ modulo.total_lecturas }}</td><td>{{ modulo.porcentaje }}%</td></tr>{% endfor %}</tbody></table></div>
-        <section class="campus-nota"><h3>Evaluaciones y calificaciones</h3><p>Las calificaciones todavía no están disponibles en el Aula. Consultá al equipo formador por las evaluaciones y los criterios de aprobación.</p></section>
-        {% if actual %}<a class="campus-boton" href="?clase={{ actual.pk }}">Volver a las clases →</a>{% endif %}
+        <section class="campus-nota"><h3>Evaluaciones y calificaciones</h3>{% for prueba in pruebas %}<p><a href="{% url 'aula:curso' curso.pk %}?clase={{ prueba.leccion_id }}">{{ prueba.leccion.titulo }}</a> · {% if prueba.aprobada %}Aprobada{% else %}Pendiente{% endif %}</p>{% for i in prueba.historial %}<p><a href="{% url 'aula:prueba_resolver' i.pk %}">Intento {{ i.numero }} · {{ i.get_estado_display }}{% if i.puntaje != None %} · {{ i.puntaje }}%{% endif %}</a></p>{% endfor %}{% empty %}<p>El curso todavía no tiene pruebas publicadas.</p>{% endfor %}</section>
+<section class="campus-nota"><h3>Certificados</h3>{% for certificado in certificados %}<p><a href="{% url 'aula:certificado_pdf' certificado.pk %}" target="_blank" rel="noopener">Descargar certificado de {{ certificado.get_tipo_display|lower }} ↗</a></p>{% empty %}<p>Dirección validará la participación y la aprobación antes de emitir tus certificados.</p>{% endfor %}</section>
+        {% if actual %}<a class="campus-boton" href="{% url 'aula:curso' curso.pk %}?clase={{ actual.pk }}">Volver a las clases →</a>{% endif %}
       {% elif vista == 'materiales' %}
         <p class="campus-etiqueta">PARA CONSULTAR</p><h2>Documentos y materiales</h2><p>Los materiales están organizados por clase. Podés abrir cada documento en el visor o volver a la clase para ver los videos y las imágenes.</p>
         {% if not hay_materiales %}<p class="campus-nota">Todavía no hay archivos publicados para consultar.</p>{% endif %}
-        {% for modulo in modulos %}{% for clase in modulo.clases %}{% if clase.recursos_visibles %}<section class="campus-material"><h3>{{ clase.titulo }}</h3><ul>{% for recurso in clase.recursos_visibles %}<li><span>{{ recurso.nombre }}</span>{% if recurso.tipo == 'documento' %}<a href="{% url 'aula:recurso_visor' recurso.pk %}" target="_blank" rel="noopener">Abrir documento ↗</a>{% else %}<a href="?clase={{ clase.pk }}">Ver en la clase →</a>{% endif %}</li>{% endfor %}</ul></section>{% endif %}{% endfor %}{% endfor %}
+        {% for modulo in modulos %}{% for clase in modulo.clases %}{% if clase.recursos_visibles %}<section class="campus-material"><h3>{{ clase.titulo }}</h3><ul>{% for recurso in clase.recursos_visibles %}<li><span>{{ recurso.nombre }}</span>{% if recurso.tipo == 'documento' %}<a href="{% url 'aula:recurso_visor' recurso.pk %}" target="_blank" rel="noopener">Abrir documento ↗</a>{% else %}<a href="{% url 'aula:curso' curso.pk %}?clase={{ clase.pk }}">Ver en la clase →</a>{% endif %}</li>{% endfor %}</ul></section>{% endif %}{% endfor %}{% endfor %}
       {% elif actual %}
         <p class="campus-etiqueta">{{ actual.modulo.titulo }}</p><h2>{{ actual.titulo }}</h2>
         {% if not actual.publicada %}<p class="campus-nota">Borrador · Solo visible para el equipo.</p>{% endif %}
-        <article id="clase-{{ actual.pk }}">{% include 'aula/contenido_clase.html' with leccion=actual %}</article>
+        <article id="clase-{{ actual.pk }}">{% if prueba_actual %}{% include 'aula/prueba_panel.html' %}{% else %}{% include 'aula/contenido_clase.html' with leccion=actual %}{% endif %}</article>
         <footer class="campus-fin-clase">
-          {% if not equipo %}{% if actual.pk in completadas %}<p class="campus-completada">✓ Ya marcaste esta clase como completada.</p>{% else %}<form method="post" action="{% url 'aula:completar' actual.pk %}">{% csrf_token %}<input type="hidden" name="seguir" value="1"><button class="campus-boton">Marcar como completada y {% if siguiente %}continuar{% else %}ver mi avance{% endif %} →</button></form><p class="campus-aclaracion">Marcala cuando hayas terminado de leer y revisar sus materiales.</p>{% endif %}{% endif %}
-          <nav class="campus-navegacion" aria-label="Cambiar de clase"><div>{% if anterior %}<a href="?clase={{ anterior.pk }}"><small>← ANTERIOR</small>{{ anterior.titulo }}</a>{% endif %}</div><div>{% if siguiente %}<a href="?clase={{ siguiente.pk }}"><small>SIGUIENTE →</small>{{ siguiente.titulo }}</a>{% else %}<a href="?vista=avance">Ver mi avance →</a>{% endif %}</div></nav>
+          {% if not equipo and not prueba_actual %}{% if actual.pk in completadas %}<p class="campus-completada">✓ Ya marcaste esta clase como completada.</p>{% else %}<form method="post" action="{% url 'aula:completar' actual.pk %}">{% csrf_token %}<input type="hidden" name="seguir" value="1"><button class="campus-boton">Marcar como completada y {% if siguiente %}continuar{% else %}ver mi avance{% endif %} →</button></form><p class="campus-aclaracion">Marcala cuando hayas terminado de leer y revisar sus materiales.</p>{% endif %}{% endif %}
+          <nav class="campus-navegacion" aria-label="Cambiar de clase"><div>{% if anterior %}<a href="{% url 'aula:curso' curso.pk %}?clase={{ anterior.pk }}"><small>← ANTERIOR</small>{{ anterior.titulo }}</a>{% endif %}</div><div>{% if siguiente %}<a href="{% url 'aula:curso' curso.pk %}?clase={{ siguiente.pk }}"><small>SIGUIENTE →</small>{{ siguiente.titulo }}</a>{% else %}<a href="{% url 'aula:curso' curso.pk %}?vista=avance">Ver mi avance →</a>{% endif %}</div></nav>
         </footer>
       {% else %}<p class="campus-etiqueta">BIENVENIDA AL CURSO</p><h2>{{ curso.titulo }}</h2>{{ curso.descripcion|linebreaks }}<p class="campus-nota">El equipo está preparando las clases. Podés explorar los módulos desde el índice.</p>{% endif %}
       </div>
     </main>
   </div>
-</div><script src="{% static 'aula/campus.js' %}" defer></script>
+</div><script src="{% static 'aula/campus.js' %}" defer></script><script src="{% static 'aula/pruebas.js' %}" defer></script>
 {% endblock %}

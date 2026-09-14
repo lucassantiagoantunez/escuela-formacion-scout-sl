@@ -1,0 +1,37 @@
+{% if intento %}
+<p>Intento {{ intento.numero }} · Versión {{ intento.revision }} · Aprobación: {{ intento.minimo }}%</p>
+{% if intento.estado != 'abierto' %}
+<div class="campus-nota">{% if intento.estado == 'pendiente' %}<h3>Entrega recibida</h3><p>El equipo formador revisará tu respuesta y dejará una devolución.</p>{% else %}<h3>{{ intento.puntaje }} / 100 · {% if intento.aprobado %}Prueba aprobada{% else %}Todavía no aprobada{% endif %}</h3><p>Resultado de esta actividad. La aprobación del curso se confirma por separado.</p>{% endif %}</div>
+{% for correccion in intento.correcciones.all %}<section class="campus-nota"><strong>Devolución · {{ correccion.fecha|date:'d/m/Y H:i' }}</strong>{{ correccion.devolucion|linebreaks }}</section>{% endfor %}
+<a class="campus-boton" href="{% url 'aula:curso' curso.pk %}?clase={{ actual.pk }}">Volver a la prueba</a>
+{% else %}
+{{ intento.estructura.instrucciones|linebreaks }}
+<form method="post" action="{% url 'aula:prueba_resolver' intento.pk %}" class="prueba-form">{% csrf_token %}
+{% if escena %}
+<section class="prueba-pregunta">{{ escena.texto|linebreaks }}<input type="hidden" name="paso" value="{{ intento.respuestas.ruta|length }}">{% for opcion in escena.opciones %}<button class="campus-boton" name="decision" value="{{ opcion.id }}">{{ opcion.texto }}</button>{% endfor %}</section>
+{% elif intento.estructura.tipo == 'rompecabezas' %}
+<p>Ordená las nueve piezas. Seleccioná una y después otra para intercambiarlas; también podés usar Tab y Enter.</p>
+<div class="prueba-puzzle" data-puzzle>{% for pieza in intento.estructura.piezas %}<button type="button" data-pieza="{{ pieza.id }}" aria-label="Pieza en posición {{ forloop.counter }}" aria-pressed="false" style="background-image:url('{% url 'aula:recurso_archivo' intento.estructura.imagen %}');background-position:{{ pieza.x }}% {{ pieza.y }}%"></button>{% endfor %}</div><input type="hidden" name="piezas" id="orden-piezas"><noscript>Para ordenar las piezas, activá JavaScript en el navegador.</noscript>
+{% else %}
+{% for pregunta in intento.estructura.preguntas %}<fieldset class="prueba-pregunta"><legend>{{ forloop.counter }}. {{ pregunta.texto }}</legend>
+{% if intento.estructura.tipo == 'trivia' or intento.estructura.tipo == 'camino' %}
+{% for opcion in pregunta.opciones %}<label class="prueba-opcion"><input type="radio" name="q_{{ pregunta.id }}" value="{{ opcion.id }}" required>{{ opcion.texto }}</label>{% endfor %}
+{% elif intento.estructura.tipo == 'ordenar' %}
+<p>Elegí qué paso corresponde a cada posición.</p>{% for posicion in pregunta.opciones %}<label class="prueba-opcion">{{ forloop.counter }}.<select name="q_{{ pregunta.id }}" required><option value="">Elegí un paso</option>{% for opcion in pregunta.opciones %}<option value="{{ opcion.id }}">{{ opcion.texto }}</option>{% endfor %}</select></label>{% endfor %}
+{% elif intento.estructura.tipo == 'memoria' %}
+<label>Su pareja es<select name="q_{{ pregunta.id }}" required><option value="">Elegí una relación</option>{% for opcion in pregunta.opciones %}<option value="{{ opcion.id }}">{{ opcion.texto }}</option>{% endfor %}</select></label>
+{% elif intento.estructura.tipo == 'ruleta' %}
+<p>Este es el reto que salió en tu ruleta. Contá cómo lo resolviste; el equipo formador corregirá la respuesta.</p><label>Tu respuesta<textarea name="q_{{ pregunta.id }}" rows="6" maxlength="6000" required></textarea></label>
+{% else %}<label>Tu respuesta<input name="q_{{ pregunta.id }}" maxlength="6000" autocomplete="off" required></label>{% endif %}
+</fieldset>{% endfor %}
+{% endif %}
+{% if not escena %}<button class="campus-boton">Entregar respuestas</button><p class="campus-aclaracion">Revisá antes de entregar. Al comenzar se reserva un intento; podés continuarlo antes de entregar.</p>{% endif %}
+</form>
+{% endif %}
+{% else %}
+<p class="campus-etiqueta">{{ prueba_actual.get_tipo_display }}</p>{{ prueba_actual.instrucciones|linebreaks }}
+<p>Aprobación: {{ prueba_actual.minimo }}% · Hasta {{ prueba_actual.max_intentos }} intentos por versión.{% if prueba_actual.obligatoria %} Prueba obligatoria.{% endif %}</p>
+{% if equipo %}<p class="campus-nota">Las pruebas se resuelven con una cuenta de cursante inscripto.</p>{% if user.is_superuser %}<a class="campus-boton" href="{% url 'aula:prueba_editar' prueba_actual.pk %}">Editar prueba</a>{% endif %}
+{% else %}{% if prueba_actual.aprobada %}<p class="campus-completada">✓ Ya aprobaste esta versión.</p>{% else %}<form method="post" action="{% url 'aula:prueba_iniciar' prueba_actual.pk %}">{% csrf_token %}<button class="campus-boton">Comenzar o continuar intento →</button></form>{% endif %}{% endif %}
+{% if prueba_actual.historial %}<h3>Tus intentos</h3><ul>{% for i in prueba_actual.historial %}<li><a href="{% url 'aula:prueba_resolver' i.pk %}">Intento {{ i.numero }} · versión {{ i.revision }} · {{ i.get_estado_display }}{% if i.puntaje != None %} · {{ i.puntaje }}%{% endif %}</a></li>{% endfor %}</ul>{% endif %}
+{% endif %}

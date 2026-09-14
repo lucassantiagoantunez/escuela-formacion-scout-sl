@@ -121,6 +121,11 @@ def editar_leccion(request, curso_pk, pk=None, modulo_pk=None):
                 if not pk or 'modulo' in form.changed_data:
                     form.instance.orden = (form.cleaned_data['modulo'].lecciones.aggregate(n=Max('orden'))['n'] or 0) + 1
                 form.instance.texto_enriquecido = True
+                if pk and hasattr(form.instance,'prueba'):
+                    from .pruebas_motor import preparar
+                    if form.instance.publicada:
+                        preparar(form.instance.prueba)
+                    form.instance.obligatoria=False
                 leccion = form.save()
                 guardar_recursos(leccion, preparados, guardados)
                 registrar(request, leccion, CHANGE if pk else ADDITION, 'Clase y recursos guardados desde Gestión.')

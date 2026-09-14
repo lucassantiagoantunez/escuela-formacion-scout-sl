@@ -5,16 +5,21 @@ const estado = document.querySelector('#estado');
 const canvas = document.querySelector('canvas');
 const anterior = document.querySelector('#anterior');
 const siguiente = document.querySelector('#siguiente');
-let documento, numero = 1, trabajando = false;
+let documento, numero = 1, trabajando = false, pendiente = false;
 async function mostrar() {
-  if (trabajando || !documento) return;
+  if (!documento) return;
+  if (trabajando) { pendiente = true; return; }
   trabajando = true;
   anterior.disabled = siguiente.disabled = true;
   estado.textContent = 'Cargando página…';
   try {
     const pagina = await documento.getPage(numero);
     const original = pagina.getViewport({scale:1});
-    const scale = Math.min(1400, Math.max(220, root.clientWidth-32)) / original.width * Number(document.querySelector('#zoom').value);
+    const ancho = Math.min(1400, Math.max(220, root.clientWidth-32)) / original.width;
+    const alto = Math.max(180, window.innerHeight - document.querySelector('header').offsetHeight - 72) / original.height;
+    // En pantalla completa entra la diapositiva entera, con un pequeño margen.
+    const ajuste = document.fullscreenElement ? Math.min(ancho, alto) * 0.9 : ancho;
+    const scale = ajuste * Number(document.querySelector('#zoom').value);
     const viewport = pagina.getViewport({scale});
     const dpi = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.floor(viewport.width*dpi); canvas.height = Math.floor(viewport.height*dpi);
@@ -25,7 +30,9 @@ async function mostrar() {
     document.querySelector('#texto').textContent = text.items.map(item => item.str + (item.hasEOL ? '\n' : ' ')).join('');
     estado.textContent = '';
   } catch { estado.textContent = 'No se pudo mostrar esta página. Podés descargar el original o volver a intentar.'; }
-  finally { trabajando = false; anterior.disabled = numero <= 1; siguiente.disabled = numero >= documento.numPages; }
+  finally { trabajando = false; anterior.disabled = numero <= 1; siguiente.disabled = numero >= documento.numPages;
+    if (pendiente) { pendiente = false; mostrar(); }
+  }
 }
 anterior.addEventListener('click', () => { if (!trabajando && numero > 1) {numero--; mostrar();} });
 siguiente.addEventListener('click', () => { if (!trabajando && numero < documento.numPages) {numero++; mostrar();} });
@@ -35,6 +42,7 @@ document.querySelector('#pantalla').addEventListener('click', async () => {
   catch { estado.textContent = 'Este navegador no permite pantalla completa. Podés ampliar el documento con Tamaño.'; }
 });
 let resize; window.addEventListener('resize', () => {clearTimeout(resize); resize=setTimeout(mostrar,200);});
+document.addEventListener('fullscreenchange', () => {clearTimeout(resize); resize=setTimeout(mostrar,200);});
 try {
   documento = await pdfjs.getDocument({url:root.dataset.pdfUrl, isEvalSupported:false,
     cMapUrl:new URL('./pdfjs/cmaps/',import.meta.url).href, cMapPacked:true,

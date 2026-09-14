@@ -3,9 +3,25 @@ from django.urls import path
 from . import views
 from . import gestion
 from . import recursos
+from . import pruebas, certificados
 
 app_name = 'aula'
 urlpatterns = [
+    path('gestion/cursos/<int:curso_pk>/pruebas/nueva/',pruebas.nueva,name='prueba_nueva'),
+    path('gestion/pruebas/<int:pk>/',pruebas.editar,name='prueba_editar'),
+    path('gestion/pruebas/<int:pk>/actividades/nueva/',pruebas.item,name='prueba_item_nuevo'),
+    path('gestion/pruebas/<int:pk>/actividades/<uuid:item_pk>/',pruebas.item,name='prueba_item_editar'),
+    path('pruebas/<int:pk>/iniciar/',pruebas.iniciar,name='prueba_iniciar'),
+    path('intentos/<uuid:pk>/',pruebas.resolver,name='prueba_resolver'),
+    path('gestion/intentos/<uuid:pk>/',pruebas.revisar,name='prueba_revisar'),
+    path('gestion/cursos/<int:pk>/registro/',certificados.registro,name='registro_curso'),
+    path('gestion/cursos/<int:pk>/certificacion/',certificados.configurar,name='certificacion_configurar'),
+    path('gestion/cursos/<int:pk>/actas.csv',certificados.exportar,name='registro_exportar'),
+    path('gestion/inscripciones/<int:pk>/cierre/',certificados.cierre,name='cierre_editar'),
+    path('gestion/inscripciones/<int:pk>/emitir/',certificados.emitir,name='certificado_emitir'),
+    path('gestion/certificados/<uuid:pk>/revocar/',certificados.revocar,name='certificado_revocar'),
+    path('certificados/<uuid:pk>.pdf',certificados.descargar,name='certificado_pdf'),
+    path('constancias/<uuid:pk>/',certificados.verificar,name='certificado_verificar'),
     path('recursos/<uuid:pk>/archivo/', recursos.archivo, name='recurso_archivo'),
     path('recursos/<uuid:pk>/ver/', recursos.visor, name='recurso_visor'),
     path('gestion/recursos/<uuid:pk>/retirar/', gestion.retirar_recurso, name='recurso_retirar'),

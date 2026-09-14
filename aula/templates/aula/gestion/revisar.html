@@ -1,0 +1,8 @@
+{% extends 'aula/gestion/base.html' %}{% block gestion %}<a href="{% url 'aula:registro_curso' curso.pk %}">← Seguimiento del curso</a><h2>{{ intento.prueba.leccion.titulo }}</h2><p>{{ intento.cursante.get_full_name|default:intento.cursante.username }} · Intento {{ intento.numero }} · Versión {{ intento.revision }}</p>
+{% for p in preguntas %}<section class="gestion-aviso"><h3>{{ p.texto }}</h3>{{ p.respuesta|linebreaks }}</section>{% endfor %}
+
+<p>Resultado actual: {% if intento.puntaje != None %}{{ intento.puntaje }}%{% else %}Pendiente de corrección{% endif %}.</p>
+{% if intento.estructura.tipo == 'rompecabezas' %}<p>El resultado automático cuenta las posiciones correctas de las nueve piezas.</p>{% endif %}
+<p>Si una corrección retira la aprobación de una prueba obligatoria, también se retira la aprobación del curso y se revocan los certificados de aprobación asociados. La revisión queda en el historial.</p>
+<section class="gestion-formulario"><h3>Registrar corrección</h3><form method="post">{% csrf_token %}{{ form.as_p }}<button>Guardar nota y devolución</button></form></section>
+{% for c in intento.correcciones.all %}<p>{{ c.fecha }} · {{ c.responsable }} · {{ c.puntaje }}%: {{ c.devolucion }}</p>{% endfor %}{% endblock %}
