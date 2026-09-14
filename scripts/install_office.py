@@ -7,6 +7,7 @@ from pathlib import Path
 import os
 import re
 import subprocess
+import shutil
 
 root = Path(os.getenv('EDIFOS_OFFICE_BUILD_ROOT', str(Path(__file__).resolve().parents[1]))).resolve()
 work = root / '.office-build'
@@ -36,7 +37,13 @@ for path in dest.rglob('*'):
         if target.startswith('/') and (dest / target.lstrip('/')).exists():
             path.unlink()
             path.symlink_to(os.path.relpath(dest / target.lstrip('/'), path.parent))
+shutil.copytree(dest / 'usr/lib/libreoffice/share/.registry', dest / 'etc/libreoffice/registry', dirs_exist_ok=True)
+fundamental = dest / 'usr/lib/libreoffice/program/fundamentalrc'
+text = fundamental.read_text()
+text = text.replace('file:///usr/lib/libreoffice', (dest / 'usr/lib/libreoffice').as_uri())
+text = text.replace('file:///etc/libreoffice', (dest / 'etc/libreoffice').as_uri())
+fundamental.write_text(text)
 env = os.environ.copy()
-env['LD_LIBRARY_PATH'] = ':'.join(str(dest / p) for p in ['usr/lib/x86_64-linux-gnu', 'lib/x86_64-linux-gnu', 'usr/lib/libreoffice/program'])
+env['LD_LIBRARY_PATH'] = ':'.join(str(dest / p) for p in ['usr/lib/libreoffice/program', 'usr/lib/x86_64-linux-gnu', 'lib/x86_64-linux-gnu'])
 subprocess.run([str(dest / 'usr/lib/libreoffice/program/soffice'), '--headless', '--version'], env=env, check=True)
 print('Conversor de documentos preparado.')
