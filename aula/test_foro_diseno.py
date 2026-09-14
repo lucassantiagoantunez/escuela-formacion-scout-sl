@@ -1,4 +1,5 @@
 import io
+import json
 from datetime import date
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -183,3 +184,48 @@ class ForoDisenoTests(TestCase):
             self.client.force_login(self.alumno);self.assertEqual(self.client.get(url).status_code,403)
             self.client.force_login(self.admin);r=self.client.get(url)
             self.assertEqual(r['Content-Type'],'image/png');r.close()
+
+    def test_editor_quita_campos_y_conserva_identidad_en_segunda_pagina(self):
+        self.client.force_login(self.admin);d=self.datos_diseno()
+        d.update(pie='pagina',encabezado='')
+        for key in inicial()['campos']:d.pop(key+'_visible',None)
+        d['extras']=json.dumps([dict(texto='Texto propio <sin HTML>\nSegunda línea',x=20,y=88,ancho=60,alto=10,tamano=14,color='#123456',alineacion='izquierda',negrita=True)])
+        self.assertEqual(self.client.post(self.diseno_url(),d).status_code,302)
+        diseno=DisenoCertificado.objects.get()
+        self.assertFalse(diseno.configuracion['campos']['nombre']['visible'])
+        pdf=PdfReader(io.BytesIO(dibujar(ejemplo(self.curso,'participacion',diseno),muestra=True)))
+        self.assertEqual(len(pdf.pages),2)
+        self.assertIn('Texto propio <sin HTML>',pdf.pages[0].extract_text())
+        self.assertNotIn('Curso de prueba',pdf.pages[0].extract_text())
+        self.assertIn('Curso de prueba',pdf.pages[1].extract_text())
+        self.assertIn('EJEMPLO SIN VALIDEZ',pdf.pages[1].extract_text())
+        self.assertEqual(Certificado.objects.count(),0)
+
+    def test_textos_propios_invalidos_no_se_guardan(self):
+        self.client.force_login(self.admin)
+        base=dict(texto='Prueba',x=10,y=10,ancho=80,alto=10,tamano=15,color='#123456')
+        for extra in [{'x':float('nan')},{'color':'url(x)'},{'texto':['no']},{'y':99},{'alineacion':'javascript'}]:
+            d=self.datos_diseno();d['extras']=json.dumps([{**base,**extra}])
+            self.assertEqual(self.client.post(self.diseno_url(),d).status_code,200)
+            self.assertFalse(DisenoCertificado.objects.exists())
+        d=self.datos_diseno();d['extras']=json.dumps([base]*21)
+        self.assertEqual(self.client.post(self.diseno_url(),d).status_code,200)
+        self.assertFalse(DisenoCertificado.objects.exists())
+
+    def test_diseno_antiguo_sigue_generando_una_pagina(self):
+        diseno=DisenoCertificado(curso=self.curso,tipo='participacion',configuracion=inicial())
+        pdf=PdfReader(io.BytesIO(dibujar(ejemplo(self.curso,'participacion',diseno))))
+        self.assertEqual(len(pdf.pages),1)
+        self.assertIn('EDiFoS SAN LUIS',pdf.pages[0].extract_text())
+        self.assertIn('Curso de prueba',pdf.pages[0].extract_text())
+
+    def test_fondo_pdf_con_segunda_pagina_no_pierde_verificacion(self):
+        self.client.force_login(self.admin)
+        with TemporaryDirectory() as temporal,override_settings(AULA_PRIVATE_ROOT=Path(temporal)):
+            writer=PdfWriter();writer.add_blank_page(842,595);out=io.BytesIO();writer.write(out)
+            d=self.datos_diseno();d.update(pie='pagina',nombre_y=90,nombre_alto=8)
+            d['fondo']=SimpleUploadedFile('plantilla.pdf',out.getvalue(),content_type='application/pdf')
+            self.assertEqual(self.client.post(self.diseno_url(),d).status_code,302)
+            pdf=PdfReader(io.BytesIO(dibujar(ejemplo(self.curso,'participacion',DisenoCertificado.objects.get()),muestra=True)))
+            self.assertEqual(len(pdf.pages),2)
+            self.assertIn('Datos de verificación',pdf.pages[1].extract_text())
