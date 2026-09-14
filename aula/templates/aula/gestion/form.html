@@ -16,7 +16,7 @@
 {% if form.archivos and form.instance.pk %}
 <section class="gestion-formulario gestion-editor"><h3>Archivos que ya están en esta clase</h3><p>Agregar archivos nuevos conserva los anteriores.</p>
 <ul class="gestion-lista">{% for recurso in form.instance.recursos.all %}{% if recurso.activo %}<li><div><strong>{{ recurso.nombre }}</strong><a href="{% url 'aula:recurso_archivo' recurso.pk %}?descargar=1">Descargar original</a>{% if recurso.tipo == 'documento' %} · <a href="{% url 'aula:recurso_visor' recurso.pk %}" target="_blank" rel="noopener">Ver documento</a>{% endif %}</div><form method="post" action="{% url 'aula:recurso_retirar' recurso.pk %}">{% csrf_token %}<button>Quitar de la clase</button></form></li>{% endif %}{% endfor %}</ul>
-<a href="{% url 'aula:curso' form.instance.modulo.curso_id %}#clase-{{ form.instance.pk }}" target="_blank" rel="noopener">Ver la clase guardada →</a></section>
+<a href="{% url 'aula:curso' form.instance.modulo.curso_id %}?clase={{ form.instance.pk }}" target="_blank" rel="noopener">Ver la clase guardada →</a></section>
 {% endif %}
 {{ form.media.js }}
 {% if form.archivos %}<script src="{% static 'aula/editor.js' %}" defer></script>{% endif %}

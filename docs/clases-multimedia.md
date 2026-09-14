@@ -1,5 +1,13 @@
 # Clases con documentos, videos y texto
 
+## Experiencia de cursado
+
+El curso abre con un índice lateral de módulos desplegables y una clase por pantalla. El índice incluye búsqueda por nombre y marca las lecturas completadas. **Anterior** y **Siguiente** cambian de clase sin modificar el progreso; **Marcar como completada y continuar** registra la lectura y abre la siguiente clase publicada. Al terminar, muestra **Mi avance**. Volver al curso sin elegir una clase abre la primera lectura pendiente.
+
+**Mi avance** muestra el progreso de lecturas obligatorias por módulo. No equivale a una calificación: la herramienta de evaluaciones y notas aún no está implementada. **Documentos y materiales** reúne los archivos visibles para cada participante. En celular, **Índice** abre la navegación; **Texto grande** amplía el texto de la clase.
+
+## Preparar una clase
+
 Desde **Gestionar EDiFoS → curso → módulo → Agregar clase**:
 
 - Escribir y pegar texto; usar títulos, listas, colores, tamaños, citas y tablas.
