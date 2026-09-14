@@ -1,0 +1,2 @@
+{% extends 'aula/gestion/base.html' %}
+{% block gestion %}<h2>Eliminar clase</h2><p>Vas a quitar <strong>{{ leccion.titulo }}</strong> de {{ curso.titulo }}.</p><p>La clase dejará de aparecer en el curso y de contar como requisito pendiente. Se conservarán sus archivos, lecturas y resultados. Podés recuperarla desde la papelera del curso; volverá como borrador.</p><form method="post">{% csrf_token %}<button class="gestion-boton">Mover a la papelera</button> <a href="{% url 'aula:gestion_curso' curso.pk %}">Cancelar</a></form>{% endblock %}

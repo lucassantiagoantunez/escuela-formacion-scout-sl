@@ -55,7 +55,14 @@ class Modulo(models.Model):
         return f'{self.curso}: {self.titulo}'
 
 
+class ClasesVigentes(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(eliminada=False)
+
+
 class Leccion(models.Model):
+    objects = ClasesVigentes()
+    todas = models.Manager()
     modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE, related_name='lecciones')
     titulo = models.CharField(max_length=200)
     texto = models.TextField(blank=True)
@@ -64,6 +71,7 @@ class Leccion(models.Model):
     orden = models.PositiveIntegerField(default=0)
     publicada = models.BooleanField(default=False)
     obligatoria = models.BooleanField(default=True)
+    eliminada = models.BooleanField(default=False, editable=False)
 
     class Meta:
         ordering = ['orden', 'pk']

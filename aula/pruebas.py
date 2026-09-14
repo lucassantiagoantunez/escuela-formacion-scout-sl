@@ -73,7 +73,7 @@ def nueva(request,curso_pk):
 @direccion
 @require_http_methods(['GET','POST'])
 def editar(request,pk):
-    prueba=get_object_or_404(Prueba.objects.select_related('leccion__modulo__curso'),pk=pk)
+    prueba=get_object_or_404(Prueba.objects.select_related('leccion__modulo__curso'),pk=pk,leccion__eliminada=False)
     reglas=ReglasForm(request.POST if request.POST.get('accion')=='reglas' else None,instance=prueba)
     if request.method=='POST' and request.POST.get('accion')=='reglas':
         if reglas.is_valid():
@@ -148,12 +148,12 @@ def matricula(request,prueba):
 @login_required
 @require_POST
 def iniciar(request,pk):
-    prueba=get_object_or_404(Prueba.objects.select_related('leccion__modulo__curso'),pk=pk,leccion__publicada=True)
+    prueba=get_object_or_404(Prueba.objects.select_related('leccion__modulo__curso'),pk=pk,leccion__publicada=True,leccion__eliminada=False)
     inscripcion=matricula(request,prueba)
     try:
         with transaction.atomic():
             get_object_or_404(Inscripcion.objects.select_for_update(),pk=inscripcion.pk,activa=True,curso__publicado=True)
-            prueba=get_object_or_404(Prueba.objects.select_for_update(),pk=pk,leccion__publicada=True)
+            prueba=get_object_or_404(Prueba.objects.select_for_update(),pk=pk,leccion__publicada=True,leccion__eliminada=False)
             intentos=prueba.intentos.filter(cursante=request.user,revision=prueba.revision)
             abierto=intentos.filter(estado='abierto').first()
             if abierto:

@@ -51,6 +51,7 @@ def detalle(request, pk):
         'curso': curso, 'modulos': curso.modulos.prefetch_related('lecciones'),
         'inscripciones': inscripciones, 'total': total, 'formadores': curso.formadores.all(),
         'modulo_abierto': request.GET.get('modulo', ''),
+        'papelera': Leccion.todas.filter(modulo__curso=curso,eliminada=True).select_related('modulo'),
     })
 
 
@@ -156,6 +157,34 @@ def retirar_recurso(request, pk):
         registrar(request, recurso, CHANGE, 'Recurso retirado de la clase; archivo conservado.')
     messages.success(request, 'El archivo ya no se muestra en la clase.')
     return redirect('aula:gestion_leccion_editar', curso_pk=recurso.leccion.modulo.curso_id, pk=recurso.leccion_id)
+
+
+@direccion
+@require_http_methods(['GET','POST'])
+def eliminar_leccion(request,curso_pk,pk):
+    leccion=get_object_or_404(Leccion,pk=pk,modulo__curso_id=curso_pk)
+    if request.method=='POST':
+        with transaction.atomic():
+            Curso.objects.select_for_update().get(pk=curso_pk)
+            leccion.eliminada=True;leccion.publicada=False
+            leccion.save(update_fields=['eliminada','publicada'])
+            registrar(request,leccion,CHANGE,'Clase enviada a papelera; archivos y registros conservados.')
+        messages.success(request,'Clase eliminada del curso. Podés recuperarla desde la papelera.')
+        return redirect('aula:gestion_curso',pk=curso_pk)
+    return render(request,'aula/gestion/eliminar_clase.html',{'leccion':leccion,'curso':leccion.modulo.curso})
+
+
+@direccion
+@require_http_methods(['POST'])
+def restaurar_leccion(request,curso_pk,pk):
+    with transaction.atomic():
+        Curso.objects.select_for_update().get(pk=curso_pk)
+        leccion=get_object_or_404(Leccion.todas,pk=pk,modulo__curso_id=curso_pk,eliminada=True)
+        leccion.eliminada=False;leccion.publicada=False
+        leccion.save(update_fields=['eliminada','publicada'])
+        registrar(request,leccion,CHANGE,'Clase recuperada como borrador desde papelera.')
+    messages.success(request,'Clase recuperada como borrador. Revisala antes de publicarla.')
+    return redirect('aula:gestion_leccion_editar',curso_pk=curso_pk,pk=pk)
 
 
 def asignar(request, curso, persona, rol):

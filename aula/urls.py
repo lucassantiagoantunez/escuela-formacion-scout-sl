@@ -8,6 +8,8 @@ from . import foro,disenos
 
 app_name = 'aula'
 urlpatterns = [
+    path('gestion/cursos/<int:curso_pk>/clases/<int:pk>/eliminar/',gestion.eliminar_leccion,name='gestion_leccion_eliminar'),
+    path('gestion/cursos/<int:curso_pk>/clases/<int:pk>/restaurar/',gestion.restaurar_leccion,name='gestion_leccion_restaurar'),
     path('cursos/<int:pk>/foro/nuevo/',foro.nuevo,name='foro_nuevo'),
     path('foro/<int:pk>/responder/',foro.responder,name='foro_responder'),
     path('foro/<int:pk>/moderar/',foro.moderar,name='foro_moderar'),

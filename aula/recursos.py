@@ -15,7 +15,7 @@ from .views import cursos_permitidos
 
 
 def permitido(request, pk):
-    recurso = get_object_or_404(RecursoLeccion.objects.select_related('leccion__modulo__curso'), pk=pk, activo=True,
+    recurso = get_object_or_404(RecursoLeccion.objects.select_related('leccion__modulo__curso'), pk=pk, activo=True,leccion__eliminada=False,
                                leccion__modulo__curso__in=cursos_permitidos(request.user))
     curso = recurso.leccion.modulo.curso
     equipo = request.user.is_superuser or curso.formadores.filter(pk=request.user.pk).exists()
