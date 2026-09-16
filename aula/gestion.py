@@ -40,22 +40,15 @@ def inicio(request):
 
 @direccion
 def detalle(request, pk):
-    curso = get_object_or_404(Curso, pk=pk)
-    inscripciones = list(curso.inscripciones.select_related('cursante', 'tutor').order_by('cursante__first_name', 'cursante__username'))
-    publicadas = Leccion.objects.filter(modulo__curso=curso, publicada=True, obligatoria=True)
-    total = publicadas.count()
-    progresos = dict(Progreso.objects.filter(leccion__in=publicadas).values('cursante_id').annotate(n=Count('id')).values_list('cursante_id', 'n'))
-    for inscripcion in inscripciones:
-        inscripcion.hechas = progresos.get(inscripcion.cursante_id, 0)
-    return render(request, 'aula/gestion/curso.html', {
-        'curso': curso, 'modulos': curso.modulos.prefetch_related('lecciones'),
-        'inscripciones': inscripciones, 'total': total, 'formadores': curso.formadores.all(),
-        'modulo_abierto': request.GET.get('modulo', ''),
-        'papelera': Leccion.todas.filter(modulo__curso=curso,eliminada=True).select_related('modulo'),
-    })
+    from .tableros import gestion_curso
+    return gestion_curso(request, get_object_or_404(Curso, pk=pk))
 
 
 def formulario(request, form, titulo, descripcion, volver, boton='Guardar cambios'):
+    candidato = request.POST.get('volver') or request.GET.get('volver', '')
+    base = volver.split('?')[0]
+    if candidato.startswith(base + '?'):
+        volver = candidato
     return render(request, 'aula/gestion/form.html', {
         'form': form, 'titulo': titulo, 'descripcion': descripcion, 'volver': volver, 'boton': boton,
     })
@@ -141,10 +134,15 @@ def editar_leccion(request, curso_pk, pk=None, modulo_pk=None):
             form.add_error('archivos', exc if isinstance(exc, ValidationError) else 'No pudimos guardar los archivos. Intentá nuevamente; la clase no se modificó.')
         else:
             messages.success(request, 'Clase guardada.' if leccion.publicada else 'Clase guardada como borrador.')
+            if request.POST.get('continuar') == '1':
+                return redirect('aula:gestion_leccion_editar', curso_pk=curso.pk, pk=leccion.pk)
+            volver = request.POST.get('volver', '')
+            if volver.startswith(reverse('aula:gestion_curso', args=[curso.pk]) + '?'):
+                return redirect(volver)
             return redirect(f"{reverse('aula:gestion_curso', args=[curso.pk])}?modulo={leccion.modulo_id}#modulo-{leccion.modulo_id}")
     return formulario(request, form, 'Editar clase' if pk else 'Agregar una clase',
                       f'Curso: {curso.titulo}. ' + (f'Módulo: {modulo.titulo}. ' if modulo else '') + 'Combiná texto, documentos, imágenes y videos en tu clase.',
-                      reverse('aula:gestion_curso', args=[curso.pk]), 'Guardar clase')
+                      reverse('aula:gestion_curso', args=[curso.pk]) + '?seccion=contenido' + (f'&modulo={leccion.modulo_id}' if leccion else (f'&modulo={modulo.pk}' if modulo else '')), 'Guardar clase')
 
 
 @direccion
@@ -217,3 +215,62 @@ def agregar_persona(request, curso_pk, existente=False):
     return formulario(request, form, 'Agregar alguien que ya tiene cuenta' if existente else 'Agregar una persona nueva',
                       descripcion, reverse('aula:gestion_curso', args=[curso.pk]),
                       'Agregar al curso' if existente else 'Crear cuenta y agregar al curso')
+
+
+@direccion
+@require_http_methods(['POST'])
+def organizar_clase(request, curso_pk, pk):
+    from .tableros import ruta
+    with transaction.atomic():
+        curso = get_object_or_404(Curso.objects.select_for_update(), pk=curso_pk)
+        clase = get_object_or_404(Leccion, pk=pk, modulo__curso=curso)
+        accion = request.POST.get('accion')
+        if accion == 'duplicar' and not hasattr(clase, 'prueba'):
+            copia = Leccion.objects.create(modulo=clase.modulo, titulo=(clase.titulo[:185] + ' (copia)'),
+                texto=clase.texto, texto_enriquecido=clase.texto_enriquecido, video_url=clase.video_url,
+                obligatoria=clase.obligatoria, publicada=False,
+                orden=(clase.modulo.lecciones.aggregate(n=Max('orden'))['n'] or 0) + 1)
+            for recurso in clase.recursos.filter(activo=True):
+                # Private stored files are immutable and are not deleted when a resource is retired.
+                RecursoLeccion.objects.create(leccion=copia, nombre=recurso.nombre, tipo=recurso.tipo,
+                    archivo=recurso.archivo.name, vista_pdf=recurso.vista_pdf.name, mime=recurso.mime, orden=recurso.orden)
+            registrar(request, copia, ADDITION, 'Clase duplicada como borrador, sin progreso ni resultados.')
+            messages.success(request, 'Copia creada como borrador. Revisala antes de publicarla.')
+            return redirect('aula:gestion_leccion_editar', curso_pk=curso.pk, pk=copia.pk)
+        if accion not in ('subir', 'bajar'):
+            from django.http import HttpResponseBadRequest
+            return HttpResponseBadRequest('Elegí una acción válida.')
+        clases = list(clase.modulo.lecciones.all())
+        posicion = next(i for i, c in enumerate(clases) if c.pk == clase.pk)
+        destino = posicion + (-1 if accion == 'subir' else 1)
+        if 0 <= destino < len(clases):
+            clases[posicion], clases[destino] = clases[destino], clases[posicion]
+            for orden, c in enumerate(clases, 1):
+                c.orden = orden
+            Leccion.objects.bulk_update(clases, ['orden'])
+            registrar(request, clase, CHANGE, 'Orden de la clase actualizado.')
+    return redirect(ruta(curso, 'contenido', modulo=clase.modulo_id))
+
+
+@direccion
+@require_http_methods(['GET', 'POST'])
+def inscripcion_editar(request, pk):
+    from django import forms
+    from django.contrib.auth import get_user_model
+    from .forms import PersonaChoiceField
+    class InscripcionForm(forms.ModelForm):
+        tutor = PersonaChoiceField(queryset=get_user_model().objects.filter(is_active=True).order_by('first_name', 'username'),
+            required=False, label='Tutor asignado', help_text='Dirección verifica su acreditación y el acuerdo correspondiente.')
+        class Meta:
+            model = Inscripcion
+            fields = ['activa', 'tutor']
+            labels = {'activa': 'Inscripción activa'}
+    inscripcion = get_object_or_404(Inscripcion.objects.select_related('curso', 'cursante'), pk=pk)
+    form = InscripcionForm(request.POST if request.method == 'POST' else None, instance=inscripcion)
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            objeto = form.save()
+            registrar(request, objeto, CHANGE, 'Inscripción y tutor actualizados desde la ficha.')
+        messages.success(request, 'Datos de la inscripción guardados.')
+        return redirect('aula:ficha_cursante', pk=pk)
+    return formulario(request, form, 'Inscripción y tutor', str(inscripcion), reverse('aula:ficha_cursante', args=[pk]))

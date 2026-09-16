@@ -4,10 +4,13 @@ from . import views
 from . import gestion
 from . import recursos
 from . import pruebas, certificados
-from . import foro,disenos
+from . import foro,disenos,tableros
 
 app_name = 'aula'
 urlpatterns = [
+    path('gestion/inscripciones/<int:pk>/',tableros.ficha,name='ficha_cursante'),
+    path('gestion/inscripciones/<int:pk>/datos/',gestion.inscripcion_editar,name='inscripcion_editar'),
+    path('gestion/cursos/<int:curso_pk>/clases/<int:pk>/organizar/',gestion.organizar_clase,name='organizar_clase'),
     path('gestion/cursos/<int:curso_pk>/clases/<int:pk>/eliminar/',gestion.eliminar_leccion,name='gestion_leccion_eliminar'),
     path('gestion/cursos/<int:curso_pk>/clases/<int:pk>/restaurar/',gestion.restaurar_leccion,name='gestion_leccion_restaurar'),
     path('cursos/<int:pk>/foro/nuevo/',foro.nuevo,name='foro_nuevo'),

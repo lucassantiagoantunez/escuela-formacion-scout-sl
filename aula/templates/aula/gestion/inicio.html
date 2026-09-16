@@ -1,9 +1,7 @@
 {% extends 'aula/gestion/base.html' %}
 {% block gestion %}
-<div class="gestion-titulo"><div><p class="gestion-etiqueta">Tu espacio de trabajo</p><h2>¿Qué querés hacer hoy?</h2><p>Elegí un curso para preparar las clases o agregar personas.</p></div><a class="gestion-boton" href="{% url 'aula:gestion_curso_nuevo' %}">Crear un curso</a></div>
-<section aria-labelledby="cursos-titulo"><h3 id="cursos-titulo">Aula Virtual</h3>
-<div class="aula-cursos">{% for curso in cursos %}<article class="aula-tarjeta"><span class="gestion-estado">{% if curso.publicado %}Acceso habilitado{% else %}En preparación{% endif %}</span><h4>{{ curso.titulo }}</h4><p>{{ curso.descripcion|truncatewords:25 }}</p><a class="gestion-boton" href="{% url 'aula:gestion_curso' curso.pk %}">Gestionar este curso</a></article>{% empty %}<article class="aula-tarjeta"><h4>Empecemos con el primer curso</h4><p>Primero elegí su nombre. Después agregá los temas, las clases y las personas que van a participar.</p><a href="{% url 'aula:gestion_curso_nuevo' %}">Crear mi primer curso →</a></article>{% endfor %}</div></section>
-<section aria-labelledby="web-titulo"><h3 id="web-titulo">El resto de la web</h3><p>Estos accesos abren los editores actuales. Los iremos simplificando también.</p><div class="gestion-accesos">
+<div class="gestion-titulo"><div><p class="gestion-etiqueta">Dirección</p><h2>Administrar la web de EDiFoS</h2></div><a class="gestion-boton" href="{% url 'aula:panel' %}">Ir al panel del aula</a></div>
+<section aria-labelledby="web-titulo"><h3 id="web-titulo">Contenido de la web</h3><p>Elegí qué contenido querés actualizar.</p><div class="gestion-accesos">
 <a href="{% url 'admin:core_noticia_changelist' %}"><strong>Noticias</strong><span>Publicar novedades de la Escuela</span></a>
 <a href="{% url 'admin:core_material_changelist' %}"><strong>Biblioteca</strong><span>Agregar materiales para consultar</span></a>
 <a href="{% url 'admin:core_contenidoinicio_changelist' %}"><strong>Página de inicio</strong><span>Actualizar la presentación institucional</span></a>

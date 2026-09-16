@@ -53,11 +53,15 @@ def contexto(request,curso,extra=None):
     busqueda=request.GET.get('buscar','')[:160]
     if busqueda:
         temas=temas.filter(Q(titulo__icontains=busqueda)|Q(texto__icontains=busqueda))
+    if request.GET.get('pendientes') == '1' and equipo:
+        from .tableros import consultas_pendientes
+        temas=temas.filter(pk__in=consultas_pendientes(curso).values('pk'))
     temas=temas.annotate(cantidad=Count('respuestas',filter=Q(respuestas__oculto=False))).order_by('-actualizado','-pk')
     datos={'tema_foro':tema,'temas_foro':Paginator(temas,20).get_page(request.GET.get('pagina')),
         'respuestas_foro':respuestas,'foro_permisos':p,'foro_escribir':not equipo or p['responder_foro'],
         'foro_gestionar':bool(tema and (p['moderar_foro'] or tema.autor_id==request.user.pk)),
         'form_tema':TemaForm(),'form_respuesta':RespuestaForm(),'foro_buscar':busqueda,
+        'foro_pendientes':request.GET.get('pendientes')=='1' and equipo,
         'formadores_foro':set(curso.formadores.values_list('pk',flat=True))}
     datos.update(extra)
     return datos

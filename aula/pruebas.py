@@ -243,6 +243,11 @@ def revisar(request,pk):
                     retirar_aprobacion(inscripcion,request.user,'Se corrigió una prueba obligatoria y dejó de estar aprobada.')
             registrar(request,intento,CHANGE,'Corrección registrada con devolución e historial.')
         messages.success(request,'Corrección guardada y disponible para el cursante.')
+        if request.POST.get('continuar') == '1':
+            siguiente = IntentoPrueba.objects.filter(prueba__leccion__modulo__curso=curso, estado='pendiente').exclude(pk=pk).order_by('entregado', 'pk').first()
+            if siguiente:
+                return redirect('aula:prueba_revisar', pk=siguiente.pk)
+            return redirect(reverse('aula:registro_curso', args=[curso.pk]) + '?vista=entregas&estado=pendiente')
         return redirect('aula:prueba_revisar',pk=pk)
     preguntas=[]
     if intento.estructura.get('grafo'):

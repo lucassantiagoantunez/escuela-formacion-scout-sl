@@ -155,7 +155,7 @@ class ForoDisenoTests(TestCase):
         CierreCurso.objects.create(inscripcion=self.inscripcion,nombre_certificado='Prueba',participacion_validada=True,responsable=self.admin)
         self.client.post(reverse('aula:certificado_emitir',args=[self.inscripcion.pk]),{'tipo':'participacion'})
         self.assertEqual(Certificado.objects.count(),1)
-        self.assertContains(self.client.get(reverse('aula:registro_curso',args=[self.curso.pk])),'Emitir participación')
+        self.assertContains(self.client.get(reverse('aula:ficha_cursante',args=[self.inscripcion.pk])),'Emitir participación')
         regla.emitir=False;regla.save()
         self.assertEqual(self.client.post(reverse('aula:certificado_emitir',args=[self.inscripcion.pk]),{'tipo':'participacion'}).status_code,403)
 

@@ -186,7 +186,7 @@ class GestionTests(TestCase):
         self.client.post(reverse('aula:gestion_leccion_nueva', args=[curso.pk]), {'modulo': modulo.pk, 'titulo': 'Primera clase', 'texto': 'Contenido'})
         clase = modulo.lecciones.get()
         self.assertFalse(clase.publicada)
-        self.assertContains(self.client.get(reverse('aula:gestion_curso', args=[curso.pk])), 'Primera clase')
+        self.assertContains(self.client.get(reverse('aula:gestion_curso', args=[curso.pk])+f'?modulo={modulo.pk}'), 'Primera clase')
         self.client.post(reverse('aula:gestion_leccion_editar', args=[curso.pk, clase.pk]), {'modulo': modulo.pk, 'titulo': 'Clase publicada', 'publicada': 'on'})
         clase.refresh_from_db()
         self.assertTrue(clase.publicada)
@@ -203,7 +203,7 @@ class GestionTests(TestCase):
         oculta = Leccion.objects.create(modulo=self.modulo, titulo='Oculta')
         Progreso.objects.create(leccion=leccion, cursante=self.persona)
         Progreso.objects.create(leccion=oculta, cursante=self.persona)
-        r = self.client.get(reverse('aula:gestion_curso', args=[self.curso.pk]))
+        r = self.client.get(reverse('aula:gestion_curso', args=[self.curso.pk])+'?seccion=personas')
         self.assertContains(r, '1 / 1 lecturas completadas')
         self.assertContains(r, 'Pendiente de asignación por Dirección')
 
@@ -224,7 +224,8 @@ class GestionTests(TestCase):
         leccion = Leccion.objects.get(titulo='Clase del módulo')
         self.assertEqual(leccion.modulo, self.modulo)
         self.assertRedirects(response, f"{reverse('aula:gestion_curso', args=[self.curso.pk])}?modulo={self.modulo.pk}#modulo-{self.modulo.pk}")
-        self.assertContains(self.client.get(response.url), f'id="modulo-{self.modulo.pk}" open')
+        self.assertContains(self.client.get(response.url), 'Agregar clase')
+        self.assertEqual(self.client.get(response.url).context['modulo'],self.modulo)
 
     def test_ruta_de_modulo_rechaza_otro_curso_y_formador(self):
         url = reverse('aula:gestion_modulo_leccion_nueva', args=[self.curso.pk, self.otro_modulo.pk])
@@ -250,7 +251,7 @@ class GestionTests(TestCase):
         self.assertEqual(self.client.get(reverse('aula:curso', args=[self.curso.pk])).status_code, 404)
         self.curso.publicado = True
         self.curso.save()
-        self.assertContains(self.client.get('/aula/'), 'Entrar al curso')
+        self.assertContains(self.client.get('/aula/'), 'Continuar curso')
         self.assertNotContains(self.client.get('/aula/'), 'Inscripción confirmada · En preparación')
         self.assertNotContains(self.client.get(reverse('aula:curso', args=[self.curso.pk])), 'Borrador secreto')
 
@@ -261,7 +262,8 @@ class GestionTests(TestCase):
 
     def test_modulos_plegados_y_aviso_de_acceso(self):
         response = self.client.get(reverse('aula:gestion_curso', args=[self.curso.pk]))
-        self.assertContains(response, f'<details class="aula-modulo" id="modulo-{self.modulo.pk}">')
+        self.assertContains(response, 'En preparación')
+        response=self.client.get(reverse('aula:gestion_curso',args=[self.curso.pk])+f'?modulo={self.modulo.pk}')
         self.assertContains(response, reverse('aula:gestion_modulo_leccion_nueva', args=[self.curso.pk, self.modulo.pk]))
         self.assertContains(response, 'El curso todavía está en preparación.')
         response = self.client.post(reverse('aula:gestion_persona_existente', args=[self.curso.pk]), {'persona': self.persona.pk, 'rol': 'cursante'}, follow=True)

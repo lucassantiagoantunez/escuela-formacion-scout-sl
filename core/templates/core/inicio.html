@@ -14,6 +14,7 @@
     <div class="inicio-hero-insignia" aria-hidden="true"><span>⚜</span><strong>Siempre listos</strong><small>para aprender haciendo</small></div>
   </section>
 
+  <section class="inicio-aula-acceso" aria-labelledby="acceso-aula"><div><h2 id="acceso-aula">Tu formación en EDiFoS</h2><p>Cursos, materiales y acompañamiento del equipo de formación.</p></div><a href="{% url 'aula:panel' %}" target="_blank" rel="noopener" class="boton-verde">{% if user.is_authenticated %}Ir a mi aula ↗{% else %}Ingresar al Aula Virtual ↗{% endif %}</a></section>
   {% if noticias %}
   <section class="inicio-noticias-widget" aria-labelledby="ultimas-noticias">
     <div class="noticias-widget-etiqueta"><span>Nuevo</span><strong id="ultimas-noticias">Últimas noticias</strong></div>

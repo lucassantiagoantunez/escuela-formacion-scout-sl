@@ -114,17 +114,50 @@ def autorizado_equipo(request,curso):
 
 @login_required
 def registro(request,pk):
+    from .tableros import pagina, ficha_datos
+    from django.db.models import Exists, OuterRef, F
     curso=get_object_or_404(Curso,pk=pk)
     autorizado_equipo(request,curso)
     acciones=permisos(request.user,curso)
     ve_cursantes=acciones['ver_seguimiento'] or acciones['validar'] or acciones['emitir']
     ve_entregas=acciones['ver_seguimiento'] or acciones['corregir']
-    inscripciones=list(curso.inscripciones.select_related('cursante').prefetch_related('certificados')) if ve_cursantes else []
-    for inscripcion in inscripciones:
-        inscripcion.cierre_actual=CierreCurso.objects.filter(inscripcion=inscripcion).first()
-        inscripcion.faltan_lecturas,inscripcion.faltan_pruebas=pendientes(inscripcion)
-    intentos=IntentoPrueba.objects.filter(prueba__leccion__modulo__curso=curso).exclude(estado='abierto').select_related('cursante','prueba__leccion')[:200] if ve_entregas else []
-    return render(request,'aula/gestion/registro.html',{'curso':curso,'inscripciones':inscripciones,'intentos':intentos,'acciones':acciones,'ve_cursantes':ve_cursantes,'ve_entregas':ve_entregas})
+    permitidas=[]
+    if ve_cursantes: permitidas.append('cierres')
+    if ve_entregas: permitidas.append('entregas')
+    if ve_cursantes or acciones['disenar']: permitidas.append('certificados')
+    vista=request.GET.get('vista',permitidas[0])
+    if vista not in permitidas: raise PermissionDenied
+    buscar=request.GET.get('buscar','')[:160]
+    estado=request.GET.get('estado','pendiente' if vista=='entregas' else '')
+    datos={'curso':curso,'acciones':acciones,'ve_cursantes':ve_cursantes,'ve_entregas':ve_entregas,
+           'seccion':vista,'buscar':buscar,'estado':estado,'inscripciones':[],'intentos':[]}
+    if vista=='entregas':
+        intentos=IntentoPrueba.objects.filter(prueba__leccion__modulo__curso=curso).exclude(estado='abierto').select_related('cursante','prueba__leccion').order_by('-entregado','-pk')
+        if estado in ('pendiente','corregido'): intentos=intentos.filter(estado=estado)
+        intentos=intentos.filter(Q(cursante__first_name__icontains=buscar)|Q(cursante__last_name__icontains=buscar)|Q(cursante__username__icontains=buscar)|Q(prueba__leccion__titulo__icontains=buscar))
+        datos.update(pagina(request,intentos,20));datos['intentos']=datos['pagina']
+    elif ve_cursantes:
+        inscritos=curso.inscripciones.select_related('cursante','tutor','cierre').filter(Q(cursante__first_name__icontains=buscar)|Q(cursante__last_name__icontains=buscar)|Q(cursante__username__icontains=buscar)).order_by('cursante__first_name','cursante__username')
+        if estado=='aprobado': inscritos=inscritos.filter(cierre__aprobado=True)
+        elif estado=='acta':
+            inscritos=inscritos.filter(cierre__aprobado=True).filter(Q(cierre__libro='')|Q(cierre__acta='')|Q(cierre__folio='')|Q(cierre__fecha_acta=None)) if curso.requiere_acta else inscritos.none()
+        elif estado=='emitido': inscritos=inscritos.filter(certificados__tipo='aprobacion',certificados__revocado=False).distinct()
+        elif estado=='pausada': inscritos=inscritos.filter(activa=False)
+        elif estado in ('revisar','pendientes'):
+            lecturas=Leccion.objects.filter(modulo__curso=curso,publicada=True,obligatoria=True,prueba__isnull=True)
+            aprobadas=IntentoPrueba.objects.filter(cursante_id=OuterRef('cursante_id'),prueba__leccion__modulo__curso=curso,prueba__leccion__eliminada=False,prueba__leccion__publicada=True,prueba__obligatoria=True,revision=F('prueba__revision'),aprobado=True).values('prueba_id').distinct()
+            from django.db.models import Count,Subquery,IntegerField,Value
+            from django.db.models.functions import Coalesce
+            lecturas_hechas=Progreso.objects.filter(cursante_id=OuterRef('cursante_id'),leccion__in=lecturas).order_by().values('cursante_id').annotate(n=Count('pk')).values('n')
+            pruebas_hechas=aprobadas.order_by().values('cursante_id').annotate(n=Count('prueba_id',distinct=True)).values('n')
+            total_pruebas=Prueba.objects.filter(leccion__modulo__curso=curso,leccion__eliminada=False,leccion__publicada=True,obligatoria=True).count()
+            inscritos=inscritos.filter(activa=True).exclude(cierre__aprobado=True).annotate(lecturas_n=Coalesce(Subquery(lecturas_hechas,output_field=IntegerField()),Value(0)),pruebas_n=Coalesce(Subquery(pruebas_hechas,output_field=IntegerField()),Value(0)))
+            completos=Q(lecturas_n=lecturas.count(),pruebas_n=total_pruebas)
+            inscritos=inscritos.filter(completos) if estado=='revisar' else inscritos.exclude(completos)
+        datos.update(pagina(request,inscritos,15))
+        datos['pagina'].object_list=ficha_datos(curso,datos['pagina'])
+        datos['inscripciones']=datos['pagina']
+    return render(request,'aula/gestion/registro.html',datos)
 
 
 @direccion
@@ -165,12 +198,24 @@ def cierre(request,pk):
                 elif not objeto.aprobado:
                     certificados.filter(tipo='aprobacion').update(revocado=True,motivo_revocacion='Dirección retiró la aprobación del curso.',fecha_revocacion=timezone.now(),revocado_por=request.user)
                 registrar(request,objeto,CHANGE,'Validación académica y referencias de acta guardadas con historial.')
-            messages.success(request,'Validación guardada. La emisión del certificado se realiza desde el seguimiento del curso.')
-            return redirect('aula:registro_curso',pk=inscripcion.curso_id)
+            messages.success(request,'Validación guardada.')
+            if request.POST.get('continuar')=='1':
+                siguiente=Inscripcion.objects.filter(curso_id=inscripcion.curso_id,activa=True,pk__gt=inscripcion.pk).exclude(cierre__aprobado=True).order_by('pk').first()
+                if siguiente:
+                    return redirect('aula:cierre_editar',pk=siguiente.pk)
+                messages.info(request,'No hay más cursantes pendientes después de esta ficha.')
+            return redirect('aula:ficha_cursante',pk=inscripcion.pk)
         except ValidationError as exc:
             form.add_error(None,exc)
-    return formulario(request,form,'Validar a '+(inscripcion.cursante.get_full_name() or inscripcion.cursante.username),
-        'Confirmá los requisitos con la documentación institucional. El asiento digital no reemplaza la escritura en el libro.',reverse('aula:registro_curso',args=[inscripcion.curso_id]))
+    from .tableros import ficha_datos
+    datos=ficha_datos(inscripcion.curso,[inscripcion])[0]
+    bloqueos=[]
+    try:
+        validar_aprobacion(inscripcion)
+    except ValidationError as exc:
+        bloqueos=exc.messages
+    return render(request,'aula/gestion/cierre.html',{'curso':inscripcion.curso,'inscripcion':datos,
+        'form':form,'acciones':permisos(request.user,inscripcion.curso),'seccion':'cierres','bloqueos':bloqueos})
 
 
 @login_required
@@ -217,7 +262,7 @@ def emitir(request,pk):
                 messages.success(request,'Certificado emitido y disponible para el cursante.')
     except ValidationError as exc:
         messages.error(request,' '.join(exc.messages))
-    return redirect('aula:registro_curso',pk=inscripcion.curso_id)
+    return redirect('aula:ficha_cursante',pk=inscripcion.pk)
 
 
 @login_required
@@ -237,7 +282,7 @@ def revocar(request,pk):
                 certificado.save()
                 registrar(request,certificado,CHANGE,'Certificado revocado; código e historial conservados.')
         messages.success(request,'El certificado fue revocado.')
-    return redirect('aula:registro_curso',pk=certificado.inscripcion.curso_id)
+    return redirect('aula:ficha_cursante',pk=certificado.inscripcion_id)
 
 
 def generar_pdf(certificado):

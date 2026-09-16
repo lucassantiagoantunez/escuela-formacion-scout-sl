@@ -1,0 +1,8 @@
+<nav class="panel-menu" aria-label="Gestionar curso">
+{% if user.is_superuser %}<a href="{% url 'aula:gestion_curso' curso.pk %}" {% if seccion == 'resumen' %}aria-current="page"{% endif %}>Resumen</a><a href="{% url 'aula:gestion_curso' curso.pk %}?seccion=contenido" {% if seccion == 'contenido' or seccion == 'papelera' %}aria-current="page"{% endif %}>Contenido</a><a href="{% url 'aula:gestion_curso' curso.pk %}?seccion=personas" {% if seccion == 'personas' or seccion == 'equipo' %}aria-current="page"{% endif %}>Personas</a>{% endif %}
+{% if acciones.corregir or acciones.ver_seguimiento %}<a href="{% url 'aula:registro_curso' curso.pk %}?vista=entregas" {% if seccion == 'entregas' %}aria-current="page"{% endif %}>Evaluaciones</a>{% endif %}
+<a href="{% url 'aula:curso' curso.pk %}?vista=foro">Foro</a>
+{% if acciones.ver_seguimiento or acciones.validar or acciones.emitir %}<a href="{% url 'aula:registro_curso' curso.pk %}?vista=cierres" {% if seccion == 'cierres' %}aria-current="page"{% endif %}>Cierre del curso</a>{% endif %}
+{% if acciones.emitir or acciones.disenar or acciones.ver_seguimiento or acciones.validar %}<a href="{% url 'aula:registro_curso' curso.pk %}?vista=certificados" {% if seccion == 'certificados' %}aria-current="page"{% endif %}>Certificados y actas</a>{% endif %}
+{% if user.is_superuser %}<a href="{% url 'aula:gestion_curso' curso.pk %}?seccion=configuracion" {% if seccion == 'configuracion' %}aria-current="page"{% endif %}>Configuración</a>{% endif %}
+</nav>

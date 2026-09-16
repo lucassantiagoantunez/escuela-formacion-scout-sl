@@ -1,11 +1,14 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block titulo %}Aula Virtual EDiFoS{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/aula.css' %}">{% endblock %}
+{% block body_class %}aula-trabajo{% endblock %}
+{% block menu_arriba %}{% endblock %}{% block menu_abajo %}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/aula.css' %}"><link rel="stylesheet" href="{% static 'aula/gestion.css' %}"><link rel="stylesheet" href="{% static 'aula/paneles.css' %}">{% endblock %}
 {% block contenido %}
 <main class="aula">
-  <header class="aula-cabecera"><p>EDiFoS San Luis · Julio R. Menvielle</p><h1>Aula Virtual</h1>
-  {% if user.is_authenticated %}<nav aria-label="Aula"><a href="{% url 'aula:panel' %}">Mis cursos</a>{% if user.is_superuser %}<a href="{% url 'aula:gestion' %}">Gestionar EDiFoS</a>{% endif %}<form method="post" action="{% url 'aula:logout' %}">{% csrf_token %}<button>Salir</button></form></nav>{% endif %}</header>
+  <header class="aula-cabecera"><div><p>EDiFoS San Luis</p><h1>Aula Virtual</h1></div>
+  <nav aria-label="Aula"><a href="{% url 'inicio' %}">← Volver a la web</a>{% if user.is_authenticated %}<a href="{% url 'aula:panel' %}">Mi aula</a><a href="{% url 'aula:panel' %}?vista=formacion">Mis cursos</a>{% if user.is_superuser %}<a href="{% url 'aula:gestion' %}">Gestionar EDiFoS</a>{% endif %}<form method="post" action="{% url 'aula:logout' %}">{% csrf_token %}<button>Salir</button></form>{% endif %}</nav></header>
   {% block aula %}{% endblock %}
+  <script src="{% static 'aula/paneles.js' %}" defer></script>
 </main>
 {% endblock %}
