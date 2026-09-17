@@ -1,4 +1,4 @@
-{% extends 'core/base.html' %}
+{% extends 'core/base.html' %}{% load contenido_seguro %}
 {% load static %}
 
 {% block titulo %}{{ pagina.titulo }} - Escuela Scout{% endblock %}
@@ -29,7 +29,7 @@
 
         {% if pagina.contenido %}
             <div class="pagina-generica-contenido-principal">
-                {{ pagina.contenido|safe }}
+                {{ pagina.contenido|editorial_seguro }}
             </div>
         {% endif %}
     </div>
@@ -55,14 +55,14 @@
                 {% if bloque.tipo == "titulo" %}
                     {% if bloque.contenido %}
                         <div class="pagina-bloque-contenido">
-                            {{ bloque.contenido|safe }}
+                            {{ bloque.contenido|editorial_seguro }}
                         </div>
                     {% endif %}
                 {% endif %}
 
                 {% if bloque.tipo == "texto" %}
                     <div class="pagina-bloque-contenido">
-                        {{ bloque.contenido|safe }}
+                        {{ bloque.contenido|editorial_seguro }}
                     </div>
                 {% endif %}
 
@@ -77,7 +77,7 @@
 
                     {% if bloque.contenido %}
                         <div class="pagina-bloque-contenido separacion-superior">
-                            {{ bloque.contenido|safe }}
+                            {{ bloque.contenido|editorial_seguro }}
                         </div>
                     {% endif %}
                 {% endif %}
@@ -85,7 +85,7 @@
                 {% if bloque.tipo == "galeria" %}
                     {% if bloque.contenido %}
                         <div class="pagina-bloque-contenido">
-                            {{ bloque.contenido|safe }}
+                            {{ bloque.contenido|editorial_seguro }}
                         </div>
                     {% endif %}
 
@@ -118,7 +118,7 @@
                 {% if bloque.tipo == "video" %}
                     {% if bloque.contenido %}
                         <div class="pagina-bloque-contenido">
-                            {{ bloque.contenido|safe }}
+                            {{ bloque.contenido|editorial_seguro }}
                         </div>
                     {% endif %}
 
@@ -141,7 +141,7 @@
                 {% if bloque.tipo == "materiales" %}
                     {% if bloque.contenido %}
                         <div class="pagina-bloque-contenido">
-                            {{ bloque.contenido|safe }}
+                            {{ bloque.contenido|editorial_seguro }}
                         </div>
                     {% endif %}
 
@@ -177,7 +177,7 @@
                 {% if bloque.tipo == "interactivo" %}
                     {% if bloque.contenido %}
                         <div class="pagina-bloque-contenido">
-                            {{ bloque.contenido|safe }}
+                            {{ bloque.contenido|editorial_seguro }}
                         </div>
                     {% endif %}
 

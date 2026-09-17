@@ -12,4 +12,4 @@
   <div id="site-name"><a href="{% url 'admin:index' %}"><span>EDIFOS</span><small>Administración de contenidos</small></a></div>
 {% endblock %}
 
-{% block nav-global %}<a class="admin-ver-sitio" href="{% url 'inicio' %}" target="_blank" rel="noopener">Ver la web ↗</a>{% endblock %}
+{% block nav-global %}{% if user.is_staff and not user.is_superuser %}<a class="admin-ver-sitio" href="{% url 'aula:comunicacion' %}">Comunicación</a>{% endif %}<a class="admin-ver-sitio" href="{% url 'inicio' %}" target="_blank" rel="noopener">Ver la web ↗</a>{% endblock %}

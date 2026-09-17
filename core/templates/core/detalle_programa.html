@@ -1,4 +1,4 @@
-{% extends 'core/base.html' %}
+{% extends 'core/base.html' %}{% load contenido_seguro %}
 {% load static %}
 
 {% block titulo %}{{ programa.nombre }} - Escuela Scout{% endblock %}
@@ -27,7 +27,7 @@
         <h1 class="detalle-programa-titulo">{{ programa.nombre }}</h1>
 
         <div class="detalle-programa-descripcion">
-            {{ programa.descripcion|safe }}
+            {{ programa.descripcion|editorial_seguro }}
         </div>
     </div>
 
@@ -44,7 +44,7 @@
             <h3>{{ area.titulo }}</h3>
 
             <div class="detalle-programa-area-descripcion">
-                {{ area.descripcion|safe }}
+                {{ area.descripcion|editorial_seguro }}
             </div>
 
             {% for material in area.material_set.all %}

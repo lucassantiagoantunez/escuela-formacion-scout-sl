@@ -1,0 +1,14 @@
+{% extends 'aula/base.html' %}
+{% block aula %}
+<div class="gestion-titulo"><div><p class="gestion-etiqueta">Tu cuenta</p><h2>Mi perfil</h2><p>Usuario: <strong>{{ user.username }}</strong>{% if perfil.edad != None %} · Edad: {{ perfil.edad }} años{% endif %}</p></div><a href="{% url 'aula:panel' %}">Volver a mi aula</a></div>
+{% for message in messages %}<p class="gestion-aviso" role="status">{{ message }}</p>{% endfor %}
+<p>Completá tus datos para la ficha de formación de EDiFoS. Solo nombre y apellido son obligatorios.</p>
+<p class="panel-preflight">Tus datos de contacto, DNI y datos adicionales son privados: solo vos y Dirección pueden consultarlos. Tu nombre y apellido se usan también para identificarte en el aula y el foro.</p>
+<form method="post" class="gestion-formulario perfil-formulario">{% csrf_token %}
+{{ datos_form.non_field_errors }}{{ perfil_form.non_field_errors }}
+<fieldset><legend>Nombre y contacto</legend>{% for field in datos_form %}<div class="gestion-campo">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if not field.field.required %}<small>Opcional</small>{% endif %}</div>{% endfor %}</fieldset>
+{% for titulo, campos in secciones %}<details class="perfil-seccion"{% if perfil_form.errors %} open{% endif %}><summary>{{ titulo }} · Opcional</summary><div class="perfil-campos">{% for field in perfil_form %}{% if field.name in campos %}<div class="gestion-campo">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endif %}{% endfor %}</div></details>{% endfor %}
+<p class="gestion-ayuda">Estos datos son declarados por vos. Las firmas y autorizaciones de la ficha se gestionan por separado con Dirección. Cambiar tu nombre no modifica certificados ya emitidos ni actas registradas.</p>
+<div class="gestion-acciones"><button>Guardar mi perfil</button><a href="{% url 'aula:panel' %}">Volver sin guardar</a></div>
+</form>
+{% endblock %}

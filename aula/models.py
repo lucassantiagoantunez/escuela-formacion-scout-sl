@@ -8,6 +8,42 @@ from .almacenamiento import privado, ruta_archivo
 from .contenido import limpiar_html, youtube_embed
 
 
+class Perfil(models.Model):
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil_aula')
+    dni = models.CharField('DNI', max_length=16, blank=True)
+    fecha_nacimiento = models.DateField('Fecha de nacimiento', null=True, blank=True)
+    direccion = models.CharField('Dirección', max_length=250, blank=True)
+    localidad = models.CharField('Localidad', max_length=150, blank=True)
+    codigo_postal = models.CharField('Código postal', max_length=20, blank=True)
+    telefono = models.CharField('Teléfono', max_length=40, blank=True)
+    estado_civil = models.CharField('Estado civil', max_length=80, blank=True)
+    cantidad_hijos = models.PositiveSmallIntegerField('Cantidad de hijos', null=True, blank=True)
+    profesion = models.CharField('Profesión / trabajo', max_length=200, blank=True)
+    asociacion = models.CharField('Asociación', max_length=200, blank=True)
+    grupo = models.CharField('Grupo al que pertenecés', max_length=200, blank=True)
+    fecha_ingreso_grupo = models.DateField('Fecha de ingreso al grupo', null=True, blank=True)
+    fecha_ingreso_movimiento = models.DateField('Fecha de ingreso al Movimiento Scout', null=True, blank=True)
+    sacramentos = models.CharField('Sacramentos', max_length=250, blank=True)
+    fecha_promesa = models.DateField('Fecha de promesa', null=True, blank=True)
+    cargo = models.CharField('Cargo que desempeñás', max_length=200, blank=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'perfil privado'
+        verbose_name_plural = 'perfiles privados'
+
+    @property
+    def edad(self):
+        from django.utils import timezone
+        if not self.fecha_nacimiento:
+            return None
+        hoy = timezone.localdate()
+        return hoy.year - self.fecha_nacimiento.year - ((hoy.month, hoy.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
+
+    def __str__(self):
+        return self.usuario.get_full_name() or self.usuario.username
+
+
 def ruta_plantilla(instance, filename):
     from pathlib import Path
     return f'certificados/plantillas/{uuid4().hex}{Path(filename).suffix.lower()}'

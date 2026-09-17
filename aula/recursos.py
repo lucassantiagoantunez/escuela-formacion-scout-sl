@@ -103,9 +103,18 @@ def media_publica(request, path):
     # También bloquea variantes con segmentos ../ y enlaces simbólicos.
     try:
         destino = (settings.MEDIA_ROOT / path).resolve()
+        if settings.MEDIA_ROOT.resolve() not in destino.parents:
+            raise Http404
         raiz = settings.AULA_PRIVATE_ROOT.resolve()
         if destino == raiz or raiz in destino.parents:
             raise Http404
     except (ValueError, OSError):
         raise Http404
-    return serve(request, path, document_root=settings.MEDIA_ROOT)
+    respuesta = serve(request, path, document_root=settings.MEDIA_ROOT)
+    respuesta['X-Content-Type-Options'] = 'nosniff'
+    # Even a renamed HTML/SVG upload cannot execute with the site's session.
+    respuesta['Content-Security-Policy'] = "sandbox; default-src 'none'; base-uri 'none'"
+    if destino.suffix.lower() not in {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.ico'}:
+        respuesta['Content-Disposition'] = content_disposition_header(True, destino.name)
+        respuesta['Content-Type'] = 'application/octet-stream'
+    return respuesta

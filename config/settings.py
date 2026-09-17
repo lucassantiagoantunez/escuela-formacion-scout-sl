@@ -173,6 +173,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 # BLOQUE 12 - CONFIGURACIÓN DE PROXY / HTTPS
 # ==================================================
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+CKEDITOR_5_ALLOW_ALL_FILE_TYPES = False
+CKEDITOR_5_MAX_FILE_SIZE = 10
 
 
 # ==================================================

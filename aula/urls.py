@@ -5,9 +5,13 @@ from . import gestion
 from . import recursos
 from . import pruebas, certificados
 from . import foro,disenos,tableros
+from . import perfil
+from core.seguridad import comunicacion
 
 app_name = 'aula'
 urlpatterns = [
+    path('mi-perfil/', perfil.editar, name='perfil'),
+    path('comunicacion/', comunicacion, name='comunicacion'),
     path('gestion/inscripciones/<int:pk>/',tableros.ficha,name='ficha_cursante'),
     path('gestion/inscripciones/<int:pk>/datos/',gestion.inscripcion_editar,name='inscripcion_editar'),
     path('gestion/cursos/<int:curso_pk>/clases/<int:pk>/organizar/',gestion.organizar_clase,name='organizar_clase'),

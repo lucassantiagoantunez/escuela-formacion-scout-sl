@@ -1,4 +1,4 @@
-{% extends 'core/base.html' %}
+{% extends 'core/base.html' %}{% load contenido_seguro %}
 {% load static %}
 {% block titulo %}EDIFOS San Luis - Aprender haciendo{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'core/css/inicio.css' %}">{% endblock %}
@@ -55,7 +55,7 @@
   <section class="inicio-informacion inicio-informacion-simple">
     <article class="inicio-quienes"><h2>{{ contenido_inicio.titulo_quienes_somos|default:"Quiénes somos" }}</h2>
       {% if contenido_inicio and contenido_inicio.imagen_quienes_somos %}<img src="{{ contenido_inicio.imagen_quienes_somos.url }}" alt="{{ contenido_inicio.titulo_quienes_somos }}" class="inicio-imagen">{% endif %}
-      <div class="inicio-texto">{% if contenido_inicio %}{{ contenido_inicio.texto_quienes_somos|safe }}{% else %}<p>Somos la Escuela Diocesana de Formación Scout de San Luis: un espacio para compartir recursos y aprender haciendo.</p>{% endif %}</div>
+      <div class="inicio-texto">{% if contenido_inicio %}{{ contenido_inicio.texto_quienes_somos|editorial_seguro }}{% else %}<p>Somos la Escuela Diocesana de Formación Scout de San Luis: un espacio para compartir recursos y aprender haciendo.</p>{% endif %}</div>
     </article>
   </section>
 

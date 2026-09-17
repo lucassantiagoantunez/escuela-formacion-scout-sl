@@ -34,6 +34,7 @@
             <a href="{% url 'aula:panel' %}" target="_blank" rel="noopener">{% if user.is_authenticated %}Mi aula ↗{% else %}Ingresar al Aula ↗{% endif %}</a>
             {% if user.is_superuser %}<a href="{% url 'aula:gestion' %}">Administrar la web</a>{% endif %}
 
+            {% if user.is_staff and not user.is_superuser %}{% if perms.core.add_noticia or perms.core.change_noticia or perms.core.add_material or perms.core.change_material %}<a href="{% url 'aula:comunicacion' %}">Comunicación</a>{% endif %}{% endif %}
             {% if paginas_personalizadas_menu %}
                 <div class="menu-dropdown">
                     <button type="button" class="menu-dropdown-boton" onclick="toggleMenuExtra('menu-extra-superior', this)">

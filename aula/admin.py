@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Curso, Inscripcion, Modulo, Leccion, Progreso, PermisoFormador
+from .models import Curso, Inscripcion, Modulo, Leccion, Progreso, PermisoFormador, Perfil
 
 
 class DireccionAdmin(admin.ModelAdmin):
@@ -57,3 +57,16 @@ class PermisoFormadorAdmin(DireccionAdmin):
     list_display=['formador','curso','responder_foro','moderar_foro','corregir','validar','emitir','disenar']
     list_filter=['curso','emitir','validar']
     fields=['curso','formador','responder_foro','moderar_foro','ver_seguimiento','corregir','validar','emitir','disenar']
+
+
+@admin.register(Perfil)
+class PerfilAdmin(DireccionAdmin):
+    list_display = ['usuario', 'grupo', 'actualizado']
+    search_fields = ['usuario__first_name', 'usuario__last_name', 'usuario__username', 'grupo']
+    readonly_fields = [f.name for f in Perfil._meta.fields]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

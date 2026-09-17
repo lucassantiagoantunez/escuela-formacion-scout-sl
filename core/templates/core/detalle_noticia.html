@@ -1,4 +1,4 @@
-{% extends 'core/base.html' %}
+{% extends 'core/base.html' %}{% load contenido_seguro %}
 {% load static %}
 
 {% block titulo %}{{ noticia.titulo }} - Escuela Scout{% endblock %}
@@ -56,7 +56,7 @@
              BLOQUE HTML DETALLE NOTICIA 7 - CONTENIDO
         ========================================== -->
         <div class="detalle-noticia-contenido">
-            {{ noticia.contenido|safe }}
+            {{ noticia.contenido|editorial_seguro }}
         </div>
 
     </article>

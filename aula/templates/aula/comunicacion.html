@@ -1,0 +1,10 @@
+{% extends 'aula/base.html' %}
+{% block aula %}
+<p class="gestion-etiqueta">EDiFoS · Comunicación</p><h2>Publicar contenido</h2>
+<p>Prepará noticias y materiales para la web. Podés guardarlos sin publicar y revisarlos antes de mostrarlos.</p>
+<div class="gestion-accesos">
+{% if perms.core.change_noticia or perms.core.add_noticia %}<a href="{% url 'admin:core_noticia_changelist' %}"><strong>Noticias</strong><span>Redactar, editar, publicar y destacar novedades.</span></a>{% endif %}
+{% if perms.core.change_material or perms.core.add_material %}<a href="{% url 'admin:core_material_changelist' %}"><strong>Biblioteca</strong><span>Cargar documentos y editar los materiales públicos.</span></a>{% endif %}
+{% if perms.core.change_categoriabiblioteca or perms.core.add_categoriabiblioteca %}<a href="{% url 'admin:core_categoriabiblioteca_changelist' %}"><strong>Categorías</strong><span>Organizar los materiales de la biblioteca.</span></a>{% endif %}
+</div><p>Para retirar una noticia o material, desmarcá su publicación. Los cambios quedan registrados.</p>
+{% endblock %}
