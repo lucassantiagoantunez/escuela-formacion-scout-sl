@@ -1,4 +1,4 @@
-<div class="ck-content">{{ leccion.contenido_html }}</div>
+{% with contenido=leccion.contenido_html %}{% if contenido %}<div class="ck-content">{{ contenido }}</div>{% endif %}{% endwith %}
 {% if leccion.video_embed %}<iframe class="aula-video" src="{{ leccion.video_embed }}" title="Video: {{ leccion.titulo }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>{% elif leccion.video_url %}<p><a href="{{ leccion.video_url }}" target="_blank" rel="noopener noreferrer">Recurso externo de esta clase ↗</a></p>{% endif %}
 {% for recurso in leccion.recursos_visibles %}<figure class="aula-recurso"><figcaption>{{ recurso.nombre }}</figcaption>
 {% if recurso.tipo == 'documento' %}<iframe class="aula-documento" src="{% url 'aula:recurso_visor' recurso.pk %}" title="Documento: {{ recurso.nombre }}" loading="lazy" allowfullscreen></iframe>

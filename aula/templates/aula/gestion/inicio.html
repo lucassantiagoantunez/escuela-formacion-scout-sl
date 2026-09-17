@@ -1,6 +1,12 @@
 {% extends 'aula/gestion/base.html' %}
 {% block gestion %}
-<div class="gestion-titulo"><div><p class="gestion-etiqueta">Dirección</p><h2>Administrar la web de EDiFoS</h2></div><a class="gestion-boton" href="{% url 'aula:panel' %}">Ir al panel del aula</a></div>
+<div class="gestion-titulo"><div><p class="gestion-etiqueta">Dirección</p><h2>Gestionar EDiFoS</h2></div><a class="gestion-boton" href="{% url 'aula:panel' %}">Ir al panel del aula</a></div>
+<section class="gestion-catalogo" aria-labelledby="cursos-titulo">
+<div class="gestion-titulo"><div><h3 id="cursos-titulo">Cursos y talleres</h3><p>Gestioná contenidos, personas, evaluaciones y certificados.</p></div><a class="gestion-boton" href="{% url 'aula:gestion_curso_nuevo' %}">Crear un curso</a></div>
+<form method="get" class="panel-filtros"><label>Buscar curso<input type="search" name="buscar" value="{{ buscar }}" placeholder="Nombre del curso o taller"></label><button>Buscar</button>{% if buscar %}<a href="{% url 'aula:gestion' %}">Ver todos</a>{% endif %}</form>
+<div class="aula-cursos">{% for curso in pagina %}<article class="aula-tarjeta"><span class="gestion-estado">{% if curso.publicado %}Acceso habilitado{% else %}En preparación{% endif %}</span><h3>{{ curso.titulo }}</h3><div class="gestion-acciones"><a class="gestion-boton" href="{% url 'aula:gestion_curso' curso.pk %}">Gestionar curso</a><a href="{% url 'aula:gestion_curso' curso.pk %}?seccion=contenido">Módulos y clases</a></div></article>{% empty %}<p>No hay cursos que coincidan con tu búsqueda.</p>{% endfor %}</div>
+{% include 'aula/paginacion.html' %}
+</section>
 <section aria-labelledby="web-titulo"><h3 id="web-titulo">Contenido de la web</h3><p>Elegí qué contenido querés actualizar.</p><div class="gestion-accesos">
 <a href="{% url 'admin:core_noticia_changelist' %}"><strong>Noticias</strong><span>Publicar novedades de la Escuela</span></a>
 <a href="{% url 'admin:core_material_changelist' %}"><strong>Biblioteca</strong><span>Agregar materiales para consultar</span></a>

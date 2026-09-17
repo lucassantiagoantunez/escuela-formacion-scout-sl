@@ -7,6 +7,31 @@ from .models import (Curso, Modulo, Leccion, Inscripcion, Progreso, Prueba, Inte
 
 
 class TablerosTests(TestCase):
+    def test_gestion_catalogo_busqueda_paginada_y_acceso(self):
+        url = reverse('aula:gestion')
+        self.client.force_login(self.alumno)
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.force_login(self.director)
+        Curso.objects.bulk_create([Curso(titulo=f'Taller {n}') for n in range(12)])
+        r = self.client.get(url)
+        self.assertEqual(len(r.context['pagina']), 6)
+        self.assertEqual(r.context['pagina'].paginator.count, 13)
+        self.assertContains(r, self.url)
+        r = self.client.get(url, {'buscar': 'Taller', 'pagina': '2'})
+        self.assertEqual(len(r.context['pagina']), 6)
+        self.assertNotContains(r, self.curso.titulo)
+        self.assertContains(r, 'buscar=Taller')
+
+    def test_parrafo_vacio_no_desplaza_materiales_ni_borra_contenido(self):
+        self.leccion.texto_enriquecido = True
+        for vacio in ('<p>&nbsp;</p>', '<p><br></p>', '<p>\u00a0</p>', '<p> </p>\n'):
+            self.leccion.texto = vacio
+            self.assertEqual(self.leccion.contenido_html, '')
+            self.assertEqual(self.leccion.texto, vacio)
+        for contenido in ('<p>Texto de la clase</p>', '<table><tr><td></td></tr></table>', '<hr>'):
+            self.leccion.texto = contenido
+            self.assertTrue(self.leccion.contenido_html)
+
     @classmethod
     def setUpTestData(cls):
         U = get_user_model()

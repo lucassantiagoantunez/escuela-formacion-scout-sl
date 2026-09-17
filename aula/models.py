@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
-from django.utils.html import linebreaks
+from django.utils.html import linebreaks, strip_tags
+from html import unescape
 from django.utils.safestring import mark_safe
 from uuid import uuid4
 from .almacenamiento import privado, ruta_archivo
@@ -82,7 +83,12 @@ class Leccion(models.Model):
 
     @property
     def contenido_html(self):
-        return mark_safe(limpiar_html(self.texto) if self.texto_enriquecido else linebreaks(self.texto, autoescape=True))
+        contenido = limpiar_html(self.texto) if self.texto_enriquecido else linebreaks(self.texto, autoescape=True)
+        # Empty editor paragraphs should not push attached presentations down.
+        # Keep deliberate tables/rules and leave the saved author content intact.
+        if not unescape(strip_tags(contenido)).strip() and not any(tag in contenido for tag in ('<table', '<hr')):
+            return ''
+        return mark_safe(contenido)
 
     @property
     def video_embed(self):

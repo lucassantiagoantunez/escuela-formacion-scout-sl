@@ -35,7 +35,12 @@ def registrar(request, objeto, accion, texto):
 
 @direccion
 def inicio(request):
-    return render(request, 'aula/gestion/inicio.html', {'cursos': Curso.objects.order_by('titulo')})
+    from .tableros import pagina
+    buscar = request.GET.get('buscar', '')[:160]
+    cursos = Curso.objects.filter(titulo__icontains=buscar).order_by('titulo', 'pk')
+    return render(request, 'aula/gestion/inicio.html', {
+        **pagina(request, cursos, 6), 'buscar': buscar,
+    })
 
 
 @direccion
