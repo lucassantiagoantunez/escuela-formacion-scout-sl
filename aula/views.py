@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .models import Curso, Leccion, Modulo, Progreso, RecursoLeccion, Prueba, IntentoPrueba, Inscripcion, Certificado
-from .pruebas_motor import escena_actual
+from .pruebas_motor import escena_actual, devolucion_automatica
 from .permisos import puede_seguimiento
 
 
@@ -82,6 +82,7 @@ def curso(request, pk, intento=None, foro_extra=None):
         'anterior': ordenadas[posicion - 1] if posicion > 0 else None,
         'siguiente': ordenadas[posicion + 1] if 0 <= posicion < len(ordenadas) - 1 else None,
         'pruebas':pruebas,'prueba_actual':prueba_actual,'intento':intento,
+        'devolucion_automatica': devolucion_automatica(intento),
         'escena':escena_actual(intento)[1] if intento and intento.estructura.get('grafo') else None,
         'certificados':inscripcion.certificados.filter(revocado=False) if inscripcion else [],
     })

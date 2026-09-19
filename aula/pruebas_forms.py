@@ -34,13 +34,16 @@ class ItemForm(forms.ModelForm):
     opciones_texto=forms.CharField(required=False,label='Opciones',widget=forms.Textarea(attrs={'rows':5}),help_text='Una opción por renglón.')
     class Meta:
         model=ItemPrueba
-        fields=['texto','opciones_texto','respuesta','activo']
-        labels={'texto':'Pregunta o consigna','respuesta':'Respuesta correcta','activo':'Incluir esta actividad en la prueba'}
-        widgets={'texto':forms.Textarea(attrs={'rows':3}), 'respuesta':forms.TextInput()}
+        fields=['texto','opciones_texto','respuesta','explicacion','activo']
+        labels={'texto':'Pregunta o consigna','respuesta':'Respuesta correcta','explicacion':'Explicación al terminar (opcional)','activo':'Incluir esta actividad en la prueba'}
+        help_texts={'explicacion':'Se muestra después de entregar. Podés indicar qué clase repasar.'}
+        widgets={'texto':forms.Textarea(attrs={'rows':3}), 'respuesta':forms.TextInput(), 'explicacion':forms.Textarea(attrs={'rows':3})}
 
     def __init__(self,*args,prueba,**kwargs):
         self.prueba=prueba
         super().__init__(*args,**kwargs)
+        if prueba.tipo not in {'trivia', 'memoria', 'ordenar', 'palabra'}:
+            self.fields.pop('explicacion')
         self.initial['opciones_texto']='\n'.join(self.instance.opciones or [])
         if prueba.tipo == 'trivia':
             self.fields['respuesta']=forms.TypedChoiceField(coerce=str,choices=[(str(i),f'Opción {i}') for i in range(1,9)],label='Opción correcta')

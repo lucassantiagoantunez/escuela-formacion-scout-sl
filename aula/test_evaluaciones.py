@@ -106,6 +106,44 @@ class EvaluacionesTests(TestCase):
         self.assertEqual(i.estado,'abierto');self.assertEqual(i.estructura,estructura)
         nuevo=self.iniciar();self.assertNotEqual(i.pk,nuevo.pk)
 
+    def test_explicacion_solo_despues_de_entrega_y_conserva_version(self):
+        self.item.explicacion='Referencia original para repasar <script>alert(1)</script>'
+        self.item.save()
+        intento=self.iniciar()
+        url=reverse('aula:prueba_resolver',args=[intento.pk])
+        self.assertNotContains(self.client.get(url),'Referencia original para repasar')
+        self.entregar(intento,False)
+        self.item.explicacion='Explicación de una versión posterior'
+        self.item.save()
+        r=self.client.get(url)
+        self.assertContains(r,'Referencia original para repasar')
+        self.assertContains(r,'Para repasar')
+        self.assertContains(r,'Respuesta esperada:')
+        self.assertNotContains(r,'Explicación de una versión posterior')
+        self.assertNotContains(r,'<script>alert(1)</script>')
+        self.client.force_login(self.otra)
+        self.assertEqual(self.client.get(url).status_code,404)
+
+    def test_devolucion_parejas_aciertos_errores_y_compatibilidad(self):
+        from .pruebas_motor import devolucion_automatica
+        self.prueba.tipo='memoria';self.prueba.save()
+        self.item.respuesta='Aprender haciendo'
+        self.item.explicacion='Combinar experiencia y reflexión.';self.item.save()
+        otro=ItemPrueba.objects.create(prueba=self.prueba,texto='Segundo caso',
+            respuesta='Progresión personal',explicacion='Respetar el ritmo individual.',orden=2)
+        intento=self.iniciar()
+        self.assertEqual(devolucion_automatica(intento),[])
+        self.client.post(reverse('aula:prueba_resolver',args=[intento.pk]),{
+            'q_'+str(self.item.pk):str(self.item.pk),'q_'+str(otro.pk):str(self.item.pk)})
+        intento.refresh_from_db()
+        self.assertEqual(intento.puntaje,50)
+        filas=devolucion_automatica(intento)
+        self.assertEqual([f['acierto'] for f in filas],[True,False])
+        self.assertEqual(filas[1]['correcta'],'Progresión personal')
+        for p in intento.estructura['preguntas']:
+            p.pop('explicacion')
+        self.assertEqual(devolucion_automatica(intento),[])
+
     def test_ampliar_intentos_sin_perder_notas(self):
         i=self.iniciar();self.entregar(i,False)
         self.client.force_login(self.director)

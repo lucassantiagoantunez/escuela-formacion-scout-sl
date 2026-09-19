@@ -128,7 +128,8 @@ def preparar(prueba):
     relaciones = [{'id': str(item.pk), 'texto': item.respuesta} for item in items]
     random.SystemRandom().shuffle(relaciones)
     for item in items:
-        p = {'id': str(item.pk), 'texto': item.texto, 'respuesta': item.respuesta}
+        p = {'id': str(item.pk), 'texto': item.texto, 'respuesta': item.respuesta,
+             'explicacion': item.explicacion}
         if prueba.tipo in {'trivia', 'camino', 'ordenar'}:
             opciones = [{'id': uuid4().hex, 'texto': texto} for texto in item.opciones]
             if prueba.tipo in {'trivia', 'camino'}:
@@ -177,6 +178,36 @@ def corregir(estructura, post):
                 puntos += normalizar(valor) == normalizar(p['respuesta'])
         respuestas[p['id']] = valor
     return respuestas, None if tipo == 'ruleta' else round(100 * puntos / total)
+
+
+def devolucion_automatica(intento):
+    """Use the submitted attempt's snapshot, never the currently edited questions."""
+    if not intento or intento.estado != 'corregido':
+        return []
+    tipo = intento.estructura.get('tipo')
+    if tipo not in {'trivia', 'memoria', 'ordenar', 'palabra'}:
+        return []
+    filas = []
+    for p in intento.estructura.get('preguntas', []):
+        if not p.get('explicacion'):
+            continue
+        opciones = {o['id']: o['texto'] for o in p.get('opciones', [])}
+        valor = intento.respuestas.get(p['id'], '')
+        if tipo == 'ordenar':
+            correcta = ' → '.join(opciones.get(v, v) for v in p['secuencia'])
+            elegida = ' → '.join(opciones.get(v, v) for v in valor)
+            acierto = valor == p['secuencia']
+        elif tipo == 'trivia':
+            correcta = opciones[p['correcta']]
+            elegida = opciones.get(valor, 'Sin respuesta')
+            acierto = valor == p['correcta']
+        else:
+            correcta = p['respuesta']
+            elegida = opciones.get(valor, 'Sin respuesta') if tipo == 'memoria' else valor
+            acierto = normalizar(elegida) == normalizar(correcta)
+        filas.append({'texto': p['texto'], 'elegida': elegida, 'correcta': correcta,
+                      'acierto': acierto, 'explicacion': p['explicacion']})
+    return filas
 
 
 def escena_actual(intento):

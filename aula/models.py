@@ -226,6 +226,7 @@ class ItemPrueba(models.Model):
     texto = models.TextField()
     opciones = models.JSONField(default=list)
     respuesta = models.TextField(blank=True)
+    explicacion = models.TextField(blank=True)
     orden = models.PositiveIntegerField(default=1)
     activo = models.BooleanField(default=True)
 

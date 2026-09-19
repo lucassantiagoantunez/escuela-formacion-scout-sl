@@ -3,6 +3,7 @@
 {% if intento.estado != 'abierto' %}
 <div class="campus-nota">{% if intento.estado == 'pendiente' %}<h3>Entrega recibida</h3><p>El equipo formador revisará tu respuesta y dejará una devolución.</p>{% else %}<h3>{{ intento.puntaje }} / 100 · {% if intento.aprobado %}Prueba aprobada{% else %}Todavía no aprobada{% endif %}</h3><p>Resultado de esta actividad. La aprobación del curso se confirma por separado.</p>{% endif %}</div>
 {% for correccion in intento.correcciones.all %}<section class="campus-nota"><strong>Devolución · {{ correccion.fecha|date:'d/m/Y H:i' }}</strong>{{ correccion.devolucion|linebreaks }}</section>{% endfor %}
+{% if devolucion_automatica %}<section aria-label="Repaso de tus respuestas"><h3>Repasá tus respuestas</h3><p>Esta guía muestra la corrección automática de cada actividad. Si un formador revisó tu nota, consultá también su devolución.</p>{% for fila in devolucion_automatica %}<details class="prueba-pregunta"><summary>{{ forloop.counter }}. {% if fila.acierto %}✓ Correcta{% else %}Para repasar{% endif %} · {{ fila.texto }}</summary><p><strong>Tu respuesta:</strong> {{ fila.elegida }}</p>{% if not fila.acierto %}<p><strong>Respuesta esperada:</strong> {{ fila.correcta }}</p>{% endif %}{{ fila.explicacion|linebreaks }}</details>{% endfor %}</section>{% endif %}
 <a class="campus-boton" href="{% url 'aula:curso' curso.pk %}?clase={{ actual.pk }}">Volver a la prueba</a>
 {% else %}
 {{ intento.estructura.instrucciones|linebreaks }}
