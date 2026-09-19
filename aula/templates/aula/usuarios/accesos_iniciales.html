@@ -1,0 +1,10 @@
+{% extends 'aula/gestion/base.html' %}{% block gestion %}
+<h2>Simplificar accesos iniciales</h2>
+<p>Solo se incluyen personas que todavía no ingresaron y tienen pendiente cambiar su contraseña inicial. Las cuentas de administración y comunicación se conservan.</p>
+<form method="get" class="gestion-formulario">{{ preparar.as_p }}<button>Revisar propuesta</button></form>
+{% if curso %}<h3>{{ curso.titulo }} · {{ filas|length }} cuentas</h3>
+<p>Se conserva la misma cuenta, sus inscripciones, permisos e historial. Los 30 días siguen contando desde el primer ingreso.</p>
+<div style="overflow-x:auto"><table class="gestion-tabla"><thead><tr><th>Persona</th><th>Usuario actual</th><th>Usuario corto</th></tr></thead><tbody>{% for fila in filas %}<tr><td>{{ fila.nombre }}</td><td>{{ fila.anterior }}</td><td><strong>{{ fila.nuevo }}</strong></td></tr>{% empty %}<tr><td colspan="3">No hay cuentas pendientes de su primer ingreso.</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% if form %}<form method="post" class="gestion-formulario" autocomplete="off">{% csrf_token %}{{ form.as_p }}<p>La contraseña será temporal y deberán cambiarla al ingresar. Quien la conozca puede acceder a cualquiera de estas cuentas hasta que su titular la cambie.</p><button>Aplicar a las cuentas de la lista</button></form>{% endif %}
+<p><a href="{% url 'aula:usuarios' %}">Volver a usuarios y accesos</a></p>
+{% endblock %}

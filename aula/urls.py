@@ -7,10 +7,12 @@ from . import pruebas, certificados
 from . import foro,disenos,tableros
 from . import perfil
 from . import usuarios
+from . import accesos_iniciales
 from core.seguridad import comunicacion
 
 app_name = 'aula'
 urlpatterns = [
+    path('gestion/usuarios/accesos-iniciales/', accesos_iniciales.editar, name='accesos_iniciales'),
     path('gestion/usuarios/', usuarios.listado, name='usuarios'),
     path('gestion/usuarios/importar/', usuarios.importar, name='usuarios_importar'),
     path('gestion/usuarios/<int:pk>/', usuarios.detalle, name='usuario'),

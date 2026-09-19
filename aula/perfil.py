@@ -35,7 +35,13 @@ class CambiarClave(PasswordChangeView):
 @never_cache
 def foto(request, pk=None):
     if pk is not None and pk != request.user.pk and not request.user.is_superuser:
-        raise Http404
+        from .views import cursos_permitidos
+        titular = get_user_model().objects.filter(pk=pk, is_active=True).first()
+        if not titular or not Perfil.objects.filter(usuario=titular, compartir_foto=True, avatar='').exists():
+            raise Http404
+        compartidos = cursos_permitidos(request.user).filter(pk__in=cursos_permitidos(titular).values('pk'))
+        if not compartidos.exists():
+            raise Http404
     perfil = Perfil.objects.filter(usuario_id=pk or request.user.pk).first()
     if not perfil or not perfil.foto:
         raise Http404
@@ -60,16 +66,17 @@ class DatosPersonalesForm(forms.ModelForm):
 class PerfilForm(forms.ModelForm):
     eliminar_foto = forms.BooleanField(label='Quitar mi foto actual', required=False)
     foto = forms.FileField(label='Subir foto', required=False, widget=forms.FileInput(
-        attrs={'accept': 'image/jpeg,image/png,image/webp'}), help_text='Opcional. JPG, PNG o WebP, hasta 5 MB. Solo vos y Dirección pueden verla.')
+        attrs={'accept': 'image/jpeg,image/png,image/webp'}), help_text='Opcional. JPG, PNG o WebP, hasta 5 MB. Podés elegir si la compartís en tus cursos.')
 
     class Meta:
         model = Perfil
-        fields = ('foto', 'dni', 'fecha_nacimiento', 'direccion', 'localidad', 'codigo_postal',
+        fields = ('foto', 'avatar', 'compartir_foto', 'dni', 'fecha_nacimiento', 'direccion', 'localidad', 'codigo_postal',
                   'telefono', 'estado_civil', 'cantidad_hijos', 'profesion', 'asociacion',
                   'grupo', 'fecha_ingreso_grupo', 'fecha_ingreso_movimiento', 'sacramentos',
                   'fecha_promesa', 'cargo')
-        widgets = {campo: forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
-                   for campo in ('fecha_nacimiento', 'fecha_ingreso_grupo', 'fecha_ingreso_movimiento', 'fecha_promesa')}
+        widgets = {**{campo: forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
+                   for campo in ('fecha_nacimiento', 'fecha_ingreso_grupo', 'fecha_ingreso_movimiento', 'fecha_promesa')},
+                   'avatar': forms.RadioSelect}
         help_texts = {'dni': 'Opcional. Ingresá de 7 a 8 números, sin puntos.',
                       'sacramentos': 'Opcional. Completalo solo si deseás informar este dato a Dirección.'}
 

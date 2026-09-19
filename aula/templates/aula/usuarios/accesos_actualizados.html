@@ -1,0 +1,7 @@
+{% extends 'aula/gestion/base.html' %}{% block gestion %}
+<h2>Accesos actualizados · {{ resultados|length }} cuentas</h2>
+<p>Se conservaron las cuentas, los permisos y los plazos. Cada persona deberá cambiar su contraseña al ingresar.</p>
+<p>Guardá esta lista en un lugar privado. Las contraseñas se muestran solo en esta respuesta.</p>
+<div style="overflow-x:auto"><table id="credenciales"><thead><tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Contraseña temporal</th></tr></thead><tbody>{% for fila in resultados %}<tr><td>{{ fila.nombre }}</td><td>{{ fila.usuario }}</td><td>{{ fila.email }}</td><td>{{ fila.rol }}</td><td>{{ fila.clave }}</td></tr>{% endfor %}</tbody></table></div>
+<p><a href="{% url 'aula:usuarios' %}">Volver a usuarios y accesos</a></p>
+{% endblock %}

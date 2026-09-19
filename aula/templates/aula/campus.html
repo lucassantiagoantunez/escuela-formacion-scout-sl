@@ -1,15 +1,15 @@
-{% extends 'core/base.html' %}{% load static %}
+{% extends 'core/base.html' %}{% load static identidad %}
 {% block titulo %}{{ curso.titulo }} · Aula EDiFoS{% endblock %}
 {% block body_class %}campus-pagina{% endblock %}
 {% block menu_arriba %}{% endblock %}{% block menu_abajo %}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/editor.css' %}"><link rel="stylesheet" href="{% static 'aula/campus.css' %}"><link rel="stylesheet" href="{% static 'aula/pruebas.css' %}"><link rel="stylesheet" href="{% static 'aula/foro.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'aula/identidad.css' %}"><link rel="stylesheet" href="{% static 'aula/editor.css' %}"><link rel="stylesheet" href="{% static 'aula/campus.css' %}"><link rel="stylesheet" href="{% static 'aula/pruebas.css' %}"><link rel="stylesheet" href="{% static 'aula/foro.css' %}">{% endblock %}
 {% block contenido %}
 <a class="campus-salto" href="#contenido-clase">Saltar al contenido</a>
 <div class="campus aula">
   <header class="campus-cabecera">
     <a class="campus-marca" href="{% url 'aula:panel' %}"><strong>EDiFoS</strong><span>SAN LUIS · AULA VIRTUAL</span></a>
     <h1>{{ curso.titulo }}</h1>
-    <nav aria-label="Curso"><a href="{% url 'aula:curso' curso.pk %}?{% if actual %}clase={{ actual.pk }}{% endif %}"{% if vista == 'contenido' %} aria-current="page"{% endif %}>Cursar</a><a href="{% url 'aula:curso' curso.pk %}?vista=avance"{% if vista == 'avance' %} aria-current="page"{% endif %}>Mi avance</a><a href="{% url 'aula:curso' curso.pk %}?vista=foro"{% if vista == 'foro' %} aria-current="page"{% endif %}>Foro</a><a href="{% url 'aula:panel' %}">Mis cursos</a><a href="{% url 'aula:perfil' %}">Mi perfil</a></nav>
+    <nav aria-label="Curso"><a href="{% url 'aula:curso' curso.pk %}?{% if actual %}clase={{ actual.pk }}{% endif %}"{% if vista == 'contenido' %} aria-current="page"{% endif %}>Cursar</a><a href="{% url 'aula:curso' curso.pk %}?vista=avance"{% if vista == 'avance' %} aria-current="page"{% endif %}>Mi avance</a><a href="{% url 'aula:curso' curso.pk %}?vista=foro"{% if vista == 'foro' %} aria-current="page"{% endif %}>Foro</a><a href="{% url 'aula:panel' %}">Mis cursos</a><a class="persona-enlace" href="{% url 'aula:perfil' %}">{% identidad user %}Mi perfil</a></nav>
   </header>
   <div class="campus-cuerpo">
     <aside class="campus-indice" id="indice-curso" aria-label="Índice del curso">

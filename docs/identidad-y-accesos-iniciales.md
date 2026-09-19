@@ -1,0 +1,7 @@
+# Imagen en el aula y accesos iniciales
+
+Mi perfil permite elegir foto, iniciales o siete avatares. La imagen aparece en el encabezado del aula y campus, y junto al autor en consultas y respuestas del foro. La foto conserva almacenamiento privado; compartirla requiere una opción explícita del titular. Una foto compartida solo se sirve a usuarios activos con acceso vigente a un curso en común, además del titular y Dirección. DNI, contacto y demás ficha permanecen privados. Las fotos anteriores no se comparten automáticamente. Los avatares son símbolos locales; no hay servicios externos.
+
+Dirección puede revisar una propuesta de usuarios cortos por curso desde Usuarios y accesos → Simplificar usuarios y contraseñas iniciales. Incluye exclusivamente cuentas activas sin ningún ingreso, con contraseña temporal pendiente, sin acceso staff ni superusuario. La propuesta usa inicial + primer apellido, segunda inicial o número para colisiones. El operador introduce y confirma una contraseña temporal y aplica los cambios en una transacción. La propuesta firmada vence en una hora; se revalidan identidades y elegibilidad al aplicar. Las claves solo se muestran en la respuesta sin caché; no se registran ni se guardan en sesiones.
+
+El cambio conserva claves primarias, inscripciones, permisos, progreso y fechas de acceso. Una cuenta que ya ingresó se excluye para proteger su contraseña elegida. Siempre se exige cambiar la contraseña inicial al entrar. El uso de una contraseña temporal compartida permite acceso cruzado antes de su cambio y se advierte al operador.

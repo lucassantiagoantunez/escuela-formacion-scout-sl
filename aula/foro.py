@@ -39,14 +39,14 @@ def contexto(request,curso,extra=None):
     extra=extra or {}
     p=permisos(request.user,curso)
     equipo=request.user.is_superuser or curso.formadores.filter(pk=request.user.pk).exists()
-    temas=TemaForo.objects.filter(curso=curso).select_related('autor')
+    temas=TemaForo.objects.filter(curso=curso).select_related('autor', 'autor__perfil_aula')
     if not p['moderar_foro']:
         temas=temas.filter(oculto=False)
     tema_id=extra.get('tema_id') or request.GET.get('tema')
     tema=None;respuestas=[]
     if tema_id:
         tema=get_object_or_404(temas,pk=tema_id if str(tema_id).isdigit() and len(str(tema_id))<19 else 0)
-        respuestas=tema.respuestas.select_related('autor')
+        respuestas=tema.respuestas.select_related('autor', 'autor__perfil_aula')
         if not p['moderar_foro']:
             respuestas=respuestas.filter(oculto=False)
         respuestas=Paginator(respuestas,20).get_page(request.GET.get('pagina'))

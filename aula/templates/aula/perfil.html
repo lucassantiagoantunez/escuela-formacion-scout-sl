@@ -1,4 +1,4 @@
-{% extends 'aula/base.html' %}
+{% extends 'aula/base.html' %}{% load identidad %}
 {% block aula %}
 <div class="gestion-titulo"><div><p class="gestion-etiqueta">Tu cuenta</p><h2>Mi perfil</h2><p>Usuario: <strong>{{ user.username }}</strong>{% if perfil.edad != None %} · Edad: {{ perfil.edad }} años{% endif %}</p></div><a href="{% url 'aula:panel' %}">Volver a mi aula</a></div>
 {% for message in messages %}<p class="gestion-aviso" role="status">{{ message }}</p>{% endfor %}
@@ -7,7 +7,15 @@
 <p><a class="gestion-boton" href="{% url 'aula:password_change' %}">Cambiar mi contraseña</a></p>
 <form method="post" enctype="multipart/form-data" class="gestion-formulario perfil-formulario">{% csrf_token %}
 {{ datos_form.non_field_errors }}{{ perfil_form.non_field_errors }}
-<fieldset><legend>Foto de perfil · Opcional</legend>{% if perfil.foto %}<img src="{% url 'aula:perfil_foto' %}" alt="Tu foto de perfil" width="112" height="112" style="object-fit:cover;border-radius:50%"><p>{{ perfil_form.eliminar_foto }} {{ perfil_form.eliminar_foto.label_tag }}</p>{% endif %}<div class="gestion-campo">{{ perfil_form.foto.label_tag }}{{ perfil_form.foto }}{{ perfil_form.foto.errors }}<small>{{ perfil_form.foto.help_text }}</small></div></fieldset>
+<fieldset><legend>Tu imagen en el aula</legend>
+{% identidad user True %}
+<p>Tu imagen aparece junto a «Mi perfil» y en tus mensajes del foro. Elegí un avatar o usá tu foto; si no elegís ninguno, se muestran tus iniciales.</p>
+<div class="perfil-avatares">{% for radio in perfil_form.avatar %}<label>{{ radio.tag }} {{ radio.choice_label }}</label>{% endfor %}</div>{{ perfil_form.avatar.errors }}
+<div class="gestion-campo">{{ perfil_form.foto.label_tag }}{{ perfil_form.foto }}{{ perfil_form.foto.errors }}<small>{{ perfil_form.foto.help_text }}</small></div>
+{% if perfil.foto %}<p>{{ perfil_form.eliminar_foto }} {{ perfil_form.eliminar_foto.label_tag }}</p>{% endif %}
+<p>{{ perfil_form.compartir_foto }} {{ perfil_form.compartir_foto.label_tag }}</p>
+<small>Para mostrar la foto en el foro, elegí «Mi foto o mis iniciales» y activá la opción de compartir. Los avatares se ven en el foro sin compartir una foto.</small>
+</fieldset>
 <fieldset><legend>Nombre y contacto</legend>{% for field in datos_form %}<div class="gestion-campo">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if not field.field.required %}<small>Opcional</small>{% endif %}</div>{% endfor %}</fieldset>
 {% for titulo, campos in secciones %}<details class="perfil-seccion"{% if perfil_form.errors %} open{% endif %}><summary>{{ titulo }} · Opcional</summary><div class="perfil-campos">{% for field in perfil_form %}{% if field.name in campos %}<div class="gestion-campo">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endif %}{% endfor %}</div></details>{% endfor %}
 <p class="gestion-ayuda">Estos datos son declarados por vos. Las firmas y autorizaciones de la ficha se gestionan por separado con Dirección. Cambiar tu nombre no modifica certificados ya emitidos ni actas registradas.</p>

@@ -13,6 +13,11 @@ def ruta_foto(instance, filename):
 
 
 class Perfil(models.Model):
+    AVATARES = [('', 'Mi foto o mis iniciales'), ('brujula', '🧭 Brújula'),
+                ('carpa', '⛺ Carpa'), ('montana', '🏔️ Montaña'), ('arbol', '🌳 Árbol'),
+                ('fogata', '🔥 Fogata'), ('estrella', '⭐ Estrella'), ('lobo', '🐺 Lobo')]
+    avatar = models.CharField('Elegir avatar', max_length=20, choices=AVATARES, blank=True)
+    compartir_foto = models.BooleanField('Mostrar mi foto a los compañeros y formadores de mis cursos', default=False)
     usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil_aula')
     dni = models.CharField('DNI', max_length=16, blank=True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null=True, blank=True)
