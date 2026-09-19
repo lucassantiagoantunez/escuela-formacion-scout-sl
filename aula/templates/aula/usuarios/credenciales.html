@@ -1,0 +1,6 @@
+{% extends 'aula/gestion/base.html' %}{% block gestion %}
+<h2>Cuentas preparadas · {{ curso.titulo }}</h2><p>Acceso de cortesía: {{ dias }} días desde el primer ingreso. Las cuentas existentes conservan sus permisos y contraseñas.</p>
+<p class="gestion-aviso">Guardá esta lista ahora: las contraseñas nuevas se muestran una sola vez. Cada persona deberá cambiar la suya al ingresar. Compartí únicamente la fila que le corresponde.</p>
+<div style="overflow-x:auto"><table id="credenciales"><thead><tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Contraseña temporal</th></tr></thead><tbody>{% for r in resultados %}<tr><td>{{ r.nombre }}</td><td>{{ r.usuario }}</td><td>{{ r.email|default:'Sin correo informado' }}</td><td>{{ r.rol }}</td><td>{{ r.clave|default:'Cuenta existente: conserva su contraseña' }}</td></tr>{% endfor %}</tbody></table></div>
+<p><button type="button" onclick="window.print()">Imprimir o guardar como PDF</button></p><p><a href="{% url 'aula:usuarios' %}">Volver a usuarios</a></p>
+{% endblock %}

@@ -9,6 +9,9 @@ def permisos(user,curso):
         return dict.fromkeys(ACCIONES,False)
     if user.is_superuser:
         return dict.fromkeys(ACCIONES,True)
+    from .accesos import bloqueados
+    if bloqueados(user).filter(curso=curso).exists():
+        return dict.fromkeys(ACCIONES,False)
     if not curso.formadores.filter(pk=user.pk).exists():
         return dict.fromkeys(ACCIONES,False)
     regla=PermisoFormador.objects.filter(curso=curso,formador=user).first()

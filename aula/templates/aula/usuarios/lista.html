@@ -1,0 +1,7 @@
+{% extends 'aula/gestion/base.html' %}{% block gestion %}
+<div class="gestion-titulo"><div><h2>Usuarios y accesos</h2><p>Buscá personas, administrá cuentas y ajustá sus días de acceso.</p></div><a class="gestion-boton" href="{% url 'aula:usuarios_importar' %}">Crear cuentas en lote</a></div>
+{% for message in messages %}<p class="gestion-aviso" role="status">{{ message }}</p>{% endfor %}
+<p>Para dar de alta una persona: entrá al curso, elegí «Cursantes» o «Formadores» y «Agregar una persona nueva».</p>
+<form method="get" class="panel-filtros"><label>Buscar<input type="search" name="buscar" value="{{ buscar }}" placeholder="Nombre, apellido o usuario"></label><label>Estado<select name="estado"><option value="">Todos</option><option value="activos"{% if estado == 'activos' %} selected{% endif %}>Activos</option><option value="inactivos"{% if estado == 'inactivos' %} selected{% endif %}>Desactivados</option></select></label><button>Buscar</button></form>
+<div class="aula-cursos">{% for persona in pagina %}<article class="aula-tarjeta"><h3>{{ persona.get_full_name|default:persona.username }}</h3><p>{{ persona.username }} · {% if persona.is_active %}Activa{% else %}Desactivada{% endif %}</p><a class="gestion-boton" href="{% url 'aula:usuario' persona.pk %}">Cuenta y accesos</a></article>{% empty %}<p>No hay coincidencias.</p>{% endfor %}</div>{% include 'aula/paginacion.html' %}
+{% endblock %}

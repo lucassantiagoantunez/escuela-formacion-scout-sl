@@ -92,17 +92,27 @@ def panel(request):
     equipo = user.is_superuser or Curso.objects.filter(formadores=user).exists()
     trabajo = equipo and request.GET.get('vista') != 'formacion'
     datos = {'equipo_disponible': equipo, 'trabajo': trabajo}
+    from .models import AccesoCurso
+    datos['accesos'] = AccesoCurso.objects.filter(usuario=user).select_related('curso')
     if trabajo:
         cursos = Curso.objects.all() if user.is_superuser else Curso.objects.filter(formadores=user)
         q = request.GET.get('buscar', '')[:160]
         cursos = cursos.filter(titulo__icontains=q).order_by('titulo', 'pk')
+        datos.update(pagina(request, cursos, 9))
+        from .accesos import bloqueados
+        cursos = cursos.exclude(pk__in=bloqueados(user)) if not user.is_superuser else cursos
         datos.update(pagina(request, cursos, 9))
         datos['pagina'].object_list = [resumen_equipo(c, user) for c in datos['pagina']]
         datos['buscar'] = q
     else:
         inscripciones = Inscripcion.objects.filter(cursante=user, activa=True).select_related('curso').order_by('curso__titulo')
         datos.update(pagina(request, inscripciones, 9))
-        datos['pagina'].object_list = [ficha_datos(i.curso, [i])[0] for i in datos['pagina']]
+        from .accesos import bloqueados
+        cerrados = set(bloqueados(user).values_list('curso_id', flat=True))
+        filas = [ficha_datos(i.curso, [i])[0] for i in datos['pagina']]
+        for fila in filas:
+            fila.acceso_bloqueado = fila.curso_id in cerrados
+        datos['pagina'].object_list = filas
         datos['certificados'] = Certificado.objects.filter(inscripcion__cursante=user, revocado=False).select_related('inscripcion__curso')
     return render(request, 'aula/panel.html', datos)
 

@@ -8,6 +8,10 @@ from .almacenamiento import privado, ruta_archivo
 from .contenido import limpiar_html, youtube_embed
 
 
+def ruta_foto(instance, filename):
+    return f'perfiles/{uuid4().hex}.jpg'
+
+
 class Perfil(models.Model):
     usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil_aula')
     dni = models.CharField('DNI', max_length=16, blank=True)
@@ -27,6 +31,8 @@ class Perfil(models.Model):
     fecha_promesa = models.DateField('Fecha de promesa', null=True, blank=True)
     cargo = models.CharField('Cargo que desempeñás', max_length=200, blank=True)
     actualizado = models.DateTimeField(auto_now=True)
+    foto = models.ImageField('Foto de perfil', storage=privado, upload_to=ruta_foto, blank=True)
+    cambiar_clave = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'perfil privado'
@@ -78,6 +84,36 @@ class Inscripcion(models.Model):
 
     def __str__(self):
         return f'{self.cursante} — {self.curso}'
+
+
+class AccesoCurso(models.Model):
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE, related_name='accesos')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='accesos_aula')
+    habilitado = models.BooleanField(default=True)
+    dias = models.PositiveSmallIntegerField('Días desde el primer ingreso', null=True, blank=True)
+    inicio = models.DateTimeField('Inicio del acceso', null=True, blank=True)
+    fin = models.DateTimeField('Fin del acceso', null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['curso', 'usuario'], name='aula_acceso_unico')]
+        verbose_name = 'acceso al curso'
+        verbose_name_plural = 'accesos por fechas'
+
+    @property
+    def vigente(self):
+        from django.utils import timezone
+        ahora = timezone.now()
+        return self.habilitado and (not self.inicio or self.inicio <= ahora) and (not self.fin or ahora < self.fin)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.dias is not None and not 1 <= self.dias <= 3650:
+            raise ValidationError({'dias': 'Indicá entre 1 y 3650 días, o dejá vacío para acceso sin límite.'})
+        if self.inicio and self.fin and self.fin <= self.inicio:
+            raise ValidationError({'fin': 'El fin debe ser posterior al inicio.'})
+
+    def __str__(self):
+        return f'{self.usuario} — {self.curso}'
 
 
 class Modulo(models.Model):

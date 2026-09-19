@@ -82,6 +82,7 @@ ROLES = [('cursante', 'Cursante — participa del curso'), ('formador', 'Formado
 
 
 class PersonaForm(UserCreationForm):
+    dias_cortesia = forms.IntegerField(label='Días de acceso desde el primer ingreso', initial=30, required=False, min_value=1, max_value=3650, help_text='Dejá vacío para no fijar vencimiento. Podés cambiarlo después en Usuarios y accesos.')
     first_name = forms.CharField(label='Nombre', max_length=150)
     last_name = forms.CharField(label='Apellido', max_length=150)
     email = forms.EmailField(label='Correo electrónico (opcional)', required=False)
@@ -100,7 +101,7 @@ class PersonaForm(UserCreationForm):
         self.fields['password2'].help_text = 'Escribí otra vez la misma contraseña.'
         self.fields['username'].widget.attrs.pop('autofocus', None)
         self.fields['username'].help_text = 'Por ejemplo: maria.perez. La persona usará este nombre para entrar al Aula.'
-        self.order_fields(['first_name', 'last_name', 'email', 'username', 'password1', 'password2', 'rol'])
+        self.order_fields(['first_name', 'last_name', 'email', 'username', 'password1', 'password2', 'rol', 'dias_cortesia'])
 
 
 class PersonaChoiceField(forms.ModelChoiceField):

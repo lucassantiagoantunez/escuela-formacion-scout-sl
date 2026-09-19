@@ -4,8 +4,10 @@
 {% for message in messages %}<p class="gestion-aviso" role="status">{{ message }}</p>{% endfor %}
 <p>Completá tus datos para la ficha de formación de EDiFoS. Solo nombre y apellido son obligatorios.</p>
 <p class="panel-preflight">Tus datos de contacto, DNI y datos adicionales son privados: solo vos y Dirección pueden consultarlos. Tu nombre y apellido se usan también para identificarte en el aula y el foro.</p>
-<form method="post" class="gestion-formulario perfil-formulario">{% csrf_token %}
+<p><a class="gestion-boton" href="{% url 'aula:password_change' %}">Cambiar mi contraseña</a></p>
+<form method="post" enctype="multipart/form-data" class="gestion-formulario perfil-formulario">{% csrf_token %}
 {{ datos_form.non_field_errors }}{{ perfil_form.non_field_errors }}
+<fieldset><legend>Foto de perfil · Opcional</legend>{% if perfil.foto %}<img src="{% url 'aula:perfil_foto' %}" alt="Tu foto de perfil" width="112" height="112" style="object-fit:cover;border-radius:50%"><p>{{ perfil_form.eliminar_foto }} {{ perfil_form.eliminar_foto.label_tag }}</p>{% endif %}<div class="gestion-campo">{{ perfil_form.foto.label_tag }}{{ perfil_form.foto }}{{ perfil_form.foto.errors }}<small>{{ perfil_form.foto.help_text }}</small></div></fieldset>
 <fieldset><legend>Nombre y contacto</legend>{% for field in datos_form %}<div class="gestion-campo">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if not field.field.required %}<small>Opcional</small>{% endif %}</div>{% endfor %}</fieldset>
 {% for titulo, campos in secciones %}<details class="perfil-seccion"{% if perfil_form.errors %} open{% endif %}><summary>{{ titulo }} · Opcional</summary><div class="perfil-campos">{% for field in perfil_form %}{% if field.name in campos %}<div class="gestion-campo">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endif %}{% endfor %}</div></details>{% endfor %}
 <p class="gestion-ayuda">Estos datos son declarados por vos. Las firmas y autorizaciones de la ficha se gestionan por separado con Dirección. Cambiar tu nombre no modifica certificados ya emitidos ni actas registradas.</p>

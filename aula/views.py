@@ -11,11 +11,12 @@ from .permisos import puede_seguimiento
 
 
 def cursos_permitidos(user):
+    from .accesos import bloqueados
     if user.is_superuser:
         return Curso.objects.all()
     return Curso.objects.filter(
         Q(formadores=user) | Q(publicado=True, inscripciones__cursante=user, inscripciones__activa=True)
-    ).distinct()
+    ).exclude(pk__in=bloqueados(user)).distinct()
 
 
 @login_required
@@ -90,7 +91,8 @@ def curso(request, pk, intento=None, foro_extra=None):
 @require_POST
 def completar(request, pk):
     leccion = get_object_or_404(Leccion, pk=pk, publicada=True, prueba__isnull=True, modulo__curso__publicado=True,
-        modulo__curso__inscripciones__cursante=request.user, modulo__curso__inscripciones__activa=True)
+        modulo__curso__inscripciones__cursante=request.user, modulo__curso__inscripciones__activa=True,
+        modulo__curso__in=cursos_permitidos(request.user))
     Progreso.objects.get_or_create(cursante=request.user, leccion=leccion)
     if request.POST.get('seguir') == '1':
         clases = list(Leccion.objects.filter(modulo__curso=leccion.modulo.curso, publicada=True)

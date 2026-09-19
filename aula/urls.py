@@ -6,10 +6,18 @@ from . import recursos
 from . import pruebas, certificados
 from . import foro,disenos,tableros
 from . import perfil
+from . import usuarios
 from core.seguridad import comunicacion
 
 app_name = 'aula'
 urlpatterns = [
+    path('gestion/usuarios/', usuarios.listado, name='usuarios'),
+    path('gestion/usuarios/importar/', usuarios.importar, name='usuarios_importar'),
+    path('gestion/usuarios/<int:pk>/', usuarios.detalle, name='usuario'),
+    path('gestion/usuarios/<int:pk>/cursos/<int:curso_pk>/', usuarios.acceso, name='usuario_acceso'),
+    path('cambiar-contrasena/', perfil.CambiarClave.as_view(), name='password_change'),
+    path('mi-perfil/foto/', perfil.foto, name='perfil_foto'),
+    path('mi-perfil/foto/<int:pk>/', perfil.foto, name='perfil_foto_persona'),
     path('mi-perfil/', perfil.editar, name='perfil'),
     path('comunicacion/', comunicacion, name='comunicacion'),
     path('gestion/inscripciones/<int:pk>/',tableros.ficha,name='ficha_cursante'),

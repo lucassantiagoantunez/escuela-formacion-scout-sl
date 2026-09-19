@@ -141,8 +141,9 @@ def item(request,pk,item_pk=None):
 
 
 def matricula(request,prueba):
+    from .views import cursos_permitidos
     return get_object_or_404(Inscripcion,curso=prueba.leccion.modulo.curso,cursante=request.user,activa=True,
-                            curso__publicado=True)
+                            curso__publicado=True, curso__in=cursos_permitidos(request.user))
 
 
 @login_required

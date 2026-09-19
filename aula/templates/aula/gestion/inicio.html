@@ -8,6 +8,7 @@
 {% include 'aula/paginacion.html' %}
 </section>
 <section aria-labelledby="web-titulo"><h3 id="web-titulo">Contenido de la web</h3><p>Elegí qué contenido querés actualizar.</p><div class="gestion-accesos">
+<a href="{% url 'aula:usuarios' %}"><strong>Usuarios y accesos</strong><span>Altas, bajas, cuentas y plazos de acceso</span></a>
 <a href="{% url 'admin:core_noticia_changelist' %}"><strong>Noticias</strong><span>Publicar novedades de la Escuela</span></a>
 <a href="{% url 'admin:core_material_changelist' %}"><strong>Biblioteca</strong><span>Agregar materiales para consultar</span></a>
 <a href="{% url 'admin:core_contenidoinicio_changelist' %}"><strong>Página de inicio</strong><span>Actualizar la presentación institucional</span></a>

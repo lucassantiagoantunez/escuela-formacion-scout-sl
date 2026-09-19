@@ -210,6 +210,9 @@ def agregar_persona(request, curso_pk, existente=False):
             persona = form.cleaned_data['persona'] if existente else form.save()
             if not existente:
                 registrar(request, persona, ADDITION, 'Cuenta creada desde Gestión.')
+                from .models import Perfil, AccesoCurso
+                Perfil.objects.create(usuario=persona, cambiar_clave=True)
+                AccesoCurso.objects.create(usuario=persona, curso=curso, dias=form.cleaned_data.get('dias_cortesia'))
             asignar(request, curso, persona, form.cleaned_data['rol'])
         messages.success(request, f'{persona.get_full_name() or persona.username} ya tiene acceso asignado a {curso.titulo}. Usuario para ingresar: {persona.username}.')
         if not curso.publicado and form.cleaned_data['rol'] == 'cursante':

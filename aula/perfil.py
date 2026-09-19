@@ -11,6 +11,40 @@ from django.views.decorators.http import require_http_methods
 from .models import Perfil
 from .gestion import registrar
 from django.contrib.admin.models import CHANGE
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
+from django.http import FileResponse, Http404
+from django.core.files.base import ContentFile
+from io import BytesIO
+from PIL import Image, ImageOps, UnidentifiedImageError
+
+
+class CambiarClave(PasswordChangeView):
+    template_name = 'aula/clave.html'
+    success_url = reverse_lazy('aula:perfil')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        Perfil.objects.filter(usuario=self.request.user).update(cambiar_clave=False)
+        registrar(self.request, self.request.user, CHANGE, 'Contraseña cambiada por su titular.')
+        messages.success(self.request, 'Tu contraseña se cambió correctamente.')
+        return response
+
+
+@login_required
+@never_cache
+def foto(request, pk=None):
+    if pk is not None and pk != request.user.pk and not request.user.is_superuser:
+        raise Http404
+    perfil = Perfil.objects.filter(usuario_id=pk or request.user.pk).first()
+    if not perfil or not perfil.foto:
+        raise Http404
+    try:
+        response = FileResponse(perfil.foto.open('rb'), content_type='image/jpeg')
+    except OSError:
+        raise Http404
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 class DatosPersonalesForm(forms.ModelForm):
@@ -24,9 +58,13 @@ class DatosPersonalesForm(forms.ModelForm):
 
 
 class PerfilForm(forms.ModelForm):
+    eliminar_foto = forms.BooleanField(label='Quitar mi foto actual', required=False)
+    foto = forms.FileField(label='Subir foto', required=False, widget=forms.FileInput(
+        attrs={'accept': 'image/jpeg,image/png,image/webp'}), help_text='Opcional. JPG, PNG o WebP, hasta 5 MB. Solo vos y Dirección pueden verla.')
+
     class Meta:
         model = Perfil
-        fields = ('dni', 'fecha_nacimiento', 'direccion', 'localidad', 'codigo_postal',
+        fields = ('foto', 'dni', 'fecha_nacimiento', 'direccion', 'localidad', 'codigo_postal',
                   'telefono', 'estado_civil', 'cantidad_hijos', 'profesion', 'asociacion',
                   'grupo', 'fecha_ingreso_grupo', 'fecha_ingreso_movimiento', 'sacramentos',
                   'fecha_promesa', 'cargo')
@@ -34,6 +72,25 @@ class PerfilForm(forms.ModelForm):
                    for campo in ('fecha_nacimiento', 'fecha_ingreso_grupo', 'fecha_ingreso_movimiento', 'fecha_promesa')}
         help_texts = {'dni': 'Opcional. Ingresá de 7 a 8 números, sin puntos.',
                       'sacramentos': 'Opcional. Completalo solo si deseás informar este dato a Dirección.'}
+
+    def clean_foto(self):
+        archivo = self.cleaned_data.get('foto')
+        if not archivo or not hasattr(archivo, 'content_type'):
+            return archivo
+        if archivo.size > 5 * 1024 * 1024:
+            raise forms.ValidationError('La foto debe pesar hasta 5 MB.')
+        try:
+            with Image.open(archivo) as im:
+                if im.format not in ('JPEG', 'PNG', 'WEBP') or im.width * im.height > 20000000:
+                    raise ValueError
+                im = ImageOps.exif_transpose(im).convert('RGB')
+                im.thumbnail((640, 640))
+                salida = BytesIO()
+                im.save(salida, format='JPEG', quality=88)
+            # Re-encode pixels only: no EXIF, GPS, animation or uploaded metadata.
+            return ContentFile(salida.getvalue(), name='perfil.jpg')
+        except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+            raise forms.ValidationError('Elegí una imagen JPG, PNG o WebP válida y de hasta 20 megapíxeles.')
 
     def clean_dni(self):
         dni = re.sub(r'[.\s]', '', self.cleaned_data.get('dni', ''))
@@ -59,13 +116,18 @@ class PerfilForm(forms.ModelForm):
 def editar(request):
     perfil = Perfil.objects.filter(usuario=request.user).first() or Perfil(usuario=request.user)
     datos_form = DatosPersonalesForm(request.POST if request.method == 'POST' else None, instance=request.user)
-    perfil_form = PerfilForm(request.POST if request.method == 'POST' else None, instance=perfil)
+    anterior = perfil.foto.name
+    perfil_form = PerfilForm(request.POST if request.method == 'POST' else None, request.FILES or None, instance=perfil)
     if request.method == 'POST':
         validos = datos_form.is_valid() & perfil_form.is_valid()
         if validos:
             with transaction.atomic():
                 datos_form.save()
+                if perfil_form.cleaned_data.get('eliminar_foto') and not request.FILES.get('foto'):
+                    perfil.foto = ''
                 perfil_form.save()
+                if anterior and anterior != perfil.foto.name:
+                    transaction.on_commit(lambda: perfil.foto.storage.delete(anterior))
                 campos = datos_form.changed_data + perfil_form.changed_data
                 registrar(request, perfil, CHANGE, 'Perfil actualizado. Campos: ' + ', '.join(campos))
             messages.success(request, 'Tus datos se guardaron correctamente.')
