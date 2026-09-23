@@ -14,6 +14,7 @@ app_name = 'aula'
 urlpatterns = [
     path('gestion/usuarios/accesos-iniciales/', accesos_iniciales.editar, name='accesos_iniciales'),
     path('gestion/usuarios/', usuarios.listado, name='usuarios'),
+    path('gestion/usuarios/nueva/', usuarios.nueva, name='usuario_nuevo'),
     path('gestion/usuarios/importar/', usuarios.importar, name='usuarios_importar'),
     path('gestion/usuarios/<int:pk>/', usuarios.detalle, name='usuario'),
     path('gestion/usuarios/<int:pk>/cursos/<int:curso_pk>/', usuarios.acceso, name='usuario_acceso'),

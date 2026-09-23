@@ -1,11 +1,13 @@
-"""Direction-only account management. Never reset an existing password on import."""
+"""Delegated account creation/status; privileged operations stay with Direction."""
 import csv
 import io
 import secrets
+from functools import wraps
 from datetime import timedelta
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
@@ -20,6 +22,67 @@ from .forms import PersonaForm
 from .tableros import pagina
 
 User = get_user_model()
+
+
+def gestionar_cuentas(view):
+    @login_required
+    @wraps(view)
+    def wrapped(request, *args, **kwargs):
+        if not request.user.is_active or not request.user.has_perm('aula.gestionar_cuentas'):
+            raise PermissionDenied
+        return view(request, *args, **kwargs)
+    return wrapped
+
+
+def cuenta_protegida(operador, persona):
+    if persona.is_superuser or persona.pk == operador.pk:
+        return True
+    if operador.is_superuser:
+        return False
+    # Check stored grants even on inactive accounts: do not revive privileged users.
+    return (persona.is_staff or persona.user_permissions.exists()
+            or persona.groups.filter(permissions__isnull=False).exists())
+
+
+class CuentaNuevaForm(PersonaForm):
+    curso = forms.ModelChoiceField(queryset=Curso.objects.order_by('titulo'), label='Curso')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['rol'].choices = [
+            ('cursante', 'Cursante'),
+            ('formador', 'Formador: foro, seguimiento y correcciones; sin certificados'),
+        ]
+        self.order_fields(['curso', 'first_name', 'last_name', 'email', 'username',
+                           'password1', 'password2', 'rol', 'dias_cortesia'])
+
+
+@gestionar_cuentas
+@never_cache
+@require_http_methods(['GET', 'POST'])
+def nueva(request):
+    form = CuentaNuevaForm(request.POST if request.method == 'POST' else None,
+                           initial={'rol': 'cursante'})
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            persona = form.save()
+            curso = form.cleaned_data['curso']
+            Perfil.objects.create(usuario=persona, cambiar_clave=True)
+            AccesoCurso.objects.create(usuario=persona, curso=curso,
+                                      dias=form.cleaned_data.get('dias_cortesia'))
+            if form.cleaned_data['rol'] == 'formador':
+                curso.formadores.add(persona)
+                PermisoFormador.objects.create(curso=curso, formador=persona,
+                    responder_foro=True, moderar_foro=False, ver_seguimiento=True,
+                    corregir=True, validar=False, emitir=False, disenar=False)
+            else:
+                Inscripcion.objects.create(curso=curso, cursante=persona)
+            registrar(request, persona, ADDITION, 'Cuenta y acceso al curso creados desde Usuarios.')
+        messages.success(request, f'Cuenta creada: {persona.username}. Deberá cambiar su contraseña al ingresar.')
+        return redirect('aula:usuario', pk=persona.pk)
+    return formulario(request, form, 'Crear una cuenta',
+        'Creá la cuenta y asignale un curso. Compartí los datos de ingreso en privado. La persona deberá cambiar la contraseña al entrar.',
+        reverse('aula:usuarios'), 'Crear cuenta y agregar al curso')
 
 
 class AccesoForm(forms.ModelForm):
@@ -83,7 +146,7 @@ class ImportarForm(forms.Form):
         return filas
 
 
-@direccion
+@gestionar_cuentas
 @never_cache
 def listado(request):
     buscar = request.GET.get('buscar', '')[:150]
@@ -93,24 +156,28 @@ def listado(request):
     return render(request, 'aula/usuarios/lista.html', {**pagina(request, personas, 20), 'buscar': buscar, 'estado': request.GET.get('estado', '')})
 
 
-@direccion
+@gestionar_cuentas
 @never_cache
 @require_http_methods(['GET', 'POST'])
 def detalle(request, pk):
     persona = get_object_or_404(User, pk=pk)
-    protegida = persona.is_superuser or persona.pk == request.user.pk
+    protegida = cuenta_protegida(request.user, persona)
     if request.method == 'POST':
         if protegida:
             raise PermissionDenied
         accion = request.POST.get('accion')
         with transaction.atomic():
             persona = User.objects.select_for_update().get(pk=pk)
+            if cuenta_protegida(request.user, persona):
+                raise PermissionDenied
             if accion in ('activar', 'desactivar'):
                 persona.is_active = accion == 'activar'
                 persona.save(update_fields=['is_active'])
                 registrar(request, persona, CHANGE, 'Cuenta ' + accion + ' desde Usuarios.')
                 messages.success(request, 'Estado de la cuenta actualizado. El historial se conserva.')
             elif accion == 'eliminar':
+                if not request.user.is_superuser:
+                    raise PermissionDenied
                 if request.POST.get('confirmacion') != persona.username:
                     messages.error(request, 'Escribí el usuario exacto para confirmar la eliminación.')
                 elif persona.last_login or persona.inscripciones_aula.exists() or persona.cursos_asignados.exists():

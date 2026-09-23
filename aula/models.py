@@ -73,6 +73,9 @@ class Curso(models.Model):
     horas = models.PositiveIntegerField(null=True, blank=True)
     responsable_certificados = models.CharField(max_length=200, blank=True)
 
+    class Meta:
+        permissions = [('gestionar_cuentas', 'Crear, activar y desactivar cuentas del aula')]
+
     def __str__(self):
         return self.titulo
 
